@@ -1,42 +1,6 @@
 <template>
-  <div class="sistema-layout">
-    <!-- HEADER -->
-    <header class="top-header">
-      <div class="header-left">
-        <img src="/logo-tecnm.png" alt="Logo TecNM" class="header-logo">
-        <span class="system-title">SISTEMA INTEGRAL DE CONTROL ESCOLAR</span>
-      </div>
-      <div class="header-right">
-        <div class="search-bar">
-          <input type="text" placeholder="Buscar..." v-model="busquedaGlobal">
-          <span class="search-icon">🔍</span>
-        </div>
-        <div class="notification-bell">🛎️</div>
-        <div class="user-menu">
-          <span class="user-name">Administrador</span>
-          <span class="dropdown-arrow">▼</span>
-        </div>
-      </div>
-    </header>
-
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-      <nav class="menu">
-        <a href="#" class="menu-item"><span class="icon">📊</span> Dashboard</a>
-        <a href="#" class="menu-item"><span class="icon">🔒</span> Seguridad</a>
-        <a href="#" class="menu-item"><span class="icon">👥</span> Personas</a>
-        <a href="#" class="menu-item"><span class="icon">👤</span> Usuarios</a>
-        <a href="#" class="menu-item"><span class="icon">🏢</span> Recursos Humanos</a>
-        <a href="#" class="menu-item active"><span class="icon">📚</span> Servicios Escolares</a>
-        <a href="#" class="menu-item"><span class="icon">🎓</span> Gestión Académica</a>
-        <a href="#" class="menu-item"><span class="icon">📅</span> Eventos</a>
-        <a href="#" class="menu-item"><span class="icon">👥</span> Comité Académico</a>
-      </nav>
-    </aside>
-
-    <!-- CONTENIDO PRINCIPAL -->
-    <main class="main-content">
-      <!-- BREADCRUMB -->
+  <MainLayout>
+    <div class="formulario-page">
       <div class="breadcrumb">
         Servicios Escolares <span class="arrow">›</span> Formulario Alumno
       </div>
@@ -44,97 +8,114 @@
       <h1 class="page-title">Formulario Alumno</h1>
       <p class="subtitle">Complete la información del alumno para registrarlo en el sistema.</p>
 
+      <div v-if="notification.message" 
+           class="toast" 
+           :class="notification.type">
+        {{ notification.message }}
+      </div>
+
       <div class="form-card">
-        <!-- SECCIÓN 1: Información Personal -->
+
         <div class="section">
           <h2 class="section-title">Información Personal</h2>
           <div class="row">
             <div class="field">
-              <label>Nombre</label>
-              <input type="text" v-model="form.nombre" placeholder="Nombre(s)" required>
+              <label>Nombre <span class="obligatorio">*</span></label>
+              <input type="text" v-model.trim="form.nombre" :class="{ 'error': errors.nombre }">
+              <small v-if="errors.nombre" class="error-msg">{{ errors.nombre }}</small>
             </div>
             <div class="field">
-              <label>Apellido Paterno</label>
-              <input type="text" v-model="form.apellidoPaterno" required>
+              <label>Apellido Paterno <span class="obligatorio">*</span></label>
+              <input type="text" v-model.trim="form.apellidoPaterno" :class="{ 'error': errors.apellidoPaterno }">
+              <small v-if="errors.apellidoPaterno" class="error-msg">{{ errors.apellidoPaterno }}</small>
             </div>
             <div class="field">
               <label>Apellido Materno</label>
-              <input type="text" v-model="form.apellidoMaterno">
+              <input type="text" v-model.trim="form.apellidoMaterno">
             </div>
           </div>
           <div class="field">
-            <label>Género</label>
-            <select v-model="form.genero" required>
+            <label>Género <span class="obligatorio">*</span></label>
+            <select v-model="form.genero" :class="{ 'error': errors.genero }">
               <option value="">Seleccionar</option>
               <option value="Masculino">Masculino</option>
               <option value="Femenino">Femenino</option>
               <option value="Otro">Otro</option>
             </select>
+            <small v-if="errors.genero" class="error-msg">{{ errors.genero }}</small>
           </div>
         </div>
 
-        <!-- SECCIÓN 2: Datos Académicos -->
         <div class="section">
           <h2 class="section-title">Datos Académicos</h2>
           <div class="row">
             <div class="field">
-              <label>Número de Control</label>
-              <input type="text" v-model="form.noControl" maxlength="8" required>
+              <label>Número de Control <span class="obligatorio">*</span></label>
+              <input type="text" v-model.trim="form.noControl" maxlength="8" :class="{ 'error': errors.noControl }">
+              <small v-if="errors.noControl" class="error-msg">{{ errors.noControl }}</small>
             </div>
             <div class="field">
-              <label>Carrera</label>
-              <select v-model="form.carrera" required>
+              <label>Carrera <span class="obligatorio">*</span></label>
+              <select v-model="form.carrera" :class="{ 'error': errors.carrera }">
                 <option value="">Seleccionar carrera</option>
-                <option value="Ingeniería en Sistemas Computacionales">Ingeniería en Sistemas Computacionales</option>
-                <option value="Ingeniería Industrial">Ingeniería Industrial</option>
-                <option value="Ingeniería Civil">Ingeniería Civil</option>
-                <option value="Ingeniería Mecatrónica">Ingeniería Mecatrónica</option>
-                <option value="Ingeniería Electrónica">Ingeniería Electrónica</option>
+                <option value="Contador Publico">Contador Publico</option>
+                <option value="Ingenieria Civil">Ingenieria Civil</option>
+                <option value="Ingenieria en Gestion empresarial">Ingenieria en Gestion empresarial</option>
+                <option value="Ingenieria en Sistemas Computacionales">Ingenieria en Sistemas Computacionales</option>
+                <option value="Ingenieria Industrial">Ingenieria Industrial</option>
               </select>
+              <small v-if="errors.carrera" class="error-msg">{{ errors.carrera }}</small>
             </div>
             <div class="field">
-              <label>Semestre</label>
-              <select v-model="form.semestre" required>
+              <label>Semestre <span class="obligatorio">*</span></label>
+              <select v-model="form.semestre" :class="{ 'error': errors.semestre }">
                 <option value="">Seleccionar</option>
                 <option v-for="n in 8" :key="n" :value="n">{{ n }}</option>
               </select>
+              <small v-if="errors.semestre" class="error-msg">{{ errors.semestre }}</small>
             </div>
           </div>
         </div>
 
-        <!-- SECCIÓN 3: Estado y Fecha de Ingreso -->
         <div class="section">
           <h2 class="section-title">Estado y Fecha de Ingreso</h2>
           <div class="row">
             <div class="field">
-              <label>Estatus</label>
-              <select v-model="form.estatus" required>
+              <label>Estatus <span class="obligatorio">*</span></label>
+              <select v-model="form.estatus" :class="{ 'error': errors.estatus }">
                 <option value="Activo">Activo</option>
                 <option value="Baja Temporal">Baja Temporal</option>
                 <option value="Baja Definitiva">Baja Definitiva</option>
               </select>
             </div>
             <div class="field">
-              <label>Fecha de Ingreso</label>
-              <input type="date" v-model="form.fechaIngreso" required>
+              <label>Fecha de Ingreso <span class="obligatorio">*</span></label>
+              <input type="date" v-model="form.fechaIngreso" :class="{ 'error': errors.fechaIngreso }">
+              <small v-if="errors.fechaIngreso" class="error-msg">{{ errors.fechaIngreso }}</small>
             </div>
           </div>
         </div>
 
-        <!-- BOTONES -->
         <div class="form-actions">
-          <button class="btn-cancel" @click="cancelar">Cancelar</button>
-          <button class="btn-guardar" @click="guardarAlumno">Guardar</button>
+          <button class="btn-cancel" @click="cancelar" :disabled="isLoading">Cancelar</button>
+          <button class="btn-guardar" @click="guardarAlumno" :disabled="isLoading">
+            <span v-if="isLoading" class="spinner"></span>
+            {{ isLoading ? 'Guardando...' : 'Guardar' }}
+          </button>
         </div>
       </div>
-    </main>
-  </div>
+    </div>
+  </MainLayout>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import MainLayout from '@/layouts/MainLayout.vue'
 
-const form = ref({
+const router = useRouter()
+
+const form = reactive({
   nombre: '',
   apellidoPaterno: '',
   apellidoMaterno: '',
@@ -146,58 +127,90 @@ const form = ref({
   fechaIngreso: ''
 })
 
-const busquedaGlobal = ref('')
+const errors = reactive({})
+const notification = reactive({ message: '', type: '' })
+const isLoading = ref(false)
 
-const guardarAlumno = () => {
-  if (!form.value.nombre || !form.value.apellidoPaterno || !form.value.noControl) {
-    alert('❌ Los campos obligatorios están incompletos')
+const validarFormulario = () => {
+  Object.keys(errors).forEach(key => delete errors[key])
+
+  if (!form.nombre.trim()) errors.nombre = 'El nombre es obligatorio'
+  if (!form.apellidoPaterno.trim()) errors.apellidoPaterno = 'El apellido paterno es obligatorio'
+  if (!form.noControl.trim() || form.noControl.length !== 8) errors.noControl = 'Debe tener exactamente 8 dígitos'
+  if (!form.genero) errors.genero = 'Seleccione un género'
+  if (!form.carrera) errors.carrera = 'Seleccione una carrera'
+  if (!form.semestre) errors.semestre = 'Seleccione un semestre'
+  if (!form.fechaIngreso) errors.fechaIngreso = 'La fecha es obligatoria'
+
+  return Object.keys(errors).length === 0
+}
+
+const guardarAlumno = async () => {
+  if (!validarFormulario()) {
+    showNotification('❌ Corrige los errores marcados', 'error')
     return
   }
-  alert('✅ Alumno guardado correctamente (simulado)')
-  console.log('Datos guardados:', form.value)
+
+  isLoading.value = true
+
+  await new Promise(resolve => setTimeout(resolve, 1400))
+
+  showNotification('✅ Alumno guardado correctamente', 'success')
+
+  setTimeout(() => {
+    isLoading.value = false
+    router.push('/alumnos')
+  }, 800)
 }
 
 const cancelar = () => {
-  if (confirm('¿Desea cancelar el registro?')) {
-    window.location.href = '/alumnos'
-  }
+  router.push('/alumnos')
+}
+
+const showNotification = (message, type) => {
+  notification.message = message
+  notification.type = type
+  setTimeout(() => { notification.message = '' }, 3000)
 }
 </script>
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
-.sistema-layout { font-family: 'Montserrat', sans-serif; display: flex; min-height: 100vh; background: #F5F7FA; }
+.toast {
+  position: fixed;
+  top: 90px;
+  right: 30px;
+  padding: 14px 24px;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  z-index: 9999;
+  animation: slideIn 0.3s ease;
+}
+.toast.success { background: #2E7D32; }
+.toast.error   { background: #D32F2F; }
+@keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
 
-/* HEADER Y SIDEBAR */
-.top-header { background: #1B396A; padding: 0.9rem 2.5rem; position: fixed; top: 0; left: 0; right: 0; height: 74px; display: flex; align-items: center; justify-content: space-between; z-index: 1000; }
-.header-left { display: flex; align-items: center; gap: 1rem; }
-.header-logo { height: 58px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.95)); }
-.system-title { font-size: 1.28rem; font-weight: 700; color: white; }
-.header-right { display: flex; align-items: center; gap: 4rem; }
-.search-bar { position: relative; width: 310px; }
-.search-bar input { width: 100%; padding: 11px 15px 11px 45px; border: none; border-radius: 30px; background: rgba(255,255,255,0.18); color: white; }
-.search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: white; }
-.notification-bell { font-size: 1.6rem; color: white; cursor: pointer; }
-.user-menu { display: flex; align-items: center; gap: 8px; color: white; font-weight: 500; cursor: pointer; }
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-.sidebar { width: 260px; background: #1B396A; position: fixed; top: 74px; bottom: 0; left: 0; padding-top: 1rem; }
-.menu-item { display: flex; align-items: center; gap: 12px; padding: 14px 24px; color: white; text-decoration: none; }
-.menu-item.active { background: rgba(255,255,255,0.12); }
-
-/* CONTENIDO */
-.main-content { margin-left: 260px; margin-top: 74px; padding: 2rem; flex: 1; }
-.breadcrumb { color: #4D82BE; margin-bottom: 0.5rem; font-size: 0.95rem; }
+.formulario-page { max-width: 100%; }
 .page-title { color: #005187; font-size: 1.9rem; font-weight: 700; margin-bottom: 0.3rem; }
 .subtitle { color: #5A5A5A; margin-bottom: 2rem; }
 
-.form-card {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-  padding: 2.5rem;
-  max-width: 900px;
-}
+.form-card { background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); padding: 2.5rem; max-width: 900px; }
 
 .section { margin-bottom: 2.5rem; }
 .section-title { color: #005187; font-size: 1.35rem; font-weight: 600; margin-bottom: 1rem; border-bottom: 2px solid #E0E7FF; padding-bottom: 0.5rem; }
@@ -205,43 +218,25 @@ const cancelar = () => {
 .row { display: flex; gap: 1.5rem; margin-bottom: 1.2rem; }
 .field { flex: 1; }
 .field label { display: block; margin-bottom: 6px; font-weight: 500; color: #1A1A1A; }
-.field input, .field select {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1.5px solid #D1D9E6;
-  border-radius: 10px;
-  font-size: 1rem;
-}
-.field input:focus, .field select:focus {
-  border-color: #005187;
-  outline: none;
-  box-shadow: 0 0 0 4px rgba(0,81,135,0.15);
-}
+.obligatorio { color: #D32F2F; }
 
-.form-actions {
+.field input.error, .field select.error { border-color: #D32F2F; }
+.error-msg { color: #D32F2F; font-size: 0.85rem; margin-top: 4px; display: block; }
+
+.form-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; }
+
+.btn-cancel { padding: 12px 28px; background: #F5F7FA; color: #1A1A1A; border: 1px solid #D1D9E6; border-radius: 10px; font-weight: 600; cursor: pointer; }
+.btn-guardar { 
+  padding: 12px 32px; 
+  background: #005187; 
+  color: white; 
+  border: none; 
+  border-radius: 10px; 
+  font-weight: 600; 
+  cursor: pointer; 
   display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 2rem;
+  align-items: center;
+  gap: 8px;
 }
-
-.btn-cancel {
-  padding: 12px 28px;
-  background: #F5F7FA;
-  color: #1A1A1A;
-  border: 1px solid #D1D9E6;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.btn-guardar {
-  padding: 12px 32px;
-  background: #005187;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-}
+.btn-guardar:disabled { opacity: 0.8; cursor: not-allowed; }
 </style>
