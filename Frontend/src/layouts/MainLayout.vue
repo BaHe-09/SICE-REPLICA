@@ -10,16 +10,20 @@
         >
         <span class="system-title">SISTEMA INTEGRAL DE CONTROL ESCOLAR</span>
       </div>
-     
+
       <div class="header-right">
-        <div class="search-bar">
-          <input 
-            type="text" 
-            placeholder="Buscar..." 
+
+        <div class="search-group">
+          <input
+            type="text"
+            placeholder="Buscar..."
             v-model="busquedaGlobal"
           >
-          <span class="search-icon">🔍</span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="search-icon-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 01-14 0 7 7 0 0114 0z" />
+          </svg>
         </div>
+
         <div class="notification-bell">
           <svg xmlns="http://www.w3.org/2000/svg" class="bell-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-9-5.197V8.5m.002 3.5L12 17m-5-5v-.5a6 6 0 0112 0v.5m-12 0v.5" />
@@ -104,21 +108,47 @@ const busquedaGlobal = ref('')
 .header-logo { height: 58px; filter: drop-shadow(0 0 10px rgba(255,255,255,0.95)); }
 .system-title { font-size: 1.28rem; font-weight: 700; color: white; }
 
-.header-right { display: flex; align-items: center; gap: 2.8rem; }
-.search-bar { position: relative; width: 310px; }
-.search-bar input { width: 100%; padding: 11px 15px 11px 45px; border: none; border-radius: 30px; background: rgba(255,255,255,0.18); color: white; }
-.search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: white; }
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 2.2rem;
+}
+
+
+.search-group {
+  position: relative;
+  width: 310px;
+}
+.search-group input {
+  width: 100%;
+  padding: 11px 15px 11px 48px;
+  border: none;
+  border-radius: 30px;
+  background: rgba(255,255,255,0.18);
+  color: white;
+  font-size: 1rem;
+}
+.search-icon-svg {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  stroke: white;
+}
+
 .notification-bell { font-size: 1.6rem; color: white; cursor: pointer; }
 .user-menu { display: flex; align-items: center; gap: 8px; color: white; font-weight: 500; cursor: pointer; }
 
 .sidebar { width: 260px; background: #1B396A; position: fixed; top: 74px; bottom: 0; left: 0; padding-top: 1rem; }
-.menu-item { 
-  display: flex; 
-  align-items: center; 
-  gap: 12px; 
-  padding: 14px 24px; 
-  color: white; 
-  text-decoration: none; 
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 24px;
+  color: white;
+  text-decoration: none;
   font-size: 0.98rem;
 }
 .menu-item.active { background: rgba(255,255,255,0.12); font-weight: 600; }

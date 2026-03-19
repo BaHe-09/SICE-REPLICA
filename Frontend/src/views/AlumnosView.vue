@@ -1,15 +1,23 @@
 <template>
   <MainLayout v-slot="{ busquedaGlobal }">
     <div class="alumnos-page">
+
       <h1 class="page-title">Lista de Alumnos</h1>
 
       <div class="filters-bar">
-        <input 
-          type="text" 
-          placeholder="Buscar alumno..." 
-          v-model="busquedaAlumno" 
-          class="search-input"
-        >
+
+        <div class="search-group">
+          <input
+            type="text" 
+            placeholder="Buscar alumno..."
+            v-model="busquedaAlumno"
+            class="search-input"
+          >
+          <svg xmlns="http://www.w3.org/2000/svg" class="search-icon-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 01-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+
         <select v-model="filtroCarrera" class="filter-select">
           <option value="">Carrera</option>
           <option value="Contador Publico">Contador Publico</option>
@@ -35,6 +43,14 @@
           <option value="Baja Temporal">Baja Temporal</option>
           <option value="Baja Definitiva">Baja Definitiva</option>
         </select>
+
+
+        <button class="btn-limpiar" @click="resetFilters">
+          <svg xmlns="http://www.w3.org/2000/svg" class="reset-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6h12v12" />
+          </svg>
+          Limpiar filtros
+        </button>
 
         <button class="btn-nuevo" @click="nuevoAlumno">
           + Nuevo Alumno
@@ -73,7 +89,6 @@
         </table>
 
         <div v-else class="empty-state">
-          <div class="empty-icon">📋</div>
           <h3>No hay resultados</h3>
           <p>No se encontraron alumnos con los filtros aplicados.<br>
              Intenta cambiar los criterios de búsqueda.</p>
@@ -123,7 +138,6 @@ const props = defineProps({
   busquedaGlobal: { type: String, default: '' }
 })
 
-
 const normalize = (text) => {
   return text
     .toLowerCase()
@@ -143,11 +157,11 @@ const alumnos = ref([
 
 const alumnosFiltrados = computed(() => {
   return alumnos.value.filter(alumno => {
-    const coincideGlobal = !props.busquedaGlobal || 
+    const coincideGlobal = !props.busquedaGlobal ||
       normalize(alumno.nombre).includes(normalize(props.busquedaGlobal)) ||
       alumno.noControl.includes(props.busquedaGlobal)
 
-    const coincideLocal = !busquedaAlumno.value || 
+    const coincideLocal = !busquedaAlumno.value ||
       normalize(alumno.nombre).includes(normalize(busquedaAlumno.value)) ||
       alumno.noControl.includes(busquedaAlumno.value)
 
@@ -191,11 +205,87 @@ const editarAlumno = (a) => alert(`Editar: ${a.nombre}`)
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
 .alumnos-page { max-width: 100%; }
-.page-title { color: #005187; font-size: 1.9rem; font-weight: 700; margin-bottom: 1.2rem; }
+.page-title {
+  color: #005187;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
 
-.filters-bar { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-.search-input, .filter-select { padding: 11px 14px; border: 1px solid #D1D9E6; border-radius: 8px; font-size: 1rem; }
-.btn-nuevo { background: #005187; color: white; border: none; padding: 11px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+.btn-action.editar {
+  background: #4D82BE;
+  color: white;
+  border: 1px solid #4D82BE;
+}
+
+.btn-action.editar:hover {
+  background: #3B6EA5;
+  border-color: #3B6EA5;
+}
+
+.filters-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.8rem;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+/* BUSCADOR */
+.search-group {
+  position: relative;
+  flex: 0 0 260px;
+  overflow: hidden;
+}
+.search-input {
+  width: 100%;
+  padding: 12px 14px 12px 48px;
+  border: 1px solid #D1D9E6;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+.search-icon-svg {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  stroke: #6B7280;
+}
+
+.btn-limpiar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #F5F7FA;
+  color: #1A1A1A;
+  border: 1px solid #D1D9E6;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+  white-space: nowrap;
+}
+.btn-limpiar:hover { background: #EEF2F7; }
+.reset-icon { width: 18px; height: 18px; stroke: #6B7280; }
+
+
+.filter-select {
+  padding: 12px 14px;
+  border: 1px solid #D1D9E6;
+  border-radius: 8px;
+  font-size: 1rem;
+  flex: 0 0 180px;
+  min-width: 180px;
+  background: white;
+  cursor: pointer;
+}
+
+
+.btn-nuevo { background: #005187; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; }
 
 .table-container { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.07); }
 .alumnos-table { width: 100%; border-collapse: collapse; }
@@ -211,7 +301,6 @@ const editarAlumno = (a) => alert(`Editar: ${a.nombre}`)
 .btn-action { padding: 7px 16px; border-radius: 6px; font-size: 0.92rem; cursor: pointer; }
 
 .empty-state { text-align: center; padding: 4rem 2rem; color: #9AA3AF; }
-.empty-icon { font-size: 4.5rem; margin-bottom: 1rem; opacity: 0.6; }
 .empty-state h3 { font-size: 1.4rem; color: #1A1A1A; margin-bottom: 0.5rem; }
 .empty-state p { margin-bottom: 1.5rem; line-height: 1.5; }
 .btn-reset { background: #F5F7FA; color: #1A1A1A; border: 1px solid #D1D9E6; padding: 10px 20px; border-radius: 8px; font-weight: 500; cursor: pointer; }

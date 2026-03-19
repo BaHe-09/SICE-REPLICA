@@ -8,11 +8,12 @@
       <h1 class="page-title">Formulario Alumno</h1>
       <p class="subtitle">Complete la información del alumno para registrarlo en el sistema.</p>
 
-      <div v-if="notification.message" 
-           class="toast" 
+      <div v-if="notification.message"
+           class="toast"
            :class="notification.type">
         {{ notification.message }}
       </div>
+
 
       <div class="form-card">
 
@@ -206,34 +207,67 @@ const showNotification = (message, type) => {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.formulario-page { max-width: 100%; }
-.page-title { color: #005187; font-size: 1.9rem; font-weight: 700; margin-bottom: 0.3rem; }
-.subtitle { color: #5A5A5A; margin-bottom: 2rem; }
 
-.form-card { background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); padding: 2.5rem; max-width: 900px; }
+.formulario-page {
+  width: 100%;
+  padding: 2rem 2.5rem;
+}
+.page-title {
+  text-align: middle;
+}
 
-.section { margin-bottom: 2.5rem; }
-.section-title { color: #005187; font-size: 1.35rem; font-weight: 600; margin-bottom: 1rem; border-bottom: 2px solid #E0E7FF; padding-bottom: 0.5rem; }
+.subtitle {
+  text-align: middle;
+}
 
-.row { display: flex; gap: 1.5rem; margin-bottom: 1.2rem; }
+.form-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 12px 35px rgba(0,0,0,0.09);
+  padding: 3rem;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.section { margin-bottom: 3rem; }
+.section-title {
+  color: #005187;
+  font-size: 1.45rem;
+  font-weight: 700;
+  margin-bottom: 1.4rem;
+  border-bottom: 2px solid #E0E7FF;
+  padding-bottom: 0.7rem;
+}
+
+.row {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1.6rem;
+  flex-wrap: wrap;
+}
 .field { flex: 1; }
-.field label { display: block; margin-bottom: 6px; font-weight: 500; color: #1A1A1A; }
+.field label { display: block; margin-bottom: 9px; font-weight: 600; color: #1A1A1A; font-size: 1.02rem; }
 .obligatorio { color: #D32F2F; }
 
+.field input, .field select {
+  padding: 13px 16px;
+  font-size: 1.02rem;
+}
 .field input.error, .field select.error { border-color: #D32F2F; }
-.error-msg { color: #D32F2F; font-size: 0.85rem; margin-top: 4px; display: block; }
+.error-msg { color: #D32F2F; font-size: 0.88rem; margin-top: 6px; display: block; }
 
-.form-actions { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; }
+.form-actions { display: flex; justify-content: flex-end; gap: 1.4rem; margin-top: 3rem; }
 
-.btn-cancel { padding: 12px 28px; background: #F5F7FA; color: #1A1A1A; border: 1px solid #D1D9E6; border-radius: 10px; font-weight: 600; cursor: pointer; }
-.btn-guardar { 
-  padding: 12px 32px; 
-  background: #005187; 
-  color: white; 
-  border: none; 
-  border-radius: 10px; 
-  font-weight: 600; 
-  cursor: pointer; 
+.btn-cancel { padding: 13px 30px; background: #F5F7FA; color: #1A1A1A; border: 1px solid #D1D9E6; border-radius: 10px; font-weight: 600; cursor: pointer; }
+.btn-guardar {
+  padding: 13px 34px;
+  background: #005187;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
