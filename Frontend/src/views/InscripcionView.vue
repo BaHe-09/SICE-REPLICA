@@ -2,23 +2,19 @@
   <MainLayout v-slot="{ busquedaGlobal }">
     <div class="inscripcion-page">
 
-      <!-- BREADCRUMB -->
       <div class="breadcrumb">
         Servicios Escolares <span class="arrow">›</span> Inscripción
       </div>
 
-      <!-- TÍTULO Y SUBTÍTULO ALINEADOS A LA IZQUIERDA -->
       <h1 class="page-title">Inscripción</h1>
       <p class="subtitle">Seleccione al alumno y asígnelo a un grupo disponible para el periodo vigente.</p>
 
-      <!-- TOAST (igual que en Formulario Alumno) -->
       <div v-if="notification.message" class="toast" :class="notification.type">
         {{ notification.message }}
       </div>
 
       <div class="content-card">
 
-        <!-- BUSCAR ALUMNO -->
         <div class="buscar-alumno-section">
           <h3>Buscar Alumno</h3>
           <div class="search-row">
@@ -37,14 +33,12 @@
             </select>
           </div>
 
-          <!-- Alumno seleccionado -->
           <div v-if="alumnoSeleccionado" class="selected-student">
             {{ alumnoSeleccionado.nombre }} • {{ alumnoSeleccionado.noControl }} • 
             {{ alumnoSeleccionado.carrera }} ({{ alumnoSeleccionado.semestre }} Semestre)
           </div>
         </div>
 
-        <!-- SELECCIONAR GRUPO -->
         <div class="seleccionar-grupo-section">
           <h3>Seleccionar Grupo</h3>
           <div class="group-search-bar">
@@ -92,7 +86,6 @@
             </table>
           </div>
 
-          <!-- PAGINACIÓN -->
           <div class="pagination">
             <span>Página 1 de 4</span>
             <div class="pagination-buttons">
@@ -173,7 +166,6 @@ const showNotification = (message, type) => {
 }
 .arrow { color: #1A1A1A; font-weight: bold; }
 
-/* TÍTULO Y SUBTÍTULO A LA IZQUIERDA (como en la plantilla) */
 .page-title {
   text-align: left;
   font-size: 2.4rem;
@@ -196,36 +188,35 @@ const showNotification = (message, type) => {
   margin: 0 auto;
 }
 
-/* Buscar Alumno */
-.buscar-alumno-section h3 { 
-  color: #005187; 
-  margin-bottom: 1rem; 
-  font-size: 1.35rem; 
+.buscar-alumno-section h3 {
+  color: #005187;
+  margin-bottom: 1rem;
+  font-size: 1.35rem;
 }
-.search-row { 
-  display: flex; 
-  gap: 12px; 
-  align-items: center; 
-  flex-wrap: wrap; 
+.search-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 .selected-student-wrapper { flex: 1; display: flex; }
-.selected-student-wrapper input { 
-  flex: 1; 
-  padding: 14px 16px; 
-  border: 1px solid #D1D9E6; 
-  border-radius: 10px; 
+.selected-student-wrapper input {
+  flex: 1;
+  padding: 14px 16px;
+  border: 1px solid #D1D9E6;
+  border-radius: 10px;
 }
-.btn-buscar { 
-  background: #005187; 
-  color: white; 
-  padding: 14px 28px; 
-  border-radius: 10px; 
-  font-weight: 600; 
+.btn-buscar {
+  background: #005187;
+  color: white;
+  padding: 14px 28px;
+  border-radius: 10px;
+  font-weight: 600;
 }
-.period-select { 
-  padding: 14px 16px; 
-  border: 1px solid #D1D9E6; 
-  border-radius: 10px; 
+.period-select {
+  padding: 14px 16px;
+  border: 1px solid #D1D9E6;
+  border-radius: 10px;
 }
 .selected-student {
   margin-top: 1rem;
@@ -236,46 +227,44 @@ const showNotification = (message, type) => {
   color: #1A1A1A;
 }
 
-/* Seleccionar Grupo */
-.seleccionar-grupo-section h3 { 
-  color: #005187; 
-  margin: 2.5rem 0 1rem; 
-  font-size: 1.35rem; 
+.seleccionar-grupo-section h3 {
+  color: #005187;
+  margin: 2.5rem 0 1rem;
+  font-size: 1.35rem;
 }
-.group-search-bar { 
-  display: flex; 
-  gap: 12px; 
-  margin-bottom: 1.5rem; 
+.group-search-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 1.5rem;
 }
-.group-input { 
-  flex: 1; 
-  padding: 14px 16px; 
-  border: 1px solid #D1D9E6; 
-  border-radius: 10px; 
+.group-input {
+  flex: 1;
+  padding: 14px 16px;
+  border: 1px solid #D1D9E6;
+  border-radius: 10px;
 }
-.btn-filtrar { 
-  background: #005187; 
-  color: white; 
-  padding: 14px 28px; 
-  border-radius: 10px; 
-  font-weight: 600; 
+.btn-filtrar {
+  background: #005187;
+  color: white;
+  padding: 14px 28px;
+  border-radius: 10px;
+  font-weight: 600;
 }
 
-/* Tabla */
 .table-container { overflow-x: auto; }
-.inscripcion-table { 
-  width: 100%; 
-  border-collapse: collapse; 
+.inscripcion-table {
+  width: 100%;
+  border-collapse: collapse;
 }
-.inscripcion-table th { 
-  background: #F5F7FA; 
-  padding: 18px 16px; 
-  font-weight: 600; 
-  color: #1A1A1A; 
+.inscripcion-table th {
+  background: #F5F7FA;
+  padding: 18px 16px;
+  font-weight: 600;
+  color: #1A1A1A;
 }
-.inscripcion-table td { 
-  padding: 18px 16px; 
-  border-bottom: 1px solid #E0E7FF; 
+.inscripcion-table td {
+  padding: 18px 16px;
+  border-bottom: 1px solid #E0E7FF;
 }
 .inscritos-badge { font-weight: 600; color: #1A1A1A; }
 
@@ -297,7 +286,6 @@ const showNotification = (message, type) => {
   cursor: not-allowed;
 }
 
-/* Paginación */
 .pagination {
   display: flex;
   justify-content: space-between;
@@ -313,12 +301,11 @@ const showNotification = (message, type) => {
   background: white;
   border-radius: 6px;
 }
-.pagination-buttons .active { 
-  background: #005187; 
-  color: white; 
+.pagination-buttons .active {
+  background: #005187;
+  color: white;
 }
 
-/* Toast */
 .toast {
   position: fixed;
   top: 90px;

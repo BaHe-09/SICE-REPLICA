@@ -1,18 +1,16 @@
 <template>
   <div class="login-page">
-    <!-- HEADER CON LOGO -->
     <header class="header">
       <div class="header-content">
         <img 
-          src="/logo-tecnm.png" 
-          alt="TECNOLÓGICO NACIONAL DE MÉXICO" 
+          src="/logo-tecnm.png"
+          alt="TECNOLÓGICO NACIONAL DE MÉXICO"
           class="logo"
         >
         <span class="header-title">TECNOLÓGICO NACIONAL DE MÉXICO®</span>
       </div>
     </header>
 
-    <!-- FORMULARIO -->
     <main class="main-content">
       <div class="login-card">
         <h1 class="title">Iniciar sesión</h1>
@@ -20,20 +18,20 @@
         <form @submit.prevent="handleLogin" class="form">
           <div class="input-group">
             <span class="icon">👤</span>
-            <input 
+            <input
               v-model="form.username"
-              type="text" 
-              placeholder="Usuario / Correo institucional" 
+              type="text"
+              placeholder="Usuario / Correo institucional"
               required
             >
           </div>
 
           <div class="input-group">
             <span class="icon">🔒</span>
-            <input 
+            <input
               v-model="form.password"
-              type="password" 
-              placeholder="Contraseña" 
+              type="password"
+              placeholder="Contraseña"
               required
             >
           </div>

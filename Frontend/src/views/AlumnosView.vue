@@ -8,7 +8,7 @@
 
         <div class="search-group">
           <input
-            type="text" 
+            type="text"
             placeholder="Buscar alumno..."
             v-model="busquedaAlumno"
             class="search-input"
@@ -232,7 +232,6 @@ const editarAlumno = (a) => alert(`Editar: ${a.nombre}`)
   width: 100%;
 }
 
-/* BUSCADOR */
 .search-group {
   position: relative;
   flex: 0 0 260px;

@@ -4,7 +4,6 @@
 
       <h1 class="page-title">Grupos</h1>
 
-      <!-- BUSCADOR + BOTÓN FILTRAR (EXACTO A TU CAPTURA) -->
       <div class="search-wrapper">
         <div class="search-group">
           <svg xmlns="http://www.w3.org/2000/svg" class="search-icon-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -21,7 +20,6 @@
         <button class="btn-filtrar" @click="filtrar">Filtrar</button>
       </div>
 
-      <!-- TABLA -->
       <div class="table-container">
         <table class="grupos-table">
           <thead>
@@ -52,7 +50,6 @@
         </table>
       </div>
 
-      <!-- PAGINACIÓN -->
       <div class="pagination">
         <div class="pagination-left">Mostrando {{ gruposFiltrados.length }} de {{ grupos.length }} grupos disponibles</div>
         <div class="pagination-center">
@@ -97,7 +94,6 @@ const gruposFiltrados = computed(() => {
 })
 
 const filtrar = () => {
-  // El botón ya funciona (filtra al instante)
 }
 
 const irAEvaluaciones = (grupo) => router.push(`/evaluaciones/${grupo.id}`)
@@ -110,13 +106,12 @@ const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
 .grupos-page { width: 100%; }
 
 .page-title {
-  color: #1A1A1A;
-  font-size: 2.6rem;
+  color: #005187;
+  font-size: 2.4rem;
   font-weight: 700;
   margin-bottom: 1.8rem;
 }
 
-/* BUSCADOR + BOTÓN EXACTO A TU CAPTURA */
 .search-wrapper {
   display: flex;
   background: white;
@@ -159,7 +154,6 @@ const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
   white-space: nowrap;
 }
 
-/* TABLA */
 .table-container {
   background: white;
   border-radius: 12px;
@@ -184,7 +178,6 @@ const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
 .btn-accion.evaluaciones { background: #005187; color: white; }
 .btn-accion.calificaciones { background: #9AA3AF; color: white; }
 
-/* PAGINACIÓN */
 .pagination {
   margin-top: 2rem;
   display: flex;

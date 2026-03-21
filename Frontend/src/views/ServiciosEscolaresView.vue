@@ -2,24 +2,20 @@
   <MainLayout v-slot="{ busquedaGlobal }">
     <div class="servicios-escolares-page">
 
-      <!-- BREADCRUMB -->
       <div class="breadcrumb">
         Servicios Escolares
       </div>
 
-      <!-- TÍTULO ALINEADO A LA IZQUIERDA -->
       <h1 class="page-title">Servicios Escolares</h1>
 
-      <!-- TOAST -->
       <div v-if="notification.message" class="toast" :class="notification.type">
         {{ notification.message }}
       </div>
 
       <div class="content-card">
 
-        <!-- TARJETAS DE ESTADÍSTICAS -->
         <div class="stats-grid">
-          <!-- Alumnos Activos -->
+
           <div class="stat-card blue">
             <svg xmlns="http://www.w3.org/2000/svg" class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14v6m-3-3h6M6 10h2a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2zm10 0h2a2 2 0 002-2v-2a2 2 0 00-2-2h-2a2 2 0 00-2 2v2a2 2 0 002 2zM6 20h2a2 2 0 002-2v-2a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2" />
@@ -31,7 +27,6 @@
             </div>
           </div>
 
-          <!-- Inscripciones del Período -->
           <div class="stat-card">
             <svg xmlns="http://www.w3.org/2000/svg" class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18 9.246 18 10.832 18.477 12 19.253zm0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18 14.754 18 13.168 18.477 12 19.253z" />
@@ -43,7 +38,6 @@
             </div>
           </div>
 
-          <!-- Grupos Abiertos -->
           <div class="stat-card">
             <svg xmlns="http://www.w3.org/2000/svg" class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14v6m-3-3h6M6 10h2a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2zm10 0h2a2 2 0 002-2v-2a2 2 0 00-2-2h-2a2 2 0 00-2 2v2a2 2 0 002 2zM6 20h2a2 2 0 002-2v-2a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2" />
@@ -55,7 +49,6 @@
             </div>
           </div>
 
-          <!-- Evaluaciones Pendientes -->
           <div class="stat-card">
             <svg xmlns="http://www.w3.org/2000/svg" class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 8.944 11.922.42.095.858.143 1.295.143a3 3 0 01.935-.072" />
@@ -68,7 +61,6 @@
           </div>
         </div>
 
-        <!-- MENSAJE IMPORTANTE -->
         <div class="mensaje-importante">
           <svg xmlns="http://www.w3.org/2000/svg" class="mensaje-icon" fill="none" viewBox="0 0 24 24" stroke="#D2B48C" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -82,7 +74,6 @@
           </button>
         </div>
 
-        <!-- ÚLTIMAS INSCRIPCIONES -->
         <div class="ultimas-inscripciones">
           <div class="table-header">
             <h3>Últimas Inscripciones</h3>
@@ -220,7 +211,6 @@ const showNotification = (message, type) => {
   margin: 0 auto;
 }
 
-/* Tarjetas */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -252,7 +242,6 @@ const showNotification = (message, type) => {
 .ver-link { color: #005187; font-weight: 600; text-decoration: none; }
 .stat-card.blue .ver-link { color: white; }
 
-/* Mensaje importante */
 .mensaje-importante {
   background: #FFF9E6;
   border-left: 6px solid #D2B48C;
@@ -285,7 +274,6 @@ const showNotification = (message, type) => {
   cursor: pointer;
 }
 
-/* Tabla y filtros */
 .table-header {
   display: flex;
   justify-content: space-between;
@@ -341,7 +329,6 @@ const showNotification = (message, type) => {
   font-weight: 600;
 }
 
-/* Paginación */
 .pagination {
   display: flex;
   justify-content: space-between;
@@ -351,7 +338,6 @@ const showNotification = (message, type) => {
   font-size: 0.95rem;
 }
 
-/* Toast */
 .toast {
   position: fixed;
   top: 90px;

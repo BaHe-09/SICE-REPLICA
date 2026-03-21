@@ -1,8 +1,3 @@
-<!-- ============================================= -->
-<!-- src/views/EvaluacionesView.vue -->
-<!-- VERSIÓN CORREGIDA - MANTIENE TU MODAL DETALLADO -->
-<!-- ============================================= -->
-
 <template>
   <MainLayout v-slot="{ busquedaGlobal }">
     <div class="evaluaciones-page">
@@ -10,7 +5,6 @@
       <div class="breadcrumb">Servicios Escolares › Grupos › Evaluaciones</div>
       <h1 class="page-title">Evaluaciones</h1>
 
-      <!-- Tarjeta Materia -->
       <div class="subject-card">
         <div class="subject-info">
           <h2>Algoritmos y Programación</h2>
@@ -24,7 +18,6 @@
         </button>
       </div>
 
-      <!-- TABLA -->
       <div class="table-container">
         <table class="eval-table">
           <thead>
@@ -57,7 +50,6 @@
         </table>
       </div>
 
-      <!-- GRÁFICO PEQUEÑO + BOTÓN ALINEADO -->
       <div class="bottom-bar">
         <div class="circular-wrapper">
           <div class="circular-progress">
@@ -70,8 +62,8 @@
         </div>
 
         <button 
-          @click="guardarCambios" 
-          :disabled="totalPorcentaje !== 100" 
+          @click="guardarCambios"
+          :disabled="totalPorcentaje !== 100"
           class="btn-guardar"
         >
           Guardar Cambios
@@ -81,7 +73,6 @@
     </div>
   </MainLayout>
 
-  <!-- ==================== MODAL DETALLADO (mantenido casi igual) ==================== -->
   <div v-if="showModal" class="modal-overlay" @click.self="cerrarModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -147,7 +138,6 @@ const criterios = ref([
 const totalPorcentaje = computed(() => criterios.value.reduce((sum, c) => sum + Number(c.porcentaje), 0))
 const circlePath = computed(() => `M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831`)
 
-// MODAL
 const showModal = ref(false)
 const nuevoNombre = ref('')
 const nuevoPorcentaje = ref(0)
@@ -184,12 +174,11 @@ const guardarCambios = () => alert('✅ Evaluaciones guardadas correctamente')
 </script>
 
 <style scoped>
-/* ... (mantengo exactamente los mismos estilos del modal que tenías, solo quité emojis y ajusté colores) */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
 .evaluaciones-page { width: 100%; max-width: 1200px; margin: 0 auto; }
 
-.page-title { color: #1A1A1A; font-size: 2.4rem; font-weight: 700; margin-bottom: 0.5rem; }
+.page-title { color: #005187; font-size: 2.4rem; font-weight: 700; margin-bottom: 0.5rem; }
 .breadcrumb { color: #5A5A5A; margin-bottom: 1rem; font-size: 0.95rem; }
 
 .subject-card { background: white; padding: 1.8rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; box-shadow: 0 8px 25px rgba(0,0,0,0.07); }
@@ -207,7 +196,6 @@ const guardarCambios = () => alert('✅ Evaluaciones guardadas correctamente')
 .btn-delete { background: #D32F2F; }
 .icon-svg { width: 18px; height: 18px; stroke: white; }
 
-/* GRÁFICO PEQUEÑO */
 .bottom-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; }
 .circular-wrapper { width: 130px; height: 130px; position: relative; }
 .circular-progress svg { transform: rotate(-90deg); width: 130px; height: 130px; }
@@ -217,7 +205,6 @@ const guardarCambios = () => alert('✅ Evaluaciones guardadas correctamente')
 .btn-guardar:hover:not(:disabled) { background: #003F6F; }
 .btn-guardar:disabled { background: #9AA3AF; cursor: not-allowed; }
 
-/* === TU MODAL DETALLADO (casi idéntico al original) === */
 .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 2000; }
 .modal-content { background: white; width: 520px; max-width: 90%; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.3); }
 .modal-header { background: #005187; color: white; padding: 1.25rem 1.8rem; display: flex; justify-content: space-between; align-items: center; }
