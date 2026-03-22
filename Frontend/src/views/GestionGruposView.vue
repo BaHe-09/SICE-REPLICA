@@ -96,8 +96,19 @@ const gruposFiltrados = computed(() => {
 const filtrar = () => {
 }
 
-const irAEvaluaciones = (grupo) => router.push(`/evaluaciones/${grupo.id}`)
-const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
+const irAEvaluaciones = (grupo) => {
+  router.push({ 
+    name: 'Evaluaciones', 
+    params: { id: grupo.id }
+  })
+}
+
+const irACalificaciones = (grupo) => {
+  router.push({ 
+    name: 'Calificaciones', 
+    params: { id: grupo.id }
+  })
+}
 </script>
 
 <style scoped>
