@@ -404,7 +404,7 @@ const eliminarAlumno = () => {
 .btn-cerrar {
   background: #005187;
   color: white;
-  padding: 12px 40px;
+  padding: 13px 40px;
   border-radius: 10px;
   font-weight: 600;
   border: none;
