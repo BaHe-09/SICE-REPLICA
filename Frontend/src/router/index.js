@@ -44,7 +44,8 @@ const router = createRouter({
     },
 
     { path: '/inscripcion', name: 'Inscripcion', component: () => import('@/views/InscripcionView.vue') },
-    { path: '/gestion-grupos', name: 'GestionGrupos', component: () => import('@/views/GestionGruposView.vue') }
+    { path: '/gestion-grupos', name: 'GestionGrupos', component: () => import('@/views/GestionGruposView.vue') },
+    { path: '/gestion-academica', name: 'GestionAcademica', component: () => import('@/views/GestionGruposView.vue') }
   ]
 })
 

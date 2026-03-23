@@ -25,6 +25,9 @@
               <a href="#" class="ver-link" @click.prevent="irAAlumnos">
                 Ver Alumnos →
               </a>
+              <h3>Alumnos Activos</h3>
+              <p class="number">{{ totalAlumnos }}</p>
+              <a href="#" class="ver-link" @click.prevent="irAAlumnos">Ver Alumnos →</a>
             </div>
           </div>
 
@@ -38,6 +41,9 @@
               <a href="#" class="ver-link" @click.prevent="irAInscripciones">
                 Ver Inscripciones →
               </a>
+              <h3>Inscripciones del Período</h3>
+              <p class="number">{{ totalInscripciones }}</p>
+              <a href="#" class="ver-link" @click.prevent="irAInscripciones">Ver Inscripciones →</a>
             </div>
           </div>
 
@@ -64,6 +70,9 @@
               <a href="#" class="ver-link" @click.prevent="irAEvaluaciones">
                 Ver Evaluaciones →
               </a>
+              <h3>Evaluaciones pendientes</h3>
+              <p class="number">{{ totalEvaluaciones }}</p>
+              <a href="#" class="ver-link" @click.prevent="irAEvaluaciones">Ver Evaluaciones →</a>
             </div>
           </div>
         </div>
@@ -134,7 +143,6 @@
 import { ref, onMounted } from 'vue';
 import MainLayout from '@/layouts/MainLayout.vue';
 import { useRouter } from 'vue-router';
-
 const router = useRouter();
 
 const irAAlumnos = () => router.push({ name: 'Alumnos' });
@@ -171,6 +179,25 @@ const cargarDatos = async () => {
 onMounted(() => {
   cargarDatos();
 });
+const totalAlumnos = ref(0)
+const totalInscripciones = ref(0)
+const totalEvaluaciones = ref(0)
+
+const cargarResumen = async () => {
+  try {
+    const response = await fetch('http://localhost:8000/api/resumen-escolar')
+    if (!response.ok) throw new Error('Error')
+    const data = await response.json()
+    totalAlumnos.value = data.total_alumnos
+    totalInscripciones.value = data.total_inscripciones
+  } catch (error) {
+    console.error('Error cargando resumen:', error)
+  }
+}
+
+onMounted(() => {
+  cargarResumen()
+})
 </script>
 
 <style scoped>
