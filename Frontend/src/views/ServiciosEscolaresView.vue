@@ -22,7 +22,7 @@
             </svg>
             <div class="info">
               <h3>Alumnos Activos</h3>
-              <p class="number">1,245</p>
+              <p class="number">{{ totalAlumnos }}</p>
               <a href="#" class="ver-link" @click.prevent="irAAlumnos">Ver Alumnos →</a>
             </div>
           </div>
@@ -33,7 +33,7 @@
             </svg>
             <div class="info">
               <h3>Inscripciones del Período</h3>
-              <p class="number">432</p>
+              <p class="number">{{ totalInscripciones }}</p>
               <a href="#" class="ver-link" @click.prevent="irAInscripciones">Ver Inscripciones →</a>
             </div>
           </div>
@@ -54,8 +54,8 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 8.944 11.922.42.095.858.143 1.295.143a3 3 0 01.935-.072" />
             </svg>
             <div class="info">
-              <h3>Evaluaciones Pendientes</h3>
-              <p class="number">16</p>
+              <h3>Evaluaciones pendientes</h3>
+              <p class="number">{{ totalEvaluaciones }}</p>
               <a href="#" class="ver-link" @click.prevent="irAEvaluaciones">Ver Evaluaciones →</a>
             </div>
           </div>
@@ -143,7 +143,7 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
@@ -165,11 +165,30 @@ const inscripciones = ref([
 
 const inscripcionesFiltradas = computed(() => inscripciones.value)
 
+const totalAlumnos = ref(0)
+const totalInscripciones = ref(0)
+const totalEvaluaciones = ref(0)
+
+const cargarResumen = async () => {
+  try {
+    const response = await fetch('http://localhost:8000/api/resumen-escolar')
+    if (!response.ok) throw new Error('Error')
+    const data = await response.json()
+    totalAlumnos.value = data.total_alumnos
+    totalInscripciones.value = data.total_inscripciones
+  } catch (error) {
+    console.error('Error cargando resumen:', error)
+  }
+}
+
+onMounted(() => {
+  cargarResumen()
+})
+
 const irAAlumnos = () => router.push('/alumnos')
 const irAInscripciones = () => router.push('/inscripcion')
 const irAGrupos = () => router.push('/gestion-grupos')
 const irAEvaluaciones = () => router.push('/evaluaciones')
-
 const nuevaInscripcion = () => router.push('/inscripcion')
 const gestionarTodo = () => {}
 
