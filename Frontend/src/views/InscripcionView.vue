@@ -169,7 +169,7 @@ const showNotification = (message, type) => {
 
 .page-title {
   text-align: left;
-  font-size: 2.4rem;
+  font-size: 2.6rem;
   font-weight: 700;
   color: #1A1A1A;
   margin-bottom: 0.5rem;
@@ -216,6 +216,7 @@ const showNotification = (message, type) => {
   padding: 14px 28px;
   border-radius: 10px;
   font-weight: 600;
+  cursor: pointer;
 }
 .btn-buscar:hover { background: #1D4ED8; }
 
@@ -289,7 +290,6 @@ const showNotification = (message, type) => {
   padding: 10px 24px;
   border-radius: 8px;
   font-weight: 600;
-  cursor: pointer;
 }
 .btn-inscribir:hover { background: #1D4ED8; }
 .btn-lleno {

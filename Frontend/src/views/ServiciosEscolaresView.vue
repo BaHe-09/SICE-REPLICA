@@ -17,7 +17,11 @@
         <div class="stats-grid">
           
 
+<<<<<<< HEAD
+          <div class="stat-card primary">
+=======
           <div class="stat-card blue">
+>>>>>>> 447a58c (Removiendo node_modules del repo)
             <svg xmlns="http://www.w3.org/2000/svg" class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 01-3-3V8a3 3 0 01-3-3V3a3 3 0 01-3-3H8a3 3 0 01-3 3v2a3 3 0 01-3 3v7a3 3 0 01-3 3v2h5m5-10v10" />
             </svg>
@@ -222,7 +226,11 @@ const showNotification = (message, type) => {
   transform: translateY(-4px);
 }
 
+<<<<<<< HEAD
+.stat-card.primary {
+=======
 .stat-card.blue {
+>>>>>>> 447a58c (Removiendo node_modules del repo)
   background: linear-gradient(135deg, #1B396A, #2563EB);
   color: white;
 }
@@ -250,7 +258,11 @@ const showNotification = (message, type) => {
   text-decoration: none;
   font-size: 0.95rem;
 }
+<<<<<<< HEAD
+.stat-card.primary .ver-link { color: white; }
+=======
 .stat-card.blue .ver-link { color: white; }
+>>>>>>> 447a58c (Removiendo node_modules del repo)
 
 
 .accesos-rapidos {

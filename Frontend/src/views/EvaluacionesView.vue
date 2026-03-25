@@ -1,3 +1,8 @@
+<!-- ============================================= -->
+<!-- src/views/EvaluacionesView.vue -->
+<!-- Iconos de lápiz y basura actualizados con SVGs exactos -->
+<!-- ============================================= -->
+
 <template>
   <MainLayout v-slot="{ busquedaGlobal }">
     <div class="evaluaciones-page">
@@ -5,19 +10,30 @@
       <div class="breadcrumb">Servicios Escolares › Grupos › Evaluaciones</div>
       <h1 class="page-title">Evaluaciones</h1>
 
+      <!-- Tarjeta Materia -->
       <div class="subject-card">
         <div class="subject-info">
           <h2>Algoritmos y Programación</h2>
           <p>Aula: A-201 Periodo: Ago/Dic 2024<br>Docente: Mtro. Juan Morales</p>
         </div>
         <button @click="abrirModalNueva" class="btn-nueva-eval">
-          <svg xmlns="http://www.w3.org/2000/svg" class="plus-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
-          </svg>
-          Nueva Evaluación
+          <span class="plus">+</span> Nueva Evaluación
         </button>
       </div>
 
+      <!-- Filtros -->
+      <div class="filters-card">
+        <select v-model="filtroPeriodo" class="filter-select">
+          <option>Ago/Dic 2024</option>
+          <option>Ene/Jun 2025</option>
+        </select>
+        <select v-model="filtroMateria" class="filter-select">
+          <option>Algoritmos y Programación</option>
+        </select>
+        <button @click="buscar" class="btn-buscar">Buscar</button>
+      </div>
+
+      <!-- Tabla -->
       <div class="table-container">
         <table class="eval-table">
           <thead>
@@ -34,14 +50,19 @@
                 <input v-model="item.porcentaje" type="number" min="0" max="100" class="porcentaje-input"> %
               </td>
               <td class="text-center actions">
+                <button @click="guardarFila(item)" class="btn-guardar-fila">Guardar</button>
+                
+                <!-- Icono de lápiz (Editar) - SVG que proporcionaste -->
                 <button @click="editar(item)" class="btn-edit">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="icon-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                   </svg>
                 </button>
+
+                <!-- Icono de basura (Eliminar) - SVG que proporcionaste -->
                 <button @click="eliminar(index)" class="btn-delete">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="icon-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.595 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.595-1.858L5 7m5 4v6m4-6v6m1-10V9a1 1 0 00-1-1h-4a1 1 0 00-1 1v1M12 4v6m2-3h2" />
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                   </svg>
                 </button>
               </td>
@@ -50,29 +71,27 @@
         </table>
       </div>
 
+      <!-- Gráfico circular + Guardar global -->
       <div class="bottom-bar">
         <div class="circular-wrapper">
           <div class="circular-progress">
-            <svg viewBox="0 0 36 36" class="small-circle">
+            <svg viewBox="0 0 36 36">
               <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#E5E7EB" stroke-width="4"/>
               <path :d="circlePath" fill="none" stroke="#1B396A" stroke-width="4" stroke-dasharray="100, 100"/>
             </svg>
             <div class="percent-text">{{ totalPorcentaje }}%</div>
           </div>
         </div>
-
-        <button 
-          @click="guardarCambios"
-          :disabled="totalPorcentaje !== 100"
-          class="btn-guardar"
-        >
-          Guardar Cambios
+        <button @click="guardarCambios" :disabled="totalPorcentaje !== 100" class="btn-guardar">
+          Guardar Todos los Cambios
         </button>
       </div>
 
+      <footer class="footer">© 2026 Tecnológico Nacional de México | Todos los derechos reservados.</footer>
     </div>
   </MainLayout>
 
+  <!-- Modal Nueva Evaluación -->
   <div v-if="showModal" class="modal-overlay" @click.self="cerrarModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -82,44 +101,16 @@
       <div class="modal-body">
         <div class="form-group">
           <label>Nombre de la evaluación</label>
-          <input 
-            v-model="nuevoNombre" 
-            type="text" 
-            placeholder="Ej: Examen Final, Práctica, Proyecto..." 
-            class="modal-input" 
-            @keyup.enter="guardarNuevaEvaluacion"
-            autofocus
-          >
+          <input v-model="nuevoNombre" type="text" placeholder="Ej: Examen Final" class="modal-input" @keyup.enter="guardarNuevaEvaluacion">
         </div>
         <div class="form-group">
           <label>Porcentaje inicial (%)</label>
-          <div class="percentage-input-wrapper">
-            <input 
-              v-model="nuevoPorcentaje" 
-              type="number" 
-              min="0" 
-              max="100" 
-              step="1"
-              placeholder="0" 
-              class="modal-input percentage-input" 
-              @keyup.enter="guardarNuevaEvaluacion"
-            >
-            <span class="percentage-symbol">%</span>
-          </div>
-          <div class="percentage-hint">
-            Valor recomendado: 20-40% (Total actual: {{ totalPorcentaje }}%)
-          </div>
+          <input v-model="nuevoPorcentaje" type="number" min="0" max="100" placeholder="0" class="modal-input" @keyup.enter="guardarNuevaEvaluacion">
         </div>
       </div>
       <div class="modal-footer">
         <button @click="cerrarModal" class="btn-cancelar">Cancelar</button>
-        <button 
-          @click="guardarNuevaEvaluacion" 
-          class="btn-guardar-modal" 
-          :disabled="!nuevoNombre.trim() || nuevoPorcentaje < 0 || nuevoPorcentaje > 100"
-        >
-          Guardar Evaluación
-        </button>
+        <button @click="guardarNuevaEvaluacion" class="btn-guardar-modal" :disabled="!nuevoNombre.trim()">Guardar Evaluación</button>
       </div>
     </div>
   </div>
@@ -128,6 +119,8 @@
 <script setup>
 import { ref, computed } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
+
+const busquedaGlobal = ref('')
 
 const criterios = ref([
   { nombre: 'Parcial 1', porcentaje: 30 },
@@ -138,6 +131,11 @@ const criterios = ref([
 const totalPorcentaje = computed(() => criterios.value.reduce((sum, c) => sum + Number(c.porcentaje), 0))
 const circlePath = computed(() => `M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831`)
 
+// Filtros
+const filtroPeriodo = ref('Ago/Dic 2024')
+const filtroMateria = ref('Algoritmos y Programación')
+
+// Modal
 const showModal = ref(false)
 const nuevoNombre = ref('')
 const nuevoPorcentaje = ref(0)
@@ -150,32 +148,34 @@ const abrirModalNueva = () => {
 const cerrarModal = () => { showModal.value = false }
 
 const guardarNuevaEvaluacion = () => {
-  if (!nuevoNombre.value.trim()) {
-    alert('Debes escribir un nombre para la evaluación')
-    return
-  }
-  if (nuevoPorcentaje.value < 0 || nuevoPorcentaje.value > 100) {
-    alert('El porcentaje debe estar entre 0 y 100')
-    return
-  }
-  if (totalPorcentaje.value + Number(nuevoPorcentaje.value) > 100) {
-    alert(`El porcentaje total excedería 100% (Actual: ${totalPorcentaje.value}%)`)
-    return
-  }
-  criterios.value.push({ nombre: nuevoNombre.value.trim(), porcentaje: Number(nuevoPorcentaje.value) })
+  if (!nuevoNombre.value.trim()) return alert('Debes escribir un nombre')
+  criterios.value.push({ nombre: nuevoNombre.value.trim(), porcentaje: Number(nuevoPorcentaje.value) || 0 })
   cerrarModal()
+}
+
+// Acciones por fila
+const guardarFila = (item) => {
+  console.log('💾 Guardando fila:', item)
+  alert(`✅ Porcentaje de ${item.nombre} guardado`)
 }
 
 const editar = (item) => alert(`Editando: ${item.nombre}`)
 const eliminar = (index) => {
   if (confirm('¿Eliminar esta evaluación?')) criterios.value.splice(index, 1)
 }
-const guardarCambios = () => alert('✅ Evaluaciones guardadas correctamente')
+
+const guardarCambios = () => {
+  console.log('💾 Guardando todos los cambios...')
+  alert('✅ Evaluaciones guardadas correctamente')
+}
+
+const buscar = () => console.log('🔎 Buscando...')
 </script>
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
+<<<<<<< HEAD
 .evaluaciones-page { 
   width: 100%; 
   max-width: 1200px; 
@@ -251,6 +251,27 @@ const guardarCambios = () => alert('✅ Evaluaciones guardadas correctamente')
   background: #FFFFFF;
 }
 .actions { display: flex; gap: 8px; }
+=======
+.evaluaciones-page { width: 100%; background: #F5F7FA; }
+.page-title { color: #005187; font-size: 2.1rem; font-weight: 700; margin-bottom: 0.4rem; }
+.breadcrumb { color: #5A5A5A; margin-bottom: 1rem; font-size: 0.95rem; }
+
+.subject-card { background: #FFFFFF; padding: 1.8rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; box-shadow: 0 8px 25px rgba(0,0,0,0.07); border: 1px solid #E5E7EB; }
+.btn-nueva-eval { background: #005187; color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+
+.filters-card { background: #FFFFFF; padding: 1.4rem; border-radius: 12px; display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 2rem; box-shadow: 0 8px 25px rgba(0,0,0,0.07); border: 1px solid #E5E7EB; }
+.filter-select { padding: 12px 16px; border: 1px solid #E5E7EB; border-radius: 8px; min-width: 180px; }
+.btn-buscar { background: #005187; color: white; padding: 12px 28px; border-radius: 8px; font-weight: 600; }
+
+.table-container { background: #FFFFFF; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.07); border: 1px solid #E5E7EB; }
+.eval-table { width: 100%; border-collapse: collapse; }
+.eval-table th { background: #F8FAFC; padding: 18px 16px; font-weight: 600; }
+.eval-table td { padding: 18px 16px; border-bottom: 1px solid #E5E9F0; }
+.porcentaje-input { width: 100px; text-align: center; padding: 10px; border: 1px solid #84B6E4; border-radius: 8px; }
+
+.actions { display: flex; gap: 8px; }
+.btn-guardar-fila { background: #005187; color: white; padding: 8px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; }
+>>>>>>> 447a58c (Removiendo node_modules del repo)
 .btn-edit, .btn-delete { 
   width: 38px; 
   height: 38px; 
@@ -261,6 +282,7 @@ const guardarCambios = () => alert('✅ Evaluaciones guardadas correctamente')
   justify-content: center; 
   cursor: pointer; 
 }
+<<<<<<< HEAD
 .btn-edit { background: #1B396A; }
 .btn-delete { background: #DC2626; }
 .icon-svg { width: 18px; height: 18px; stroke: white; }
@@ -354,4 +376,31 @@ const guardarCambios = () => alert('✅ Evaluaciones guardadas correctamente')
 }
 .btn-cancelar { background: #F5F5F5; color: #1A1A1A; border: 1px solid #E5E7EB; }
 .btn-guardar-modal { background: #1B396A; color: white; }
+=======
+.btn-edit { background: #4D82BE; color: white; }
+.btn-delete { background: #D32F2F; color: white; }
+
+.bottom-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; }
+.circular-wrapper { width: 180px; height: 180px; position: relative; }
+.circular-progress svg { transform: rotate(-90deg); }
+.percent-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2.8rem; font-weight: 700; color: #005187; }
+
+.btn-guardar { background: #005187; color: white; padding: 14px 40px; border-radius: 8px; font-weight: 600; font-size: 1.05rem; }
+
+.footer { margin-top: 3rem; text-align: center; color: #9AA3AF; font-size: 0.9rem; }
+
+/* Modal */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+.modal-content { background: white; width: 480px; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+.modal-header { background: #005187; color: white; padding: 1.25rem 1.8rem; display: flex; justify-content: space-between; align-items: center; }
+.modal-header h3 { margin: 0; font-size: 1.45rem; font-weight: 700; }
+.close-btn { background: none; border: none; color: white; font-size: 1.8rem; cursor: pointer; }
+.modal-body { padding: 2rem 1.8rem; }
+.form-group { margin-bottom: 1.6rem; }
+.form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #1A1A1A; }
+.modal-input { width: 100%; padding: 14px 16px; border: 2px solid #E5E9F0; border-radius: 10px; font-size: 1.05rem; }
+.modal-footer { padding: 1.2rem 1.8rem; background: #F8FAFC; display: flex; gap: 12px; justify-content: flex-end; }
+.btn-cancelar { background: #9AA3AF; color: white; padding: 12px 28px; border-radius: 10px; font-weight: 600; }
+.btn-guardar-modal { background: #005187; color: white; padding: 12px 36px; border-radius: 10px; font-weight: 600; }
+>>>>>>> 447a58c (Removiendo node_modules del repo)
 </style>
