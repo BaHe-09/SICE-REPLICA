@@ -96,28 +96,20 @@ const gruposFiltrados = computed(() => {
 const filtrar = () => {
 }
 
-const irAEvaluaciones = (grupo) => {
-  router.push({ 
-    name: 'Evaluaciones', 
-    params: { id: grupo.id }
-  })
-}
-
-const irACalificaciones = (grupo) => {
-  router.push({ 
-    name: 'Calificaciones', 
-    params: { id: grupo.id }
-  })
-}
+const irAEvaluaciones = (grupo) => router.push(`/evaluaciones/${grupo.id}`)
+const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
 </script>
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
-.grupos-page { width: 100%; }
+.grupos-page { 
+  width: 100%; 
+  background: #F5F5F5;
+}
 
 .page-title {
-  color: #005187;
+  color: #1A1A1A;
   font-size: 2.4rem;
   font-weight: 700;
   margin-bottom: 1.8rem;
@@ -125,12 +117,13 @@ const irACalificaciones = (grupo) => {
 
 .search-wrapper {
   display: flex;
-  background: white;
+  background: #FFFFFF;
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0,0,0,0.06);
   overflow: hidden;
   max-width: 620px;
   margin-bottom: 2rem;
+  border: 1px solid #E5E7EB;
 }
 
 .search-group {
@@ -143,6 +136,7 @@ const irACalificaciones = (grupo) => {
   border: none;
   font-size: 1rem;
   background: transparent;
+  color: #1A1A1A;
 }
 .search-icon-svg {
   position: absolute;
@@ -155,7 +149,7 @@ const irACalificaciones = (grupo) => {
 }
 
 .btn-filtrar {
-  background: #005187;
+  background: #1B396A;
   color: white;
   border: none;
   padding: 0 34px;
@@ -164,16 +158,29 @@ const irACalificaciones = (grupo) => {
   font-size: 1rem;
   white-space: nowrap;
 }
+.btn-filtrar:hover { background: #1D4ED8; }
 
 .table-container {
-  background: white;
+  background: #FFFFFF;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 8px 25px rgba(0,0,0,0.07);
+  border: 1px solid #E5E7EB;
 }
 .grupos-table { width: 100%; border-collapse: collapse; }
-.grupos-table th { background: #F8FAFC; padding: 16px; text-align: left; font-weight: 600; }
-.grupos-table td { padding: 16px; border-bottom: 1px solid #E5E9F0; }
+.grupos-table th { 
+  background: #F5F5F5; 
+  padding: 16px; 
+  text-align: left; 
+  font-weight: 600; 
+  color: #1A1A1A;
+  border-bottom: 1px solid #E5E7EB;
+}
+.grupos-table td { 
+  padding: 16px; 
+  border-bottom: 1px solid #E5E7EB; 
+  color: #1A1A1A;
+}
 
 .inscritos-text { font-weight: 600; color: #1A1A1A; font-size: 1rem; }
 
@@ -186,8 +193,8 @@ const irACalificaciones = (grupo) => {
   border: none;
   cursor: pointer;
 }
-.btn-accion.evaluaciones { background: #005187; color: white; }
-.btn-accion.calificaciones { background: #9AA3AF; color: white; }
+.btn-accion.evaluaciones { background: #1B396A; color: white; }
+.btn-accion.calificaciones { background: #6B7280; color: white; }
 
 .pagination {
   margin-top: 2rem;
@@ -195,13 +202,15 @@ const irACalificaciones = (grupo) => {
   justify-content: space-between;
   align-items: center;
   font-size: 0.95rem;
+  color: #6B7280;
 }
 .pagination-center button {
   padding: 6px 12px;
-  border: 1px solid #D1D9E6;
-  background: white;
+  border: 1px solid #E5E7EB;
+  background: #FFFFFF;
   border-radius: 6px;
   cursor: pointer;
+  color: #1A1A1A;
 }
-.pagination-center .active { background: #005187; color: white; }
+.pagination-center .active { background: #1B396A; color: white; }
 </style>

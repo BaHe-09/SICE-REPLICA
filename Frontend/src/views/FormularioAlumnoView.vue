@@ -154,34 +154,14 @@ const guardarAlumno = async () => {
 
   isLoading.value = true
 
-  try {
-    const response = await fetch('http://localhost:8000/api/alumnos', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify(form)
-    });
+  await new Promise(resolve => setTimeout(resolve, 1400))
 
-    const data = await response.json();
+  showNotification('✅ Alumno guardado correctamente', 'success')
 
-    if (!response.ok) {
-      throw new Error(data.error || 'Error al guardar');
-    }
-
-    showNotification('✅ Alumno guardado correctamente', 'success')
-
-    // Esperar un momento para que el usuario vea el mensaje y redirigir
-    setTimeout(() => {
-      router.push('/alumnos')
-    }, 1500)
-
-  } catch (error) {
-    showNotification('❌ Error: ' + error.message, 'error')
-  } finally {
+  setTimeout(() => {
     isLoading.value = false
-  }
+    router.push('/alumnos')
+  }, 800)
 }
 
 const cancelar = () => {
@@ -198,6 +178,117 @@ const showNotification = (message, type) => {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
+.formulario-page {
+  width: 100%;
+  padding: 2rem 2.5rem;
+  background: #F5F5F5;
+}
+
+.page-title {
+  color: #1A1A1A;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+
+.subtitle {
+  color: #6B7280;
+  margin-bottom: 2rem;
+}
+
+.breadcrumb {
+  color: #6B7280;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.form-card {
+  background: #FFFFFF;
+  border-radius: 16px;
+  box-shadow: 0 12px 35px rgba(0,0,0,0.09);
+  padding: 3rem;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  border: 1px solid #E5E7EB;
+}
+
+.section { margin-bottom: 3rem; }
+.section-title {
+  color: #1A1A1A;
+  font-size: 1.45rem;
+  font-weight: 700;
+  margin-bottom: 1.4rem;
+  border-bottom: 2px solid #E5E7EB;
+  padding-bottom: 0.7rem;
+}
+
+.row {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1.6rem;
+  flex-wrap: wrap;
+}
+.field { flex: 1; }
+.field label { 
+  display: block; 
+  margin-bottom: 9px; 
+  font-weight: 600; 
+  color: #1A1A1A; 
+  font-size: 1.02rem; 
+}
+.obligatorio { color: #DC2626; }
+
+.field input, .field select {
+  padding: 13px 16px;
+  font-size: 1.02rem;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 10px;
+  background: #FFFFFF;
+  color: #1A1A1A;
+}
+.field input.error, .field select.error { 
+  border-color: #DC2626; 
+}
+.error-msg { 
+  color: #DC2626; 
+  font-size: 0.88rem; 
+  margin-top: 6px; 
+  display: block; 
+}
+
+.form-actions { 
+  display: flex; 
+  justify-content: flex-end; 
+  gap: 1.4rem; 
+  margin-top: 3rem; 
+}
+
+.btn-cancel { 
+  padding: 13px 30px; 
+  background: #F5F5F5; 
+  color: #1A1A1A; 
+  border: 1px solid #E5E7EB; 
+  border-radius: 10px; 
+  font-weight: 600; 
+  cursor: pointer; 
+}
+.btn-guardar {
+  padding: 13px 34px;
+  background: #1B396A;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-guardar:hover { background: #1D4ED8; }
+.btn-guardar:disabled { opacity: 0.8; cursor: not-allowed; }
+
+
 .toast {
   position: fixed;
   top: 90px;
@@ -210,8 +301,8 @@ const showNotification = (message, type) => {
   z-index: 9999;
   animation: slideIn 0.3s ease;
 }
-.toast.success { background: #2E7D32; }
-.toast.error   { background: #D32F2F; }
+.toast.success { background: #16A34A; }
+.toast.error   { background: #DC2626; }
 @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
 
 .spinner {
@@ -226,71 +317,4 @@ const showNotification = (message, type) => {
   vertical-align: middle;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-
-
-.formulario-page {
-  width: 100%;
-  padding: 2rem 2.5rem;
-}
-.page-title {
-  text-align: middle;
-}
-
-.subtitle {
-  text-align: middle;
-}
-
-.form-card {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 12px 35px rgba(0,0,0,0.09);
-  padding: 3rem;
-  width: 100%;
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
-.section { margin-bottom: 3rem; }
-.section-title {
-  color: #005187;
-  font-size: 1.45rem;
-  font-weight: 700;
-  margin-bottom: 1.4rem;
-  border-bottom: 2px solid #E0E7FF;
-  padding-bottom: 0.7rem;
-}
-
-.row {
-  display: flex;
-  gap: 2rem;
-  margin-bottom: 1.6rem;
-  flex-wrap: wrap;
-}
-.field { flex: 1; }
-.field label { display: block; margin-bottom: 9px; font-weight: 600; color: #1A1A1A; font-size: 1.02rem; }
-.obligatorio { color: #D32F2F; }
-
-.field input, .field select {
-  padding: 13px 16px;
-  font-size: 1.02rem;
-}
-.field input.error, .field select.error { border-color: #D32F2F; }
-.error-msg { color: #D32F2F; font-size: 0.88rem; margin-top: 6px; display: block; }
-
-.form-actions { display: flex; justify-content: flex-end; gap: 1.4rem; margin-top: 3rem; }
-
-.btn-cancel { padding: 13px 30px; background: #F5F7FA; color: #1A1A1A; border: 1px solid #D1D9E6; border-radius: 10px; font-weight: 600; cursor: pointer; }
-.btn-guardar {
-  padding: 13px 34px;
-  background: #005187;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.btn-guardar:disabled { opacity: 0.8; cursor: not-allowed; }
 </style>

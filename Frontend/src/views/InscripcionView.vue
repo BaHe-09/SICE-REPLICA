@@ -105,69 +105,44 @@
   </MainLayout>
 </template>
 
-
 <script setup>
-import { ref, onMounted, computed, reactive } from 'vue'
+import { ref, computed, reactive } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 const busquedaAlumno = ref('')
 const busquedaGrupo = ref('')
 const periodo = ref('Ago/Dic 2024')
 const alumnoSeleccionado = ref(null)
-const grupos = ref([])
+
+const grupos = ref([
+  { id: 1, materia: 'Algoritmos y Programación', docente: 'Mtro. Juan Morales', aula: 'A-201', capacidad: 30, inscritos: 23 },
+  { id: 2, materia: 'Base de Datos', docente: 'Dra. Ana Ruiz', aula: 'B-103', capacidad: 30, inscritos: 28 },
+  { id: 3, materia: 'Administración de Redes', docente: 'Mtro. Carlos Jiménez', aula: 'A-204', capacidad: 25, inscritos: 19 }
+])
 
 const notification = reactive({ message: '', type: '' })
 
-// Cargar grupos al iniciar
-onMounted(async () => {
-  const res = await fetch('http://localhost:8000/api/grupos-disponibles');
-  grupos.value = await res.json();
-});
+const gruposFiltrados = computed(() => grupos.value)
 
-const gruposFiltrados = computed(() => {
-  return grupos.value.filter(g => 
-    g.materia.toLowerCase().includes(busquedaGrupo.value.toLowerCase())
-  )
-})
-
-const seleccionarAlumno = async () => {
-  if (!busquedaAlumno.value.trim()) return;
-  
-  try {
-    const res = await fetch(`http://localhost:8000/api/buscar-alumno?q=${busquedaAlumno.value}`);
-    if (!res.ok) throw new Error();
-    alumnoSeleccionado.value = await res.json();
-    showNotification('Alumno encontrado', 'success');
-  } catch (err) {
-    showNotification('No se encontró el alumno', 'error');
-    alumnoSeleccionado.value = null;
-  }
-}
-
-const inscribirAlumno = async (grupo) => {
-  if (!alumnoSeleccionado.value) {
-    showNotification('Primero busca y selecciona un alumno', 'error');
-    return;
-  }
-
-  try {
-    const res = await fetch('http://localhost:8000/api/inscribir', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        id_alumno: alumnoSeleccionado.value.id_alumno,
-        id_grupo: grupo.id
-      })
-    });
-
-    if (res.ok) {
-      grupo.inscritos++;
-      showNotification(`✅ Inscrito en ${grupo.materia}`, 'success');
+const seleccionarAlumno = () => {
+  if (busquedaAlumno.value.trim()) {
+    alumnoSeleccionado.value = {
+      nombre: 'Sara Pérez',
+      noControl: '21456987',
+      carrera: 'Ingeniería en Sistemas Computacionales',
+      semestre: 6
     }
-  } catch (err) {
-    showNotification('Error al procesar inscripción', 'error');
+    showNotification('Alumno seleccionado correctamente', 'success')
   }
 }
+
+const inscribirAlumno = (grupo) => {
+  const index = grupos.value.findIndex(g => g.id === grupo.id)
+  if (index !== -1) grupos.value[index].inscritos++
+  showNotification(`✅ Inscrito en ${grupo.materia}`, 'success')
+}
+
+const filtrarGrupos = () => {}
 
 const showNotification = (message, type) => {
   notification.message = message
@@ -182,10 +157,11 @@ const showNotification = (message, type) => {
 .inscripcion-page {
   width: 100%;
   padding: 2rem 2.5rem;
+  background: #F5F5F5;
 }
 
 .breadcrumb {
-  color: #5A5A5A;
+  color: #6B7280;
   font-size: 0.95rem;
   margin-bottom: 1rem;
 }
@@ -200,21 +176,22 @@ const showNotification = (message, type) => {
 }
 .subtitle {
   text-align: left;
-  color: #5A5A5A;
+  color: #6B7280;
   margin-bottom: 2rem;
 }
 
 .content-card {
-  background: white;
+  background: #FFFFFF;
   border-radius: 16px;
   box-shadow: 0 12px 35px rgba(0,0,0,0.09);
   padding: 3rem;
   max-width: 1100px;
   margin: 0 auto;
+  border: 1px solid #E5E7EB;
 }
 
 .buscar-alumno-section h3 {
-  color: #005187;
+  color: #1A1A1A;
   margin-bottom: 1rem;
   font-size: 1.35rem;
 }
@@ -228,32 +205,40 @@ const showNotification = (message, type) => {
 .selected-student-wrapper input {
   flex: 1;
   padding: 14px 16px;
-  border: 1px solid #D1D9E6;
+  border: 1px solid #E5E7EB;
   border-radius: 10px;
+  background: #FFFFFF;
+  color: #1A1A1A;
 }
 .btn-buscar {
-  background: #005187;
+  background: #1B396A;
   color: white;
   padding: 14px 28px;
   border-radius: 10px;
   font-weight: 600;
 }
+.btn-buscar:hover { background: #1D4ED8; }
+
 .period-select {
   padding: 14px 16px;
-  border: 1px solid #D1D9E6;
+  border: 1px solid #E5E7EB;
   border-radius: 10px;
-}
-.selected-student {
-  margin-top: 1rem;
-  padding: 14px 20px;
-  background: #F5F7FA;
-  border-radius: 10px;
-  font-weight: 500;
+  background: #FFFFFF;
   color: #1A1A1A;
 }
 
+.selected-student {
+  margin-top: 1rem;
+  padding: 14px 20px;
+  background: #F5F5F5;
+  border-radius: 10px;
+  font-weight: 500;
+  color: #1A1A1A;
+  border: 1px solid #E5E7EB;
+}
+
 .seleccionar-grupo-section h3 {
-  color: #005187;
+  color: #1A1A1A;
   margin: 2.5rem 0 1rem;
   font-size: 1.35rem;
 }
@@ -265,16 +250,19 @@ const showNotification = (message, type) => {
 .group-input {
   flex: 1;
   padding: 14px 16px;
-  border: 1px solid #D1D9E6;
+  border: 1px solid #E5E7EB;
   border-radius: 10px;
+  background: #FFFFFF;
+  color: #1A1A1A;
 }
 .btn-filtrar {
-  background: #005187;
+  background: #1B396A;
   color: white;
   padding: 14px 28px;
   border-radius: 10px;
   font-weight: 600;
 }
+.btn-filtrar:hover { background: #1D4ED8; }
 
 .table-container { overflow-x: auto; }
 .inscripcion-table {
@@ -282,29 +270,32 @@ const showNotification = (message, type) => {
   border-collapse: collapse;
 }
 .inscripcion-table th {
-  background: #F5F7FA;
+  background: #F5F5F5;
   padding: 18px 16px;
   font-weight: 600;
   color: #1A1A1A;
+  border-bottom: 1px solid #E5E7EB;
 }
 .inscripcion-table td {
   padding: 18px 16px;
-  border-bottom: 1px solid #E0E7FF;
+  border-bottom: 1px solid #E5E7EB;
+  color: #1A1A1A;
 }
 .inscritos-badge { font-weight: 600; color: #1A1A1A; }
 
 .btn-inscribir {
-  background: #005187;
+  background: #1B396A;
   color: white;
   padding: 10px 24px;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
 }
+.btn-inscribir:hover { background: #1D4ED8; }
 .btn-lleno {
-  background: #F5F7FA;
+  background: #F5F5F5;
   color: #1A1A1A;
-  border: 1px solid #D1D9E6;
+  border: 1px solid #E5E7EB;
   padding: 10px 24px;
   border-radius: 8px;
   font-weight: 600;
@@ -317,17 +308,18 @@ const showNotification = (message, type) => {
   align-items: center;
   margin-top: 2rem;
   font-size: 0.95rem;
-  color: #5A5A5A;
+  color: #6B7280;
 }
 .pagination-buttons button {
   margin: 0 4px;
   padding: 6px 12px;
-  border: 1px solid #D1D9E6;
-  background: white;
+  border: 1px solid #E5E7EB;
+  background: #FFFFFF;
   border-radius: 6px;
+  color: #1A1A1A;
 }
 .pagination-buttons .active {
-  background: #005187;
+  background: #1B396A;
   color: white;
 }
 
@@ -343,7 +335,7 @@ const showNotification = (message, type) => {
   z-index: 9999;
   animation: slideIn 0.3s ease;
 }
-.toast.success { background: #2E7D32; }
-.toast.error { background: #D32F2F; }
+.toast.success { background: #16A34A; }
+.toast.error { background: #DC2626; }
 @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
 </style>

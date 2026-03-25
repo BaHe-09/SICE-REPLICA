@@ -115,7 +115,6 @@
       </div>
     </div>
 
-
     <div v-if="showViewModal" class="modal-overlay" @click.self="cerrarModalVer">
       <div class="modal-content view-modal">
         <div class="modal-header">
@@ -138,7 +137,6 @@
         </div>
       </div>
     </div>
-
 
     <div v-if="showModal" class="modal-overlay" @click.self="cerrarModal">
       <div class="modal-content">
@@ -197,8 +195,7 @@
 </template>
 
 <script setup>
-
-import { ref, computed, onMounted } from 'vue' // Añadimos onMounted
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
@@ -216,69 +213,40 @@ const props = defineProps({
 })
 
 const normalize = (text) => {
-  if (!text) return ''
   return text
-    .toString()
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
 }
 
-// 1. Iniciamos con el array vacío
-const alumnos = ref([])
-
-// 2. Función para traer los datos reales de tu Laravel
-const cargarAlumnosDesdeBD = async () => {
-  try {
-    const response = await fetch('http://localhost:8000/api/alumnos-full');
-    if (!response.ok) throw new Error('Error al conectar con el servidor');
-    const data = await response.json();
-    alumnos.value = data; 
-  } catch (error) {
-    console.error("Error cargando alumnos:", error);
-  }
-};
-
-// 3. Ejecutar la carga al abrir la vista
-onMounted(() => {
-  cargarAlumnosDesdeBD();
-});
+const alumnos = ref([
+  { id: 1, noControl: '21456987', nombre: 'Sara Pérez', carrera: 'Ingenieria en Sistemas Computacionales', semestre: 6, estatus: 'Activo' },
+  { id: 2, noControl: '21463254', nombre: 'Juan García', carrera: 'Ingenieria Industrial', semestre: 4, estatus: 'Activo' },
+  { id: 3, noControl: '21454128', nombre: 'Mariela Gómez', carrera: 'Ingenieria Civil', semestre: 8, estatus: 'Activo' },
+  { id: 4, noControl: '21454321', nombre: 'Ana Rodríguez', carrera: 'Contador Publico', semestre: 2, estatus: 'Activo' },
+  { id: 5, noControl: '21451986', nombre: 'Carlos Torres', carrera: 'Ingenieria en Gestion empresarial', semestre: 5, estatus: 'Baja Temporal' },
+  { id: 6, noControl: '21451976', nombre: 'Luis Herrera', carrera: 'Ingenieria en Sistemas Computacionales', semestre: 7, estatus: 'Activo' },
+  { id: 7, noControl: '21454833', nombre: 'Pedro Jiménez', carrera: 'Ingenieria Industrial', semestre: 8, estatus: 'Baja Definitiva' },
+])
 
 const alumnosFiltrados = computed(() => {
   return alumnos.value.filter(alumno => {
-<<<<<<< HEAD
-    // Filtro Global (del Layout)
-    const coincideGlobal = !props.busquedaGlobal ||
-=======
     const coincideGlobal = !props.busquedaGlobal || 
->>>>>>> 0ab94e5bd893f1a6ccc1faaeab464b871f381f9c
       normalize(alumno.nombre).includes(normalize(props.busquedaGlobal)) ||
-      alumno.noControl.toString().includes(props.busquedaGlobal)
+      alumno.noControl.includes(props.busquedaGlobal)
 
-<<<<<<< HEAD
-    // Filtro Local (Busqueda arriba de la tabla)
-    const coincideLocal = !busquedaAlumno.value ||
-=======
     const coincideLocal = !busquedaAlumno.value || 
->>>>>>> 0ab94e5bd893f1a6ccc1faaeab464b871f381f9c
       normalize(alumno.nombre).includes(normalize(busquedaAlumno.value)) ||
-      alumno.noControl.toString().includes(busquedaAlumno.value)
+      alumno.noControl.includes(busquedaAlumno.value)
 
-    // Filtros de Select (Normalizados para evitar fallos por acentos o mayúsculas)
-    const coincideCarrera = !filtroCarrera.value || 
-                            normalize(alumno.carrera) === normalize(filtroCarrera.value)
-    
-    const coincideSemestre = !filtroSemestre.value || 
-                             alumno.semestre.toString() === filtroSemestre.value.toString()
-    
-    const coincideEstatus = !filtroEstatus.value || 
-                            normalize(alumno.estatus) === normalize(filtroEstatus.value)
+    const coincideCarrera = !filtroCarrera.value || alumno.carrera === filtroCarrera.value
+    const coincideSemestre = !filtroSemestre.value || alumno.semestre === parseInt(filtroSemestre.value)
+    const coincideEstatus = !filtroEstatus.value || alumno.estatus === filtroEstatus.value
 
     return coincideGlobal && coincideLocal && coincideCarrera && coincideSemestre && coincideEstatus
   })
 })
 
-// Lógica de paginación (Se mantiene igual)
 const totalPages = computed(() => Math.ceil(alumnosFiltrados.value.length / filasPorPagina.value) || 1)
 const paginatedAlumnos = computed(() => {
   const start = (currentPage.value - 1) * filasPorPagina.value
@@ -304,7 +272,6 @@ const resetFilters = () => {
 
 const nuevoAlumno = () => router.push('/formulario-alumno')
 
-
 const showViewModal = ref(false)
 const alumnoVer = ref({})
 
@@ -316,7 +283,6 @@ const abrirModalVer = (alumno) => {
 const cerrarModalVer = () => {
   showViewModal.value = false
 }
-
 
 const showModal = ref(false)
 const alumnoEditar = ref(null)
@@ -331,114 +297,158 @@ const cerrarModal = () => {
   alumnoEditar.value = null
 }
 
+
 const guardarCambios = () => {
   if (!alumnoEditar.value) return
+
   const index = alumnos.value.findIndex(a => a.id === alumnoEditar.value.id)
   if (index !== -1) alumnos.value[index] = { ...alumnoEditar.value }
+
   cerrarModal()
-  alert(' Cambios guardados correctamente')
+  alert('✅ Cambios guardados correctamente')
 }
+
 
 const eliminarAlumno = () => {
   if (confirm(`¿Seguro que deseas eliminar a ${alumnoEditar.value.nombre}?`)) {
     const index = alumnos.value.findIndex(a => a.id === alumnoEditar.value.id)
     if (index !== -1) alumnos.value.splice(index, 1)
+
     cerrarModal()
     alert('🗑️ Alumno eliminado correctamente')
   }
 }
 </script>
 
-
 <style scoped>
-
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
-.alumnos-page { max-width: 100%; }
-.page-title { color: #005187; font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; }
+.alumnos-page { max-width: 100%; background: #F5F5F5; }
+.page-title { color: #1A1A1A; font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 1.5rem; }
 
-.filters-bar { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.8rem; flex-wrap: nowrap; width: 100%; }
+.filters-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.8rem;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  width: 100%;
+}
 
-.search-group { position: relative; flex: 0 0 260px; overflow: hidden; }
-.search-input { width: 100%; padding: 12px 14px 12px 48px; border: 1px solid #D1D9E6; border-radius: 8px; font-size: 1rem; }
-.search-icon-svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; stroke: #6B7280; }
+.search-group {
+  position: relative;
+  flex: 0 0 260px;
+  min-width: 260px;
+  z-index: 1;
+}
+.search-input { 
+  width: 100%; 
+  padding: 12px 14px 12px 48px; 
+  border: 1px solid #E5E7EB; 
+  border-radius: 8px; 
+  font-size: 1rem; 
+  background: #FFFFFF;
+}
+.search-icon-svg { 
+  position: absolute; 
+  left: 14px; 
+  top: 50%; 
+  transform: translateY(-50%); 
+  width: 20px; 
+  height: 20px; 
+  stroke: #6B7280; 
+}
 
-.btn-limpiar { display: flex; align-items: center; gap: 8px; background: #F5F7FA; color: #1A1A1A; border: 1px solid #D1D9E6; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem; white-space: nowrap; }
-.btn-limpiar:hover { background: #EEF2F7; }
+.btn-limpiar { 
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  background: #FFFFFF; 
+  color: #1A1A1A; 
+  border: 1px solid #E5E7EB; 
+  padding: 12px 20px; 
+  border-radius: 8px; 
+  font-weight: 600; 
+  cursor: pointer; 
+  font-size: 1rem; 
+  white-space: nowrap; 
+}
+.btn-limpiar:hover { background: #F5F5F5; }
 .reset-icon { width: 18px; height: 18px; stroke: #6B7280; }
 
-.filter-select { padding: 12px 14px; border: 1px solid #D1D9E6; border-radius: 8px; font-size: 1rem; flex: 0 0 180px; min-width: 180px; background: white; cursor: pointer; }
+.filter-select { 
+  padding: 12px 14px; 
+  border: 1px solid #E5E7EB; 
+  border-radius: 8px; 
+  font-size: 1rem; 
+  flex: 1 1 180px; 
+  min-width: 180px; 
+  background: #FFFFFF; 
+  cursor: pointer; 
+  position: relative;
+  z-index: 2;
+}
 
-.btn-nuevo { background: #005187; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+
+.btn-nuevo { 
+  background: #1B396A; 
+  color: white; 
+  border: none; 
+  padding: 12px 24px; 
+  border-radius: 8px; 
+  font-weight: 600; 
+  cursor: pointer; 
+  white-space: nowrap; 
+}
+.btn-nuevo:hover { background: #1D4ED8; }
 
 .actions { display: flex; gap: 8px; }
-.btn-action { padding: 7px 16px; border-radius: 6px; font-size: 0.92rem; cursor: pointer; }
-.btn-action.editar {
-  background: #4D82BE;
-  color: white;
-  border: 1px solid #4D82BE;
-}
-.btn-action.editar:hover {
-  background: #3B6EA5;
-  border-color: #3B6EA5;
-}
+.btn-action { padding: 7px 16px; border-radius: 6px; font-size: 0.92rem; cursor: pointer; font-weight: 600; }
+.btn-action.ver { background: #FFFFFF; color: #1A1A1A; border: 1px solid #E5E7EB; }
+.btn-action.editar { background: #1B396A; color: white; border: 1px solid #1B396A; }
+.btn-action.editar:hover { background: #1D4ED8; }
 
-.table-container { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.07); }
+.table-container { background: #FFFFFF; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.07); border: 1px solid #E5E7EB; }
 .alumnos-table { width: 100%; border-collapse: collapse; }
-.alumnos-table th { background: #F8FAFC; padding: 16px; text-align: left; font-weight: 600; }
-.alumnos-table td { padding: 16px; border-bottom: 1px solid #E5E9F0; }
+.alumnos-table th { background: #F5F5F5; padding: 16px; text-align: left; font-weight: 600; color: #1A1A1A; border-bottom: 1px solid #E5E7EB; }
+.alumnos-table td { padding: 16px; border-bottom: 1px solid #E5E7EB; color: #1A1A1A; }
 
 .status-badge { padding: 5px 14px; border-radius: 20px; font-size: 0.88rem; font-weight: 500; }
-.status-badge.activo { background: #E8F5E9; color: #2E7D32; }
-.status-badge.baja-temporal { background: #FFF3E0; color: #ED6C02; }
-.status-badge.baja-definitiva { background: #FDECEA; color: #D32F2F; }
+.status-badge.activo { background: #DCFCE7; color: #16A34A; }
+.status-badge.baja-temporal { background: #FEF3C7; color: #F59E0B; }
+.status-badge.baja-definitiva { background: #FEE2E2; color: #DC2626; }
 
-.empty-state { text-align: center; padding: 4rem 2rem; color: #9AA3AF; }
+.empty-state { text-align: center; padding: 4rem 2rem; color: #6B7280; background: #FFFFFF; border-radius: 12px; border: 1px solid #E5E7EB; }
 .empty-state h3 { font-size: 1.4rem; color: #1A1A1A; margin-bottom: 0.5rem; }
 .empty-state p { margin-bottom: 1.5rem; line-height: 1.5; }
-.btn-reset { background: #F5F7FA; color: #1A1A1A; border: 1px solid #D1D9E6; padding: 10px 20px; border-radius: 8px; font-weight: 500; cursor: pointer; }
+.btn-reset { background: #FFFFFF; color: #1A1A1A; border: 1px solid #E5E7EB; padding: 10px 20px; border-radius: 8px; font-weight: 500; cursor: pointer; }
 
-.pagination { margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; }
+.pagination { margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; color: #6B7280; }
 .pagination-left, .pagination-center, .pagination-right { display: flex; align-items: center; gap: 10px; }
-.pagination-right button { padding: 6px 12px; border: 1px solid #D1D9E6; background: white; border-radius: 6px; cursor: pointer; }
-.pagination-right .active { background: #005187; color: white; border-color: #005187; }
-
+.pagination-right button { padding: 6px 12px; border: 1px solid #E5E7EB; background: #FFFFFF; border-radius: 6px; cursor: pointer; color: #1A1A1A; }
+.pagination-right .active { background: #1B396A; color: white; border-color: #1B396A; }
 
 .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 2000; }
-.modal-content { background: white; width: 520px; max-width: 90%; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); overflow: hidden; }
-.modal-header { background: #005187; color: white; padding: 1.2rem 1.8rem; display: flex; justify-content: space-between; align-items: center; }
+.modal-content { background: #FFFFFF; width: 520px; max-width: 90%; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.15); overflow: hidden; border: 1px solid #E5E7EB; }
+.modal-header { background: #1B396A; color: white; padding: 1.2rem 1.8rem; display: flex; justify-content: space-between; align-items: center; }
 .modal-header h3 { margin: 0; font-size: 1.4rem; font-weight: 700; }
 .close-btn { background: none; border: none; color: white; font-size: 1.8rem; cursor: pointer; }
 .modal-body { padding: 2rem 1.8rem; }
 .form-group { margin-bottom: 1.6rem; }
 .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #1A1A1A; }
-.modal-input, .modal-select { width: 100%; padding: 12px 16px; border: 1.5px solid #D1D9E6; border-radius: 10px; font-size: 1rem; }
-.modal-input.disabled { background: #F5F7FA; cursor: not-allowed; }
-.modal-footer { padding: 1.2rem 1.8rem; background: #F8FAFC; display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid #E5E9F0; }
+.modal-input, .modal-select { width: 100%; padding: 12px 16px; border: 1.5px solid #E5E7EB; border-radius: 10px; font-size: 1rem; background: #FFFFFF; color: #1A1A1A; }
+.modal-input.disabled { background: #F5F5F5; cursor: not-allowed; }
+.modal-footer { padding: 1.2rem 1.8rem; background: #F5F5F5; display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid #E5E7EB; }
 .btn-cancelar, .btn-eliminar, .btn-guardar { padding: 12px 28px; border-radius: 10px; font-weight: 600; cursor: pointer; }
-.btn-cancelar { background: #F5F7FA; color: #1A1A1A; border: 1px solid #D1D9E6; }
-.btn-eliminar { background: #D32F2F; color: white; border: none; }
-.btn-guardar { background: #005187; color: white; border: none; }
-
+.btn-cancelar { background: #FFFFFF; color: #1A1A1A; border: 1px solid #E5E7EB; }
+.btn-eliminar { background: #DC2626; color: white; border: none; }
+.btn-guardar { background: #1B396A; color: white; border: none; }
 
 .view-modal .modal-body { padding: 2.2rem 1.8rem; }
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 14px 0;
-  border-bottom: 1px solid #E5E9F0;
-  font-size: 1.05rem;
-}
+.detail-row { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #E5E7EB; font-size: 1.05rem; color: #1A1A1A; }
 .detail-row:last-child { border-bottom: none; }
-.detail-row strong { color: #1A1A1A; font-weight: 600; }
+.detail-row strong { font-weight: 600; }
 
-.btn-cerrar {
-  background: #005187;
-  color: white;
-  padding: 13px 40px;
-  border-radius: 10px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-}
+.btn-cerrar { background: #1B396A; color: white; padding: 12px 40px; border-radius: 10px; font-weight: 600; border: none; cursor: pointer; }
 </style>
