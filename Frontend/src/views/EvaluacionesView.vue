@@ -1,6 +1,6 @@
 <!-- ============================================= -->
 <!-- src/views/EvaluacionesView.vue -->
-<!-- Iconos de lápiz y basura actualizados con SVGs exactos -->
+<!-- Iconos actualizados: Lupa + Guardar (bookmark) -->
 <!-- ============================================= -->
 
 <template>
@@ -30,7 +30,14 @@
         <select v-model="filtroMateria" class="filter-select">
           <option>Algoritmos y Programación</option>
         </select>
-        <button @click="buscar" class="btn-buscar">Buscar</button>
+        
+        <!-- Botón Buscar con lupa -->
+        <button @click="buscar" class="btn-buscar">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-btn">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+          </svg>
+          Buscar
+        </button>
       </div>
 
       <!-- Tabla -->
@@ -50,16 +57,19 @@
                 <input v-model="item.porcentaje" type="number" min="0" max="100" class="porcentaje-input"> %
               </td>
               <td class="text-center actions">
-                <button @click="guardarFila(item)" class="btn-guardar-fila">Guardar</button>
+                <!-- Botón Guardar por fila con icono bookmark -->
+                <button @click="guardarFila(item)" class="btn-guardar-fila">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-btn">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+                  </svg>
+                </button>
                 
-                <!-- Icono de lápiz (Editar) - SVG que proporcionaste -->
                 <button @click="editar(item)" class="btn-edit">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
                   </svg>
                 </button>
 
-                <!-- Icono de basura (Eliminar) - SVG que proporcionaste -->
                 <button @click="eliminar(index)" class="btn-delete">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                     <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
@@ -77,12 +87,17 @@
           <div class="circular-progress">
             <svg viewBox="0 0 36 36">
               <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#E5E7EB" stroke-width="4"/>
-              <path :d="circlePath" fill="none" stroke="#1B396A" stroke-width="4" stroke-dasharray="100, 100"/>
+              <path :d="circlePath" fill="none" stroke="#005187" stroke-width="4" stroke-dasharray="100, 100"/>
             </svg>
             <div class="percent-text">{{ totalPorcentaje }}%</div>
           </div>
         </div>
+        
+        <!-- Botón Guardar Todos con icono bookmark -->
         <button @click="guardarCambios" :disabled="totalPorcentaje !== 100" class="btn-guardar">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-btn">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+          </svg>
           Guardar Todos los Cambios
         </button>
       </div>
@@ -175,83 +190,6 @@ const buscar = () => console.log('🔎 Buscando...')
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
-<<<<<<< HEAD
-.evaluaciones-page { 
-  width: 100%; 
-  max-width: 1200px; 
-  margin: 0 auto; 
-  background: #F5F5F5;
-}
-
-.page-title { 
-  color: #1A1A1A;
-  font-size: 2.4rem; 
-  font-weight: 700; 
-  margin-bottom: 0.5rem; 
-}
-.breadcrumb { 
-  color: #6B7280;
-  margin-bottom: 1rem; 
-  font-size: 0.95rem; 
-}
-
-.subject-card { 
-  background: #FFFFFF;
-  padding: 1.8rem; 
-  border-radius: 12px; 
-  display: flex; 
-  justify-content: space-between; 
-  align-items: center; 
-  margin-bottom: 2rem; 
-  box-shadow: 0 8px 25px rgba(0,0,0,0.07); 
-  border: 1px solid #E5E7EB;
-}
-.btn-nueva-eval { 
-  background: #1B396A;
-  color: white; 
-  padding: 12px 24px; 
-  border-radius: 8px; 
-  font-weight: 600; 
-  display: flex; 
-  align-items: center; 
-  gap: 8px; 
-  cursor: pointer; 
-  border: none; 
-}
-.btn-nueva-eval:hover { background: #1D4ED8; }
-.plus-icon { width: 20px; height: 20px; stroke: white; }
-
-.table-container { 
-  background: #FFFFFF; 
-  border-radius: 12px; 
-  overflow: hidden; 
-  box-shadow: 0 8px 25px rgba(0,0,0,0.07); 
-  margin-bottom: 2rem; 
-  border: 1px solid #E5E7EB;
-}
-.eval-table { width: 100%; border-collapse: collapse; }
-.eval-table th { 
-  background: #F5F5F5; 
-  padding: 18px 16px; 
-  font-weight: 600; 
-  color: #1A1A1A;
-  border-bottom: 1px solid #E5E7EB;
-}
-.eval-table td { 
-  padding: 18px 16px; 
-  border-bottom: 1px solid #E5E7EB; 
-  color: #1A1A1A;
-}
-.porcentaje-input { 
-  width: 100px; 
-  text-align: center; 
-  padding: 10px; 
-  border: 1px solid #E5E7EB; 
-  border-radius: 8px; 
-  background: #FFFFFF;
-}
-.actions { display: flex; gap: 8px; }
-=======
 .evaluaciones-page { width: 100%; background: #F5F7FA; }
 .page-title { color: #005187; font-size: 2.1rem; font-weight: 700; margin-bottom: 0.4rem; }
 .breadcrumb { color: #5A5A5A; margin-bottom: 1rem; font-size: 0.95rem; }
@@ -261,7 +199,7 @@ const buscar = () => console.log('🔎 Buscando...')
 
 .filters-card { background: #FFFFFF; padding: 1.4rem; border-radius: 12px; display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 2rem; box-shadow: 0 8px 25px rgba(0,0,0,0.07); border: 1px solid #E5E7EB; }
 .filter-select { padding: 12px 16px; border: 1px solid #E5E7EB; border-radius: 8px; min-width: 180px; }
-.btn-buscar { background: #005187; color: white; padding: 12px 28px; border-radius: 8px; font-weight: 600; }
+.btn-buscar { background: #005187; color: white; padding: 12px 28px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
 
 .table-container { background: #FFFFFF; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.07); border: 1px solid #E5E7EB; }
 .eval-table { width: 100%; border-collapse: collapse; }
@@ -270,9 +208,7 @@ const buscar = () => console.log('🔎 Buscando...')
 .porcentaje-input { width: 100px; text-align: center; padding: 10px; border: 1px solid #84B6E4; border-radius: 8px; }
 
 .actions { display: flex; gap: 8px; }
-.btn-guardar-fila { background: #005187; color: white; padding: 8px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; }
->>>>>>> 447a58c (Removiendo node_modules del repo)
-.btn-edit, .btn-delete { 
+.btn-guardar-fila, .btn-edit, .btn-delete { 
   width: 38px; 
   height: 38px; 
   border: none; 
@@ -282,101 +218,7 @@ const buscar = () => console.log('🔎 Buscando...')
   justify-content: center; 
   cursor: pointer; 
 }
-<<<<<<< HEAD
-.btn-edit { background: #1B396A; }
-.btn-delete { background: #DC2626; }
-.icon-svg { width: 18px; height: 18px; stroke: white; }
-
-.bottom-bar { 
-  display: flex; 
-  justify-content: space-between; 
-  align-items: center; 
-  margin-top: 2rem; 
-}
-.circular-wrapper { width: 130px; height: 130px; position: relative; }
-.circular-progress svg { transform: rotate(-90deg); width: 130px; height: 130px; }
-.percent-text { 
-  position: absolute; 
-  top: 50%; 
-  left: 50%; 
-  transform: translate(-50%, -50%); 
-  font-size: 2rem; 
-  font-weight: 700; 
-  color: #1B396A; 
-}
-
-.btn-guardar { 
-  background: #1B396A; 
-  color: white; 
-  padding: 14px 40px; 
-  border-radius: 8px; 
-  font-weight: 600; 
-  font-size: 1.05rem; 
-  cursor: pointer; 
-  border: none; 
-}
-.btn-guardar:hover:not(:disabled) { background: #1D4ED8; }
-.btn-guardar:disabled { background: #9AA3AF; cursor: not-allowed; }
-
-.modal-overlay { 
-  position: fixed; 
-  top: 0; left: 0; right: 0; bottom: 0; 
-  background: rgba(0,0,0,0.6); 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  z-index: 2000; 
-}
-.modal-content { 
-  background: #FFFFFF; 
-  width: 520px; 
-  max-width: 90%; 
-  border-radius: 20px; 
-  overflow: hidden; 
-  box-shadow: 0 25px 60px rgba(0,0,0,0.15); 
-  border: 1px solid #E5E7EB;
-}
-.modal-header { 
-  background: #1B396A; 
-  color: white; 
-  padding: 1.25rem 1.8rem; 
-  display: flex; 
-  justify-content: space-between; 
-  align-items: center; 
-}
-.modal-header h3 { margin: 0; font-size: 1.45rem; font-weight: 700; }
-.close-btn { background: none; border: none; color: white; font-size: 1.8rem; cursor: pointer; }
-.modal-body { padding: 2rem 1.8rem; }
-.form-group { margin-bottom: 1.8rem; }
-.form-group label { display: block; margin-bottom: 10px; font-weight: 600; color: #1A1A1A; }
-.modal-input { 
-  width: 100%; 
-  padding: 14px 16px; 
-  border: 2px solid #E5E7EB; 
-  border-radius: 12px; 
-  font-size: 1rem; 
-  background: #FFFFFF;
-}
-.percentage-input-wrapper { position: relative; }
-.percentage-symbol { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: #1B396A; font-weight: 700; }
-.percentage-hint { margin-top: 8px; font-size: 0.85rem; color: #6B7280; }
-.modal-footer { 
-  padding: 1.2rem 1.8rem; 
-  background: #F5F5F5; 
-  display: flex; 
-  gap: 12px; 
-  justify-content: flex-end; 
-  border-top: 1px solid #E5E7EB; 
-}
-.btn-cancelar, .btn-guardar-modal { 
-  padding: 12px 28px; 
-  border-radius: 10px; 
-  font-weight: 600; 
-  cursor: pointer; 
-}
-.btn-cancelar { background: #F5F5F5; color: #1A1A1A; border: 1px solid #E5E7EB; }
-.btn-guardar-modal { background: #1B396A; color: white; }
-=======
+.btn-guardar-fila { background: #005187; color: white; }
 .btn-edit { background: #4D82BE; color: white; }
 .btn-delete { background: #D32F2F; color: white; }
 
@@ -385,7 +227,7 @@ const buscar = () => console.log('🔎 Buscando...')
 .circular-progress svg { transform: rotate(-90deg); }
 .percent-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2.8rem; font-weight: 700; color: #005187; }
 
-.btn-guardar { background: #005187; color: white; padding: 14px 40px; border-radius: 8px; font-weight: 600; font-size: 1.05rem; }
+.btn-guardar { background: #005187; color: white; padding: 14px 40px; border-radius: 8px; font-weight: 600; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; }
 
 .footer { margin-top: 3rem; text-align: center; color: #9AA3AF; font-size: 0.9rem; }
 
@@ -402,5 +244,10 @@ const buscar = () => console.log('🔎 Buscando...')
 .modal-footer { padding: 1.2rem 1.8rem; background: #F8FAFC; display: flex; gap: 12px; justify-content: flex-end; }
 .btn-cancelar { background: #9AA3AF; color: white; padding: 12px 28px; border-radius: 10px; font-weight: 600; }
 .btn-guardar-modal { background: #005187; color: white; padding: 12px 36px; border-radius: 10px; font-weight: 600; }
->>>>>>> 447a58c (Removiendo node_modules del repo)
+
+/* Tamaño de los iconos SVG */
+.icon-btn {
+  width: 20px;
+  height: 20px;
+}
 </style>
