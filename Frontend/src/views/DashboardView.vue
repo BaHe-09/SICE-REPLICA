@@ -99,44 +99,75 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 const router = useRouter()
 
-
+// KPIs (estructura original conservada)
 const kpis = ref([
-  { title: 'Alumnos Activos', value: '1,248', iconPath: 'M17 20h5v-2a3 3 0 01-3-3V8a3 3 0 01-3-3V3a3 3 0 01-3-3H8a3 3 0 01-3 3v2a3 3 0 01-3 3v7a3 3 0 01-3 3v2h5m5-10v10', trend: '+34 este mes' },
-  { title: 'Inscripciones', value: '324', iconPath: 'M12 6v12m-3-9h6m-6 6h6', trend: '+12%' },
-  { title: 'Baja Temporal', value: '18', iconPath: 'M13 10V3L4 14h7v7l9-11h-7z', trend: '-2' },
-  { title: 'Baja Definitiva', value: '7', iconPath: 'M6 18L18 6M6 6h12v12', trend: '' },
-  { title: 'Grupos Activos', value: '42', iconPath: 'M17 20h5v-2a3 3 0 01-3-3V8a3 3 0 01-3-3V3a3 3 0 01-3-3H8a3 3 0 01-3 3v2a3 3 0 01-3 3v7a3 3 0 01-3 3v2h5m5-10v10', trend: '' },
-  { title: 'Promedio General', value: '8.7', iconPath: 'M14 10h4.764a2 2 0 011.789 2.894L18 19H6l-2.236-6.106A2 2 0 015.236 10H10', trend: '' }
+  { title: 'Alumnos Activos', value: '0', iconPath: 'M17 20h5v-2a3 3 0 01-3-3V8a3 3 0 01-3-3V3a3 3 0 01-3-3H8a3 3 0 01-3 3v2a3 3 0 01-3 3v7a3 3 0 01-3 3v2h5m5-10v10', trend: '' },
+  { title: 'Inscripciones', value: '0', iconPath: 'M12 6v12m-3-9h6m-6 6h6', trend: '' },
+  { title: 'Baja Temporal', value: '0', iconPath: 'M13 10V3L4 14h7v7l9-11h-7z', trend: '' },
+  { title: 'Baja Definitiva', value: '0', iconPath: 'M6 18L18 6M6 6h12v12', trend: '' },
+  { title: 'Grupos Activos', value: '0', iconPath: 'M17 20h5v-2a3 3 0 01-3-3V8a3 3 0 01-3-3V3a3 3 0 01-3-3H8a3 3 0 01-3 3v2a3 3 0 01-3 3v7a3 3 0 01-3 3v2h5m5-10v10', trend: '' },
+  { title: 'Promedio General', value: '0', iconPath: 'M14 10h4.764a2 2 0 011.789 2.894L18 19H6l-2.236-6.106A2 2 0 015.236 10H10', trend: '' }
 ])
 
-const carreraData = ref([
-  { carrera: 'Ing. Sistemas', porcentaje: 42 },
-  { carrera: 'Ing. Industrial', porcentaje: 28 },
-  { carrera: 'Ing. Civil', porcentaje: 15 },
-  { carrera: 'Contador Público', porcentaje: 15 }
-])
+const carreraData = ref([])
+const semestreData = ref([])
+const recentActivity = ref([])
 
-const semestreData = ref([
-  { semestre: 5, cantidad: 312, color: '#1B396A' },
-  { semestre: 6, cantidad: 245, color: '#D6D6D6' },
-  { semestre: 7, cantidad: 198, color: '#6B7280' },
-  { semestre: 8, cantidad: 134, color: '#1A1A1A' }
-])
+const loading = ref(true)
+const error = ref(null)
 
-const recentActivity = ref([
-  { descripcion: 'Ana Sofía Martínez López se inscribió en 5° semestre', tiempo: 'Hace 12 minutos' },
-  { descripcion: 'Calificaciones del grupo 5CV1 cargadas', tiempo: 'Hace 47 minutos' },
-  { descripcion: 'Carlos Torres solicitó baja temporal', tiempo: 'Hace 2 horas' },
-  { descripcion: 'Nuevo grupo 6CV3 creado', tiempo: 'Ayer' }
-])
+// Cargar datos reales
+onMounted(async () => {
+  try {
+    const res = await fetch('http://localhost:8000/api/dashboard')
 
+    if (!res.ok) throw new Error('Error en API')
 
+    const data = await res.json()
+
+    // KPIs dinámicos (sin romper estructura)
+    kpis.value[0].value = data.kpis?.alumnos ?? 0
+    kpis.value[1].value = data.kpis?.inscripciones ?? 0
+    kpis.value[2].value = data.kpis?.bajas_temporales ?? 0
+    kpis.value[3].value = data.kpis?.bajas_definitivas ?? 0
+    kpis.value[4].value = data.kpis?.grupos ?? 0
+    kpis.value[5].value = data.kpis?.promedio ?? 0
+
+    // Carreras
+    const total = data.carreras?.reduce((acc, c) => acc + c.total, 0) || 1
+
+    carreraData.value = (data.carreras || []).map(c => ({
+      carrera: c.nombre,
+      porcentaje: Math.round((c.total / total) * 100)
+    }))
+
+    // Semestres
+    semestreData.value = (data.semestres || []).map(s => ({
+      semestre: s.semestre_actual,
+      cantidad: s.total,
+      color: '#1B396A'
+    }))
+
+    // Actividad reciente (puedes conectar a bitacora luego)
+    recentActivity.value = [
+      { descripcion: 'Datos cargados desde el sistema', tiempo: 'Ahora' }
+    ]
+
+  } catch (err) {
+    console.error(err)
+    error.value = 'Error cargando datos'
+  } finally {
+    loading.value = false
+  }
+})
+
+// Navegación
 const nuevaInscripcion = () => router.push('/inscripcion')
 const irAAlumnos = () => router.push('/alumnos')
 const irAGrupos = () => router.push('/gestion-grupos')
