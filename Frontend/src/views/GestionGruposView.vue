@@ -20,7 +20,7 @@
 
         <select v-model="filtroCarrera" class="filter-select" @change="aplicarFiltros">
           <option value="">Carrera</option>
-          <option value="Ingeniería en Sistemas Computacionales">Ingeniería en Sistemas Computacionales</option>
+          <option value="Ingeniería en Sistemas Computacionales">Ingenieria en Sistemas Computacionales</option>
           <option value="Ingeniería Industrial">Ingeniería Industrial</option>
           <option value="Ingeniería Civil">Ingeniería Civil</option>
           <option value="Ingeniería en Gestión Empresarial">Ingeniería en Gestión Empresarial</option>
