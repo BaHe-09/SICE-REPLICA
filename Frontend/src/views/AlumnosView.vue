@@ -7,7 +7,7 @@
         <div class="search-group">
           <input
             type="text"
-            placeholder="Buscar alumno..."
+            placeholder="Buscar alumno"
             v-model="busquedaAlumno"
             class="search-input"
           >
@@ -24,17 +24,19 @@
           <option value="Ingenieria en Sistemas Computacionales">Ingenieria en Sistemas Computacionales</option>
           <option value="Ingenieria Industrial">Ingenieria Industrial</option>
         </select>
+
         <select v-model="filtroSemestre" class="filter-select">
           <option value="">Semestre</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-          <option value="6">6</option>
-          <option value="7">7</option>
-          <option value="8">8</option>
+          <option value="1">1° Semestre</option>
+          <option value="2">2° Semestre</option>
+          <option value="3">3° Semestre</option>
+          <option value="4">4° Semestre</option>
+          <option value="5">5° Semestre</option>
+          <option value="6">6° Semestre</option>
+          <option value="7">7° Semestre</option>
+          <option value="8">8° Semestre</option>
         </select>
+
         <select v-model="filtroEstatus" class="filter-select">
           <option value="">Estatus</option>
           <option value="Activo">Activo</option>
@@ -50,7 +52,7 @@
         </button>
 
         <button class="btn-nuevo" @click="nuevoAlumno">
-          + Nuevo Alumno
+          + Nueva inscripción
         </button>
       </div>
 
@@ -170,7 +172,7 @@
           <div class="form-group">
             <label>Semestre</label>
             <select v-model="alumnoEditar.semestre" class="modal-select">
-              <option v-for="n in 8" :key="n" :value="n">{{ n }}</option>
+              <option v-for="n in 8" :key="n" :value="n">{{ n }}° Semestre</option>
             </select>
           </div>
 
@@ -297,7 +299,6 @@ const cerrarModal = () => {
   alumnoEditar.value = null
 }
 
-
 const guardarCambios = () => {
   if (!alumnoEditar.value) return
 
@@ -307,7 +308,6 @@ const guardarCambios = () => {
   cerrarModal()
   alert('✅ Cambios guardados correctamente')
 }
-
 
 const eliminarAlumno = () => {
   if (confirm(`¿Seguro que deseas eliminar a ${alumnoEditar.value.nombre}?`)) {
@@ -323,8 +323,19 @@ const eliminarAlumno = () => {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
-.alumnos-page { max-width: 100%; background: #F5F5F5; }
-.page-title { color: #1A1A1A; font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 1.5rem; }
+.alumnos-page { 
+  max-width: 100%; 
+  background: #F5F5F5; 
+  font-family: 'Montserrat', sans-serif;
+}
+
+.page-title { 
+  color: #1A1A1A; 
+  font-size: 2rem; 
+  font-weight: 700; 
+  letter-spacing: -0.02em; 
+  margin-bottom: 1.5rem; 
+}
 
 .filters-bar {
   display: flex;
@@ -349,6 +360,11 @@ const eliminarAlumno = () => {
   border-radius: 8px; 
   font-size: 1rem; 
   background: #FFFFFF;
+  color: #1A1A1A;
+  font-family: 'Montserrat', sans-serif;
+}
+.search-input::placeholder {
+  color: #9CA3AF;
 }
 .search-icon-svg { 
   position: absolute; 
@@ -373,6 +389,7 @@ const eliminarAlumno = () => {
   cursor: pointer; 
   font-size: 1rem; 
   white-space: nowrap; 
+  font-family: 'Montserrat', sans-serif;
 }
 .btn-limpiar:hover { background: #F5F5F5; }
 .reset-icon { width: 18px; height: 18px; stroke: #6B7280; }
@@ -388,8 +405,9 @@ const eliminarAlumno = () => {
   cursor: pointer; 
   position: relative;
   z-index: 2;
+  color: #1A1A1A;
+  font-family: 'Montserrat', sans-serif;
 }
-
 
 .btn-nuevo { 
   background: #1B396A; 
@@ -400,55 +418,255 @@ const eliminarAlumno = () => {
   font-weight: 600; 
   cursor: pointer; 
   white-space: nowrap; 
+  font-family: 'Montserrat', sans-serif;
+  transition: background 0.2s ease;
 }
-.btn-nuevo:hover { background: #1D4ED8; }
+.btn-nuevo:hover { 
+  background: #1D4ED8; 
+}
 
 .actions { display: flex; gap: 8px; }
-.btn-action { padding: 7px 16px; border-radius: 6px; font-size: 0.92rem; cursor: pointer; font-weight: 600; }
-.btn-action.ver { background: #FFFFFF; color: #1A1A1A; border: 1px solid #E5E7EB; }
-.btn-action.editar { background: #1B396A; color: white; border: 1px solid #1B396A; }
-.btn-action.editar:hover { background: #1D4ED8; }
+.btn-action { 
+  padding: 7px 16px; 
+  border-radius: 6px; 
+  font-size: 0.92rem; 
+  cursor: pointer; 
+  font-weight: 600; 
+  font-family: 'Montserrat', sans-serif;
+}
+.btn-action.ver { 
+  background: #FFFFFF; 
+  color: #1A1A1A; 
+  border: 1px solid #E5E7EB; 
+}
+.btn-action.editar { 
+  background: #1B396A; 
+  color: white; 
+  border: 1px solid #1B396A; 
+}
+.btn-action.editar:hover { 
+  background: #1D4ED8; 
+}
 
-.table-container { background: #FFFFFF; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.07); border: 1px solid #E5E7EB; }
+.table-container { 
+  background: #FFFFFF; 
+  border-radius: 12px; 
+  overflow: hidden; 
+  box-shadow: 0 8px 25px rgba(0,0,0,0.07); 
+  border: 1px solid #E5E7EB; 
+}
 .alumnos-table { width: 100%; border-collapse: collapse; }
-.alumnos-table th { background: #F5F5F5; padding: 16px; text-align: left; font-weight: 600; color: #1A1A1A; border-bottom: 1px solid #E5E7EB; }
-.alumnos-table td { padding: 16px; border-bottom: 1px solid #E5E7EB; color: #1A1A1A; }
+.alumnos-table th { 
+  background: #F5F5F5; 
+  padding: 16px; 
+  text-align: left; 
+  font-weight: 600; 
+  color: #1A1A1A; 
+  border-bottom: 1px solid #E5E7EB; 
+  font-family: 'Montserrat', sans-serif;
+}
+.alumnos-table td { 
+  padding: 16px; 
+  border-bottom: 1px solid #E5E7EB; 
+  color: #1A1A1A; 
+  font-family: 'Montserrat', sans-serif;
+}
 
-.status-badge { padding: 5px 14px; border-radius: 20px; font-size: 0.88rem; font-weight: 500; }
-.status-badge.activo { background: #DCFCE7; color: #16A34A; }
-.status-badge.baja-temporal { background: #FEF3C7; color: #F59E0B; }
-.status-badge.baja-definitiva { background: #FEE2E2; color: #DC2626; }
+.status-badge { 
+  padding: 5px 14px; 
+  border-radius: 20px; 
+  font-size: 0.88rem; 
+  font-weight: 500; 
+  font-family: 'Montserrat', sans-serif;
+}
+.status-badge.activo { 
+  background: #DCFCE7; 
+  color: #16A34A; 
+}
+.status-badge.baja-temporal { 
+  background: #FEF3C7; 
+  color: #F59E0B; 
+}
+.status-badge.baja-definitiva { 
+  background: #FEE2E2; 
+  color: #DC2626; 
+}
 
-.empty-state { text-align: center; padding: 4rem 2rem; color: #6B7280; background: #FFFFFF; border-radius: 12px; border: 1px solid #E5E7EB; }
-.empty-state h3 { font-size: 1.4rem; color: #1A1A1A; margin-bottom: 0.5rem; }
-.empty-state p { margin-bottom: 1.5rem; line-height: 1.5; }
-.btn-reset { background: #FFFFFF; color: #1A1A1A; border: 1px solid #E5E7EB; padding: 10px 20px; border-radius: 8px; font-weight: 500; cursor: pointer; }
+.empty-state { 
+  text-align: center; 
+  padding: 4rem 2rem; 
+  color: #6B7280; 
+  background: #FFFFFF; 
+  border-radius: 12px; 
+  border: 1px solid #E5E7EB; 
+}
+.empty-state h3 { 
+  font-size: 1.4rem; 
+  color: #1A1A1A; 
+  margin-bottom: 0.5rem; 
+  font-family: 'Montserrat', sans-serif;
+}
+.empty-state p { 
+  margin-bottom: 1.5rem; 
+  line-height: 1.5; 
+}
+.btn-reset { 
+  background: #FFFFFF; 
+  color: #1A1A1A; 
+  border: 1px solid #E5E7EB; 
+  padding: 10px 20px; 
+  border-radius: 8px; 
+  font-weight: 500; 
+  cursor: pointer; 
+  font-family: 'Montserrat', sans-serif;
+}
 
-.pagination { margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; color: #6B7280; }
-.pagination-left, .pagination-center, .pagination-right { display: flex; align-items: center; gap: 10px; }
-.pagination-right button { padding: 6px 12px; border: 1px solid #E5E7EB; background: #FFFFFF; border-radius: 6px; cursor: pointer; color: #1A1A1A; }
-.pagination-right .active { background: #1B396A; color: white; border-color: #1B396A; }
+.pagination { 
+  margin-top: 2rem; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  font-size: 0.95rem; 
+  color: #6B7280; 
+  font-family: 'Montserrat', sans-serif;
+}
+.pagination-left, .pagination-center, .pagination-right { 
+  display: flex; 
+  align-items: center; 
+  gap: 10px; 
+}
+.pagination-right button { 
+  padding: 6px 12px; 
+  border: 1px solid #E5E7EB; 
+  background: #FFFFFF; 
+  border-radius: 6px; 
+  cursor: pointer; 
+  color: #1A1A1A; 
+  font-family: 'Montserrat', sans-serif;
+}
+.pagination-right .active { 
+  background: #1B396A; 
+  color: white; 
+  border-color: #1B396A; 
+}
 
-.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 2000; }
-.modal-content { background: #FFFFFF; width: 520px; max-width: 90%; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.15); overflow: hidden; border: 1px solid #E5E7EB; }
-.modal-header { background: #1B396A; color: white; padding: 1.2rem 1.8rem; display: flex; justify-content: space-between; align-items: center; }
-.modal-header h3 { margin: 0; font-size: 1.4rem; font-weight: 700; }
-.close-btn { background: none; border: none; color: white; font-size: 1.8rem; cursor: pointer; }
+.modal-overlay { 
+  position: fixed; 
+  top: 0; 
+  left: 0; 
+  right: 0; 
+  bottom: 0; 
+  background: rgba(0,0,0,0.6); 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  z-index: 2000; 
+}
+.modal-content { 
+  background: #FFFFFF; 
+  width: 520px; 
+  max-width: 90%; 
+  border-radius: 16px; 
+  box-shadow: 0 20px 50px rgba(0,0,0,0.15); 
+  overflow: hidden; 
+  border: 1px solid #E5E7EB; 
+}
+.modal-header { 
+  background: #1B396A; 
+  color: white; 
+  padding: 1.2rem 1.8rem; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+}
+.modal-header h3 { 
+  margin: 0; 
+  font-size: 1.4rem; 
+  font-weight: 700; 
+  font-family: 'Montserrat', sans-serif;
+}
+.close-btn { 
+  background: none; 
+  border: none; 
+  color: white; 
+  font-size: 1.8rem; 
+  cursor: pointer; 
+}
 .modal-body { padding: 2rem 1.8rem; }
 .form-group { margin-bottom: 1.6rem; }
-.form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #1A1A1A; }
-.modal-input, .modal-select { width: 100%; padding: 12px 16px; border: 1.5px solid #E5E7EB; border-radius: 10px; font-size: 1rem; background: #FFFFFF; color: #1A1A1A; }
-.modal-input.disabled { background: #F5F5F5; cursor: not-allowed; }
-.modal-footer { padding: 1.2rem 1.8rem; background: #F5F5F5; display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid #E5E7EB; }
-.btn-cancelar, .btn-eliminar, .btn-guardar { padding: 12px 28px; border-radius: 10px; font-weight: 600; cursor: pointer; }
-.btn-cancelar { background: #FFFFFF; color: #1A1A1A; border: 1px solid #E5E7EB; }
-.btn-eliminar { background: #DC2626; color: white; border: none; }
-.btn-guardar { background: #1B396A; color: white; border: none; }
+.form-group label { 
+  display: block; 
+  margin-bottom: 8px; 
+  font-weight: 600; 
+  color: #1A1A1A; 
+  font-family: 'Montserrat', sans-serif;
+}
+.modal-input, .modal-select { 
+  width: 100%; 
+  padding: 12px 16px; 
+  border: 1.5px solid #E5E7EB; 
+  border-radius: 10px; 
+  font-size: 1rem; 
+  background: #FFFFFF; 
+  color: #1A1A1A; 
+  font-family: 'Montserrat', sans-serif;
+}
+.modal-input.disabled { 
+  background: #F5F5F5; 
+  cursor: not-allowed; 
+}
+.modal-footer { 
+  padding: 1.2rem 1.8rem; 
+  background: #F5F5F5; 
+  display: flex; 
+  gap: 12px; 
+  justify-content: flex-end; 
+  border-top: 1px solid #E5E7EB; 
+}
+.btn-cancelar, .btn-eliminar, .btn-guardar { 
+  padding: 12px 28px; 
+  border-radius: 10px; 
+  font-weight: 600; 
+  cursor: pointer; 
+  font-family: 'Montserrat', sans-serif;
+}
+.btn-cancelar { 
+  background: #FFFFFF; 
+  color: #1A1A1A; 
+  border: 1px solid #E5E7EB; 
+}
+.btn-eliminar { 
+  background: #DC2626; 
+  color: white; 
+  border: none; 
+}
+.btn-guardar { 
+  background: #1B396A; 
+  color: white; 
+  border: none; 
+}
 
 .view-modal .modal-body { padding: 2.2rem 1.8rem; }
-.detail-row { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #E5E7EB; font-size: 1.05rem; color: #1A1A1A; }
+.detail-row { 
+  display: flex; 
+  justify-content: space-between; 
+  padding: 14px 0; 
+  border-bottom: 1px solid #E5E7EB; 
+  font-size: 1.05rem; 
+  color: #1A1A1A; 
+  font-family: 'Montserrat', sans-serif;
+}
 .detail-row:last-child { border-bottom: none; }
 .detail-row strong { font-weight: 600; }
 
-.btn-cerrar { background: #1B396A; color: white; padding: 12px 40px; border-radius: 10px; font-weight: 600; border: none; cursor: pointer; }
+.btn-cerrar { 
+  background: #1B396A; 
+  color: white; 
+  padding: 12px 40px; 
+  border-radius: 10px; 
+  font-weight: 600; 
+  border: none; 
+  cursor: pointer; 
+  font-family: 'Montserrat', sans-serif;
+}
 </style>
