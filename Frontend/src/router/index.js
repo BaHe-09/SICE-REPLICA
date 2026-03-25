@@ -5,11 +5,17 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/servicios-escolares'
+      redirect: '/dashboard'
     },
-    
+
     { path: '/login', name: 'Login', component: () => import('@/views/LoginView.vue') },
-    
+
+    {
+      path: '/dashboard',
+      name: 'Dashboard',
+      component: () => import('@/views/DashboardView.vue')
+    },
+
     {
       path: '/servicios-escolares',
       name: 'ServiciosEscolares',
@@ -18,8 +24,8 @@ const router = createRouter({
 
     { path: '/alumnos', name: 'Alumnos', component: () => import('@/views/AlumnosView.vue') },
     { path: '/formulario-alumno', name: 'FormularioAlumno', component: () => import('@/views/FormularioAlumnoView.vue') },
-    
-    // Evaluaciones ────────────────
+
+
     { 
       path: '/evaluaciones', 
       name: 'EvaluacionesGeneral', 
@@ -27,11 +33,10 @@ const router = createRouter({
     },
     { 
       path: '/evaluaciones/:id', 
-      name: 'Evaluaciones',               // ← este nombre lo usaremos al navegar
+      name: 'Evaluaciones', 
       component: () => import('@/views/EvaluacionesView.vue') 
     },
 
-    // Calificaciones ───────────────
     { 
       path: '/calificaciones', 
       name: 'CalificacionesGeneral', 
@@ -39,7 +44,7 @@ const router = createRouter({
     },
     { 
       path: '/calificaciones/:id', 
-      name: 'Calificaciones',             // ← este nombre lo usaremos al navegar
+      name: 'Calificaciones', 
       component: () => import('@/views/CalificacionesView.vue') 
     },
 
