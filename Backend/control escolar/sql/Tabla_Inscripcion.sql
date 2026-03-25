@@ -2,14 +2,14 @@ USE sice;
 
 -- ============================================================
 -- DATOS BASE
--- Inserción de datos necesarios respetando integridad referencial
+-- Inserción de datos respetando integridad referencial
 -- ============================================================
 
 -- GENERO
 INSERT IGNORE INTO genero (id_genero, nombre_genero)
 VALUES (1, 'Masculino'), (2, 'Femenino');
 
--- PERSONA (Alumno)
+-- PERSONA
 INSERT IGNORE INTO persona (id_persona, nombre, apellido_paterno, apellido_materno, curp, fecha_nacimiento, id_genero)
 VALUES (1,'Juan','Perez','Lopez','PEJL010101HNLXXX01','2001-01-01',1);
 
@@ -61,106 +61,109 @@ VALUES (1,'ISC101','Programacion',8,4,4);
 INSERT IGNORE INTO grupo (id_grupo, id_materia, id_docente, id_periodo, id_aula, clave_grupo, capacidad)
 VALUES (1,1,1,1,1,'A1',30);
 
--- INSCRIPCION
+-- INSCRIPCION (BASE)
 INSERT IGNORE INTO inscripcion (id_inscripcion, id_alumno, id_grupo, fecha_inscripcion, estatus)
 VALUES (1,1,1,CURDATE(),'ACTIVA');
 
+
 -- ============================================================
--- PROCEDIMIENTOS ALMACENADOS (CRUD ALUMNO)
+-- PROCEDIMIENTOS ALMACENADOS (CRUD INSCRIPCION)
 -- ============================================================
 
 DELIMITER $$
 
 -- ------------------------------------------------------------
--- CONSULTAR ALUMNOS
+-- CONSULTAR INSCRIPCIONES
 -- ------------------------------------------------------------
-DROP PROCEDURE IF EXISTS ver_alumnos$$
-CREATE PROCEDURE ver_alumnos()
+DROP PROCEDURE IF EXISTS ver_inscripciones$$
+CREATE PROCEDURE ver_inscripciones()
 BEGIN
     SELECT 
-        a.id_alumno,
+        i.id_inscripcion,
         p.nombre,
         p.apellido_paterno,
         a.numero_control,
-        c.nombre AS carrera
-    FROM alumno a
+        g.clave_grupo,
+        i.estatus,
+        i.fecha_inscripcion
+    FROM inscripcion i
+    JOIN alumno a ON i.id_alumno = a.id_alumno
     JOIN persona p ON a.id_persona = p.id_persona
-    JOIN carrera c ON a.id_carrera = c.id_carrera;
+    JOIN grupo g ON i.id_grupo = g.id_grupo;
 END$$
 
 
 -- ------------------------------------------------------------
--- INSERTAR ALUMNO
+-- INSERTAR INSCRIPCION
 -- ------------------------------------------------------------
-DROP PROCEDURE IF EXISTS insertar_alumno$$
-CREATE PROCEDURE insertar_alumno(
-    IN p_id_persona INT,
-    IN p_numero_control VARCHAR(20),
-    IN p_id_carrera INT,
-    IN p_fecha_ingreso DATE,
-    IN p_semestre INT
+DROP PROCEDURE IF EXISTS insertar_inscripcion$$
+CREATE PROCEDURE insertar_inscripcion(
+    IN p_id_alumno INT,
+    IN p_id_grupo INT,
+    IN p_fecha DATE,
+    IN p_estatus VARCHAR(20)
 )
 BEGIN
-    IF p_numero_control IS NULL OR p_numero_control = '' THEN
+    IF p_estatus IS NULL OR p_estatus = '' THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'El número de control es obligatorio';
+        SET MESSAGE_TEXT = 'El estatus es obligatorio';
     END IF;
 
-    INSERT INTO alumno
-    (id_persona,numero_control,id_carrera,fecha_ingreso,semestre_actual)
+    INSERT INTO inscripcion
+    (id_alumno, id_grupo, fecha_inscripcion, estatus)
     VALUES
-    (p_id_persona,p_numero_control,p_id_carrera,p_fecha_ingreso,p_semestre);
+    (p_id_alumno, p_id_grupo, p_fecha, p_estatus);
 
-    SELECT 'Alumno insertado correctamente' AS mensaje;
+    SELECT 'Inscripción insertada correctamente' AS mensaje;
 END$$
 
 
 -- ------------------------------------------------------------
--- ACTUALIZAR ALUMNO
+-- ACTUALIZAR INSCRIPCION
 -- ------------------------------------------------------------
-DROP PROCEDURE IF EXISTS actualizar_alumno$$
-CREATE PROCEDURE actualizar_alumno(
+DROP PROCEDURE IF EXISTS actualizar_inscripcion$$
+CREATE PROCEDURE actualizar_inscripcion(
     IN p_id INT,
-    IN p_semestre INT
+    IN p_estatus VARCHAR(20)
 )
 BEGIN
     DECLARE existe INT;
 
-    SELECT COUNT(*) INTO existe FROM alumno WHERE id_alumno = p_id;
+    SELECT COUNT(*) INTO existe FROM inscripcion WHERE id_inscripcion = p_id;
 
     IF existe = 0 THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'El alumno no existe';
+        SET MESSAGE_TEXT = 'La inscripción no existe';
     END IF;
 
-    UPDATE alumno
-    SET semestre_actual = p_semestre
-    WHERE id_alumno = p_id;
+    UPDATE inscripcion
+    SET estatus = p_estatus
+    WHERE id_inscripcion = p_id;
 
-    SELECT 'Alumno actualizado correctamente' AS mensaje;
+    SELECT 'Inscripción actualizada correctamente' AS mensaje;
 END$$
 
 
 -- ------------------------------------------------------------
--- ELIMINAR ALUMNO
+-- ELIMINAR INSCRIPCION
 -- ------------------------------------------------------------
-DROP PROCEDURE IF EXISTS eliminar_alumno$$
-CREATE PROCEDURE eliminar_alumno(
+DROP PROCEDURE IF EXISTS eliminar_inscripcion$$
+CREATE PROCEDURE eliminar_inscripcion(
     IN p_id INT
 )
 BEGIN
     DECLARE existe INT;
 
-    SELECT COUNT(*) INTO existe FROM alumno WHERE id_alumno = p_id;
+    SELECT COUNT(*) INTO existe FROM inscripcion WHERE id_inscripcion = p_id;
 
     IF existe = 0 THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'El alumno no existe';
+        SET MESSAGE_TEXT = 'La inscripción no existe';
     END IF;
 
-    DELETE FROM alumno WHERE id_alumno = p_id;
+    DELETE FROM inscripcion WHERE id_inscripcion = p_id;
 
-    SELECT 'Alumno eliminado correctamente' AS mensaje;
+    SELECT 'Inscripción eliminada correctamente' AS mensaje;
 END$$
 
 DELIMITER ;
@@ -173,10 +176,10 @@ CREATE USER IF NOT EXISTS 'usuario_app'@'localhost' IDENTIFIED BY '123456';
 
 REVOKE ALL PRIVILEGES ON sice.* FROM 'usuario_app'@'localhost';
 
-GRANT EXECUTE ON PROCEDURE sice.ver_alumnos TO 'usuario_app'@'localhost';
-GRANT EXECUTE ON PROCEDURE sice.insertar_alumno TO 'usuario_app'@'localhost';
-GRANT EXECUTE ON PROCEDURE sice.actualizar_alumno TO 'usuario_app'@'localhost';
-GRANT EXECUTE ON PROCEDURE sice.eliminar_alumno TO 'usuario_app'@'localhost';
+GRANT EXECUTE ON PROCEDURE sice.ver_inscripciones TO 'usuario_app'@'localhost';
+GRANT EXECUTE ON PROCEDURE sice.insertar_inscripcion TO 'usuario_app'@'localhost';
+GRANT EXECUTE ON PROCEDURE sice.actualizar_inscripcion TO 'usuario_app'@'localhost';
+GRANT EXECUTE ON PROCEDURE sice.eliminar_inscripcion TO 'usuario_app'@'localhost';
 
 FLUSH PRIVILEGES;
 
@@ -184,10 +187,10 @@ FLUSH PRIVILEGES;
 -- PRUEBAS
 -- ============================================================
 
-CALL ver_alumnos();
+CALL ver_inscripciones();
 
-CALL insertar_alumno(1,'22180005',1,'2024-08-01',1);
+CALL insertar_inscripcion(1,1,CURDATE(),'ACTIVA');
 
-CALL actualizar_alumno(1,2);
+CALL actualizar_inscripcion(1,'INACTIVA');
 
-CALL eliminar_alumno(1);
+CALL eliminar_inscripcion(1);

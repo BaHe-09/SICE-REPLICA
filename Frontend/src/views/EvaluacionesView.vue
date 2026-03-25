@@ -1,8 +1,3 @@
-<!-- ============================================= -->
-<!-- src/views/EvaluacionesView.vue -->
-<!-- VERSIÓN CORREGIDA - MANTIENE TU MODAL DETALLADO -->
-<!-- ============================================= -->
-
 <template>
   <MainLayout v-slot="{ busquedaGlobal }">
     <div class="evaluaciones-page">
@@ -10,7 +5,6 @@
       <div class="breadcrumb">Servicios Escolares › Grupos › Evaluaciones</div>
       <h1 class="page-title">Evaluaciones</h1>
 
-      <!-- Tarjeta Materia -->
       <div class="subject-card">
         <div class="subject-info">
           <h2>Algoritmos y Programación</h2>
@@ -24,7 +18,6 @@
         </button>
       </div>
 
-      <!-- TABLA -->
       <div class="table-container">
         <table class="eval-table">
           <thead>
@@ -57,21 +50,20 @@
         </table>
       </div>
 
-      <!-- GRÁFICO PEQUEÑO + BOTÓN ALINEADO -->
       <div class="bottom-bar">
         <div class="circular-wrapper">
           <div class="circular-progress">
             <svg viewBox="0 0 36 36" class="small-circle">
               <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#E5E7EB" stroke-width="4"/>
-              <path :d="circlePath" fill="none" stroke="#005187" stroke-width="4" stroke-dasharray="100, 100"/>
+              <path :d="circlePath" fill="none" stroke="#1B396A" stroke-width="4" stroke-dasharray="100, 100"/>
             </svg>
             <div class="percent-text">{{ totalPorcentaje }}%</div>
           </div>
         </div>
 
         <button 
-          @click="guardarCambios" 
-          :disabled="totalPorcentaje !== 100" 
+          @click="guardarCambios"
+          :disabled="totalPorcentaje !== 100"
           class="btn-guardar"
         >
           Guardar Cambios
@@ -81,7 +73,6 @@
     </div>
   </MainLayout>
 
-  <!-- ==================== MODAL DETALLADO (mantenido casi igual) ==================== -->
   <div v-if="showModal" class="modal-overlay" @click.self="cerrarModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -147,7 +138,6 @@ const criterios = ref([
 const totalPorcentaje = computed(() => criterios.value.reduce((sum, c) => sum + Number(c.porcentaje), 0))
 const circlePath = computed(() => `M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831`)
 
-// MODAL
 const showModal = ref(false)
 const nuevoNombre = ref('')
 const nuevoPorcentaje = ref(0)
@@ -184,54 +174,184 @@ const guardarCambios = () => alert('✅ Evaluaciones guardadas correctamente')
 </script>
 
 <style scoped>
-/* ... (mantengo exactamente los mismos estilos del modal que tenías, solo quité emojis y ajusté colores) */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
-.evaluaciones-page { width: 100%; max-width: 1200px; margin: 0 auto; }
+.evaluaciones-page { 
+  width: 100%; 
+  max-width: 1200px; 
+  margin: 0 auto; 
+  background: #F5F5F5;
+}
 
-.page-title { color: #1A1A1A; font-size: 2.4rem; font-weight: 700; margin-bottom: 0.5rem; }
-.breadcrumb { color: #5A5A5A; margin-bottom: 1rem; font-size: 0.95rem; }
+.page-title { 
+  color: #1A1A1A;
+  font-size: 2.4rem; 
+  font-weight: 700; 
+  margin-bottom: 0.5rem; 
+}
+.breadcrumb { 
+  color: #6B7280;
+  margin-bottom: 1rem; 
+  font-size: 0.95rem; 
+}
 
-.subject-card { background: white; padding: 1.8rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; box-shadow: 0 8px 25px rgba(0,0,0,0.07); }
-.btn-nueva-eval { background: #005187; color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer; border: none; }
+.subject-card { 
+  background: #FFFFFF;
+  padding: 1.8rem; 
+  border-radius: 12px; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  margin-bottom: 2rem; 
+  box-shadow: 0 8px 25px rgba(0,0,0,0.07); 
+  border: 1px solid #E5E7EB;
+}
+.btn-nueva-eval { 
+  background: #1B396A;
+  color: white; 
+  padding: 12px 24px; 
+  border-radius: 8px; 
+  font-weight: 600; 
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  cursor: pointer; 
+  border: none; 
+}
+.btn-nueva-eval:hover { background: #1D4ED8; }
 .plus-icon { width: 20px; height: 20px; stroke: white; }
 
-.table-container { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.07); margin-bottom: 2rem; }
+.table-container { 
+  background: #FFFFFF; 
+  border-radius: 12px; 
+  overflow: hidden; 
+  box-shadow: 0 8px 25px rgba(0,0,0,0.07); 
+  margin-bottom: 2rem; 
+  border: 1px solid #E5E7EB;
+}
 .eval-table { width: 100%; border-collapse: collapse; }
-.eval-table th { background: #F8FAFC; padding: 18px 16px; font-weight: 600; }
-.eval-table td { padding: 18px 16px; border-bottom: 1px solid #E5E9F0; }
-.porcentaje-input { width: 100px; text-align: center; padding: 10px; border: 1px solid #D1D9E6; border-radius: 8px; }
+.eval-table th { 
+  background: #F5F5F5; 
+  padding: 18px 16px; 
+  font-weight: 600; 
+  color: #1A1A1A;
+  border-bottom: 1px solid #E5E7EB;
+}
+.eval-table td { 
+  padding: 18px 16px; 
+  border-bottom: 1px solid #E5E7EB; 
+  color: #1A1A1A;
+}
+.porcentaje-input { 
+  width: 100px; 
+  text-align: center; 
+  padding: 10px; 
+  border: 1px solid #E5E7EB; 
+  border-radius: 8px; 
+  background: #FFFFFF;
+}
 .actions { display: flex; gap: 8px; }
-.btn-edit, .btn-delete { width: 38px; height: 38px; border: none; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-.btn-edit { background: #4D82BE; }
-.btn-delete { background: #D32F2F; }
+.btn-edit, .btn-delete { 
+  width: 38px; 
+  height: 38px; 
+  border: none; 
+  border-radius: 8px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  cursor: pointer; 
+}
+.btn-edit { background: #1B396A; }
+.btn-delete { background: #DC2626; }
 .icon-svg { width: 18px; height: 18px; stroke: white; }
 
-/* GRÁFICO PEQUEÑO */
-.bottom-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; }
+.bottom-bar { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  margin-top: 2rem; 
+}
 .circular-wrapper { width: 130px; height: 130px; position: relative; }
 .circular-progress svg { transform: rotate(-90deg); width: 130px; height: 130px; }
-.percent-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; font-weight: 700; color: #005187; }
+.percent-text { 
+  position: absolute; 
+  top: 50%; 
+  left: 50%; 
+  transform: translate(-50%, -50%); 
+  font-size: 2rem; 
+  font-weight: 700; 
+  color: #1B396A; 
+}
 
-.btn-guardar { background: #005187; color: white; padding: 14px 40px; border-radius: 8px; font-weight: 600; font-size: 1.05rem; cursor: pointer; border: none; }
-.btn-guardar:hover:not(:disabled) { background: #003F6F; }
+.btn-guardar { 
+  background: #1B396A; 
+  color: white; 
+  padding: 14px 40px; 
+  border-radius: 8px; 
+  font-weight: 600; 
+  font-size: 1.05rem; 
+  cursor: pointer; 
+  border: none; 
+}
+.btn-guardar:hover:not(:disabled) { background: #1D4ED8; }
 .btn-guardar:disabled { background: #9AA3AF; cursor: not-allowed; }
 
-/* === TU MODAL DETALLADO (casi idéntico al original) === */
-.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 2000; }
-.modal-content { background: white; width: 520px; max-width: 90%; border-radius: 20px; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.3); }
-.modal-header { background: #005187; color: white; padding: 1.25rem 1.8rem; display: flex; justify-content: space-between; align-items: center; }
+.modal-overlay { 
+  position: fixed; 
+  top: 0; left: 0; right: 0; bottom: 0; 
+  background: rgba(0,0,0,0.6); 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  z-index: 2000; 
+}
+.modal-content { 
+  background: #FFFFFF; 
+  width: 520px; 
+  max-width: 90%; 
+  border-radius: 20px; 
+  overflow: hidden; 
+  box-shadow: 0 25px 60px rgba(0,0,0,0.15); 
+  border: 1px solid #E5E7EB;
+}
+.modal-header { 
+  background: #1B396A; 
+  color: white; 
+  padding: 1.25rem 1.8rem; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+}
 .modal-header h3 { margin: 0; font-size: 1.45rem; font-weight: 700; }
 .close-btn { background: none; border: none; color: white; font-size: 1.8rem; cursor: pointer; }
 .modal-body { padding: 2rem 1.8rem; }
 .form-group { margin-bottom: 1.8rem; }
 .form-group label { display: block; margin-bottom: 10px; font-weight: 600; color: #1A1A1A; }
-.modal-input { width: 100%; padding: 14px 16px; border: 2px solid #E5E9F0; border-radius: 12px; font-size: 1rem; }
+.modal-input { 
+  width: 100%; 
+  padding: 14px 16px; 
+  border: 2px solid #E5E7EB; 
+  border-radius: 12px; 
+  font-size: 1rem; 
+  background: #FFFFFF;
+}
 .percentage-input-wrapper { position: relative; }
-.percentage-symbol { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: #005187; font-weight: 700; }
+.percentage-symbol { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: #1B396A; font-weight: 700; }
 .percentage-hint { margin-top: 8px; font-size: 0.85rem; color: #6B7280; }
-.modal-footer { padding: 1.2rem 1.8rem; background: #F8FAFC; display: flex; gap: 12px; justify-content: flex-end; border-top: 1px solid #E5E9F0; }
-.btn-cancelar, .btn-guardar-modal { padding: 12px 28px; border-radius: 10px; font-weight: 600; cursor: pointer; }
-.btn-cancelar { background: #9AA3AF; color: white; }
-.btn-guardar-modal { background: #005187; color: white; }
+.modal-footer { 
+  padding: 1.2rem 1.8rem; 
+  background: #F5F5F5; 
+  display: flex; 
+  gap: 12px; 
+  justify-content: flex-end; 
+  border-top: 1px solid #E5E7EB; 
+}
+.btn-cancelar, .btn-guardar-modal { 
+  padding: 12px 28px; 
+  border-radius: 10px; 
+  font-weight: 600; 
+  cursor: pointer; 
+}
+.btn-cancelar { background: #F5F5F5; color: #1A1A1A; border: 1px solid #E5E7EB; }
+.btn-guardar-modal { background: #1B396A; color: white; }
 </style>

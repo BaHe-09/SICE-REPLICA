@@ -2,23 +2,19 @@
   <MainLayout v-slot="{ busquedaGlobal }">
     <div class="inscripcion-page">
 
-      <!-- BREADCRUMB -->
       <div class="breadcrumb">
         Servicios Escolares <span class="arrow">›</span> Inscripción
       </div>
 
-      <!-- TÍTULO Y SUBTÍTULO ALINEADOS A LA IZQUIERDA -->
       <h1 class="page-title">Inscripción</h1>
       <p class="subtitle">Seleccione al alumno y asígnelo a un grupo disponible para el periodo vigente.</p>
 
-      <!-- TOAST (igual que en Formulario Alumno) -->
       <div v-if="notification.message" class="toast" :class="notification.type">
         {{ notification.message }}
       </div>
 
       <div class="content-card">
 
-        <!-- BUSCAR ALUMNO -->
         <div class="buscar-alumno-section">
           <h3>Buscar Alumno</h3>
           <div class="search-row">
@@ -37,14 +33,12 @@
             </select>
           </div>
 
-          <!-- Alumno seleccionado -->
           <div v-if="alumnoSeleccionado" class="selected-student">
             {{ alumnoSeleccionado.nombre }} • {{ alumnoSeleccionado.noControl }} • 
             {{ alumnoSeleccionado.carrera }} ({{ alumnoSeleccionado.semestre }} Semestre)
           </div>
         </div>
 
-        <!-- SELECCIONAR GRUPO -->
         <div class="seleccionar-grupo-section">
           <h3>Seleccionar Grupo</h3>
           <div class="group-search-bar">
@@ -92,7 +86,6 @@
             </table>
           </div>
 
-          <!-- PAGINACIÓN -->
           <div class="pagination">
             <span>Página 1 de 4</span>
             <div class="pagination-buttons">
@@ -164,16 +157,16 @@ const showNotification = (message, type) => {
 .inscripcion-page {
   width: 100%;
   padding: 2rem 2.5rem;
+  background: #F5F5F5;
 }
 
 .breadcrumb {
-  color: #5A5A5A;
+  color: #6B7280;
   font-size: 0.95rem;
   margin-bottom: 1rem;
 }
 .arrow { color: #1A1A1A; font-weight: bold; }
 
-/* TÍTULO Y SUBTÍTULO A LA IZQUIERDA (como en la plantilla) */
 .page-title {
   text-align: left;
   font-size: 2.4rem;
@@ -183,142 +176,153 @@ const showNotification = (message, type) => {
 }
 .subtitle {
   text-align: left;
-  color: #5A5A5A;
+  color: #6B7280;
   margin-bottom: 2rem;
 }
 
 .content-card {
-  background: white;
+  background: #FFFFFF;
   border-radius: 16px;
   box-shadow: 0 12px 35px rgba(0,0,0,0.09);
   padding: 3rem;
   max-width: 1100px;
   margin: 0 auto;
+  border: 1px solid #E5E7EB;
 }
 
-/* Buscar Alumno */
-.buscar-alumno-section h3 { 
-  color: #005187; 
-  margin-bottom: 1rem; 
-  font-size: 1.35rem; 
+.buscar-alumno-section h3 {
+  color: #1A1A1A;
+  margin-bottom: 1rem;
+  font-size: 1.35rem;
 }
-.search-row { 
-  display: flex; 
-  gap: 12px; 
-  align-items: center; 
-  flex-wrap: wrap; 
+.search-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 .selected-student-wrapper { flex: 1; display: flex; }
-.selected-student-wrapper input { 
-  flex: 1; 
-  padding: 14px 16px; 
-  border: 1px solid #D1D9E6; 
-  border-radius: 10px; 
-}
-.btn-buscar { 
-  background: #005187; 
-  color: white; 
-  padding: 14px 28px; 
-  border-radius: 10px; 
-  font-weight: 600; 
-}
-.period-select { 
-  padding: 14px 16px; 
-  border: 1px solid #D1D9E6; 
-  border-radius: 10px; 
-}
-.selected-student {
-  margin-top: 1rem;
-  padding: 14px 20px;
-  background: #F5F7FA;
+.selected-student-wrapper input {
+  flex: 1;
+  padding: 14px 16px;
+  border: 1px solid #E5E7EB;
   border-radius: 10px;
-  font-weight: 500;
+  background: #FFFFFF;
+  color: #1A1A1A;
+}
+.btn-buscar {
+  background: #1B396A;
+  color: white;
+  padding: 14px 28px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+.btn-buscar:hover { background: #1D4ED8; }
+
+.period-select {
+  padding: 14px 16px;
+  border: 1px solid #E5E7EB;
+  border-radius: 10px;
+  background: #FFFFFF;
   color: #1A1A1A;
 }
 
-/* Seleccionar Grupo */
-.seleccionar-grupo-section h3 { 
-  color: #005187; 
-  margin: 2.5rem 0 1rem; 
-  font-size: 1.35rem; 
-}
-.group-search-bar { 
-  display: flex; 
-  gap: 12px; 
-  margin-bottom: 1.5rem; 
-}
-.group-input { 
-  flex: 1; 
-  padding: 14px 16px; 
-  border: 1px solid #D1D9E6; 
-  border-radius: 10px; 
-}
-.btn-filtrar { 
-  background: #005187; 
-  color: white; 
-  padding: 14px 28px; 
-  border-radius: 10px; 
-  font-weight: 600; 
+.selected-student {
+  margin-top: 1rem;
+  padding: 14px 20px;
+  background: #F5F5F5;
+  border-radius: 10px;
+  font-weight: 500;
+  color: #1A1A1A;
+  border: 1px solid #E5E7EB;
 }
 
-/* Tabla */
+.seleccionar-grupo-section h3 {
+  color: #1A1A1A;
+  margin: 2.5rem 0 1rem;
+  font-size: 1.35rem;
+}
+.group-search-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 1.5rem;
+}
+.group-input {
+  flex: 1;
+  padding: 14px 16px;
+  border: 1px solid #E5E7EB;
+  border-radius: 10px;
+  background: #FFFFFF;
+  color: #1A1A1A;
+}
+.btn-filtrar {
+  background: #1B396A;
+  color: white;
+  padding: 14px 28px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+.btn-filtrar:hover { background: #1D4ED8; }
+
 .table-container { overflow-x: auto; }
-.inscripcion-table { 
-  width: 100%; 
-  border-collapse: collapse; 
+.inscripcion-table {
+  width: 100%;
+  border-collapse: collapse;
 }
-.inscripcion-table th { 
-  background: #F5F7FA; 
-  padding: 18px 16px; 
-  font-weight: 600; 
-  color: #1A1A1A; 
+.inscripcion-table th {
+  background: #F5F5F5;
+  padding: 18px 16px;
+  font-weight: 600;
+  color: #1A1A1A;
+  border-bottom: 1px solid #E5E7EB;
 }
-.inscripcion-table td { 
-  padding: 18px 16px; 
-  border-bottom: 1px solid #E0E7FF; 
+.inscripcion-table td {
+  padding: 18px 16px;
+  border-bottom: 1px solid #E5E7EB;
+  color: #1A1A1A;
 }
 .inscritos-badge { font-weight: 600; color: #1A1A1A; }
 
 .btn-inscribir {
-  background: #005187;
+  background: #1B396A;
   color: white;
   padding: 10px 24px;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
 }
+.btn-inscribir:hover { background: #1D4ED8; }
 .btn-lleno {
-  background: #F5F7FA;
+  background: #F5F5F5;
   color: #1A1A1A;
-  border: 1px solid #D1D9E6;
+  border: 1px solid #E5E7EB;
   padding: 10px 24px;
   border-radius: 8px;
   font-weight: 600;
   cursor: not-allowed;
 }
 
-/* Paginación */
 .pagination {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: 2rem;
   font-size: 0.95rem;
-  color: #5A5A5A;
+  color: #6B7280;
 }
 .pagination-buttons button {
   margin: 0 4px;
   padding: 6px 12px;
-  border: 1px solid #D1D9E6;
-  background: white;
+  border: 1px solid #E5E7EB;
+  background: #FFFFFF;
   border-radius: 6px;
+  color: #1A1A1A;
 }
-.pagination-buttons .active { 
-  background: #005187; 
-  color: white; 
+.pagination-buttons .active {
+  background: #1B396A;
+  color: white;
 }
 
-/* Toast */
 .toast {
   position: fixed;
   top: 90px;
@@ -331,7 +335,7 @@ const showNotification = (message, type) => {
   z-index: 9999;
   animation: slideIn 0.3s ease;
 }
-.toast.success { background: #2E7D32; }
-.toast.error { background: #D32F2F; }
+.toast.success { background: #16A34A; }
+.toast.error { background: #DC2626; }
 @keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
 </style>

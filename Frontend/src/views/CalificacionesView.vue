@@ -6,7 +6,6 @@
       <h1 class="page-title">Calificaciones</h1>
       <p class="subtitle">Captura de calificaciones de los alumnos del grupo seleccionado</p>
 
-      <!-- FILTROS -->
       <div class="filters-card">
         <select v-model="filtroPeriodo" class="filter-select">
           <option>Mayo - Dic 2024</option>
@@ -31,9 +30,8 @@
         <button class="btn-exportar">Exportar ▼</button>
       </div>
 
-      <!-- PROMEDIO GENERAL (discreto y bien equilibrado) -->
       <div class="average-card">
-        <svg xmlns="http://www.w3.org/2000/svg" class="avg-icon" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#005187" stroke-width="2.5">
+        <svg xmlns="http://www.w3.org/2000/svg" class="avg-icon" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#1B396A" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M3 13h4v7H3zM9 7h4v13H9zM15 3h4v17h-4z" />
         </svg>
         <div class="avg-text">
@@ -42,7 +40,6 @@
         </div>
       </div>
 
-      <!-- TABLA -->
       <div class="table-container">
         <table class="calif-table">
           <thead>
@@ -73,7 +70,6 @@
         </table>
       </div>
 
-      <!-- BOTÓN GUARDAR ALINEADO -->
       <div class="actions-bar">
         <button @click="guardarTodo" class="btn-guardar">Guardar Cambios</button>
       </div>
@@ -112,72 +108,125 @@ const guardarTodo = () => alert('✅ Calificaciones guardadas correctamente')
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
+.calificaciones-page { 
+  max-width: 100%; 
+  background: #F5F5F5;
+}
+
 .page-title { 
-  color: #1A1A1A; 
-  font-size: 2.3rem; 
+  color: #1A1A1A;
+  font-size: 2.1rem; 
   font-weight: 700; 
-  margin-bottom: 0.5rem; 
+  margin-bottom: 0.4rem; 
 }
-.subtitle { color: #5A5A5A; margin-bottom: 1.8rem; }
-.breadcrumb { color: #5A5A5A; margin-bottom: 1rem; font-size: 0.95rem; }
-
-.filters-card { 
-  background: white; 
-  padding: 1.4rem; 
-  border-radius: 12px; 
-  display: flex; 
-  gap: 12px; 
-  flex-wrap: wrap; 
-  margin-bottom: 2rem; 
-  box-shadow: 0 8px 25px rgba(0,0,0,0.07); 
+.subtitle { 
+  color: #6B7280;
+  margin-bottom: 1.8rem; 
 }
-.filter-select { padding: 12px 16px; border: 1px solid #84B6E4; border-radius: 8px; min-width: 180px; }
+.breadcrumb { 
+  color: #6B7280; 
+  margin-bottom: 1rem; 
+  font-size: 0.95rem; 
+}
 
-.btn-buscar { 
-  background: #005187; 
-  color: white; 
+.filters-card {
+  background: #FFFFFF;
+  padding: 1.4rem;
+  border-radius: 12px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.07);
+  border: 1px solid #E5E7EB;
+}
+.filter-select { 
+  padding: 12px 16px; 
+  border: 1px solid #E5E7EB; 
+  border-radius: 8px; 
+  min-width: 180px; 
+  background: #FFFFFF;
+  color: #1A1A1A;
+}
+
+.btn-buscar {
+  background: #1B396A;
+  color: white;
+  padding: 12px 28px;
+  border-radius: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-buscar:hover { background: #1D4ED8; }
+
+.btn-exportar { 
+  background: #FFFFFF; 
+  border: 1px solid #1B396A; 
+  color: #1B396A; 
   padding: 12px 28px; 
   border-radius: 8px; 
   font-weight: 600; 
-  display: flex; 
-  align-items: center; 
-  gap: 8px; 
 }
-.btn-exportar { background: white; border: 1px solid #005187; color: #005187; padding: 12px 28px; border-radius: 8px; font-weight: 600; }
 
-.average-card { 
-  background: #F8FAFC; 
-  border-radius: 12px; 
-  padding: 1rem 1.6rem; 
-  display: flex; 
-  align-items: center; 
-  gap: 12px; 
-  margin-bottom: 2rem; 
+.average-card {
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 1rem 1.6rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 2rem;
   max-width: 340px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  border: 1px solid #E5E7EB;
 }
 .avg-icon { width: 28px; height: 28px; }
-.avg-label { color: #5A5A5A; font-size: 1rem; font-weight: 500; }
-.avg-number { font-size: 2.1rem; font-weight: 700; color: #005187; line-height: 1; }
+.avg-label { color: #6B7280; font-size: 1rem; font-weight: 500; }
+.avg-number { font-size: 2.1rem; font-weight: 700; color: #1B396A; line-height: 1; }
 
-.table-container { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.07); }
-.calif-table th { background: #F8FAFC; padding: 16px; font-weight: 600; text-align: center; }
-.nota-input { width: 90px; text-align: center; padding: 8px; border: 1px solid #D1D9E6; border-radius: 6px; }
+.table-container { 
+  background: #FFFFFF; 
+  border-radius: 12px; 
+  overflow: hidden; 
+  box-shadow: 0 8px 25px rgba(0,0,0,0.07); 
+  border: 1px solid #E5E7EB;
+}
+.calif-table th { 
+  background: #F5F5F5; 
+  padding: 16px; 
+  font-weight: 600; 
+  text-align: center; 
+  color: #1A1A1A;
+  border-bottom: 1px solid #E5E7EB;
+}
+.nota-input { 
+  width: 90px; 
+  text-align: center; 
+  padding: 8px; 
+  border: 1px solid #E5E7EB; 
+  border-radius: 6px; 
+  background: #FFFFFF;
+}
 
 .final { font-weight: 700; color: #1A1A1A; }
-.nc-badge { background: #E1F5FE; color: #0288D1; padding: 6px 18px; border-radius: 6px; font-weight: 600; }
+.nc-badge { background: #DBEAFE; color: #2563EB; padding: 6px 18px; border-radius: 6px; font-weight: 600; }
 
-.actions-bar { 
-  display: flex; 
-  justify-content: flex-end; 
-  margin-top: 2.5rem; 
+.actions-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 2.5rem;
 }
-.btn-guardar { 
-  background: #005187; 
-  color: white; 
-  padding: 14px 42px; 
-  border-radius: 8px; 
-  font-weight: 600; 
-  font-size: 1.05rem; 
+.btn-guardar {
+  background: #1B396A;
+  color: white;
+  padding: 14px 42px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1.05rem;
 }
+.btn-guardar:hover { background: #1D4ED8; }
 </style>
