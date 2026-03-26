@@ -197,12 +197,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 const router = useRouter()
 
+// ---------------- FILTROS ----------------
 const busquedaAlumno = ref('')
 const filtroCarrera = ref('')
 const filtroSemestre = ref('')
@@ -214,6 +216,7 @@ const props = defineProps({
   busquedaGlobal: { type: String, default: '' }
 })
 
+// ---------------- NORMALIZAR TEXTO ----------------
 const normalize = (text) => {
   return text
     .toLowerCase()
@@ -221,16 +224,37 @@ const normalize = (text) => {
     .replace(/[\u0300-\u036f]/g, '')
 }
 
-const alumnos = ref([
-  { id: 1, noControl: '21456987', nombre: 'Sara Pérez', carrera: 'Ingenieria en Sistemas Computacionales', semestre: 6, estatus: 'Activo' },
-  { id: 2, noControl: '21463254', nombre: 'Juan García', carrera: 'Ingenieria Industrial', semestre: 4, estatus: 'Activo' },
-  { id: 3, noControl: '21454128', nombre: 'Mariela Gómez', carrera: 'Ingenieria Civil', semestre: 8, estatus: 'Activo' },
-  { id: 4, noControl: '21454321', nombre: 'Ana Rodríguez', carrera: 'Contador Publico', semestre: 2, estatus: 'Activo' },
-  { id: 5, noControl: '21451986', nombre: 'Carlos Torres', carrera: 'Ingenieria en Gestion empresarial', semestre: 5, estatus: 'Baja Temporal' },
-  { id: 6, noControl: '21451976', nombre: 'Luis Herrera', carrera: 'Ingenieria en Sistemas Computacionales', semestre: 7, estatus: 'Activo' },
-  { id: 7, noControl: '21454833', nombre: 'Pedro Jiménez', carrera: 'Ingenieria Industrial', semestre: 8, estatus: 'Baja Definitiva' },
-])
+// ---------------- LISTA DE ALUMNOS (BACKEND) ----------------
+const alumnos = ref([])
 
+// ---------------- CARGAR ALUMNOS ----------------
+const cargarAlumnos = async () => {
+  try {
+    const response = await fetch('http://localhost:8000/api/alumnos')
+    const data = await response.json()
+
+    console.log('Datos backend:', data)
+
+    alumnos.value = data.map(a => ({
+      id: a.id_alumno,
+      noControl: a.numero_control,
+      nombre: `${a.persona.nombre} ${a.persona.apellido_paterno} ${a.persona.apellido_materno || ''}`,
+      carrera: a.carrera.nombre,
+      semestre: a.semestre_actual,
+      estatus: a.estatus ? 'Activo' : 'Baja'
+    }))
+
+  } catch (error) {
+    console.error('Error cargando alumnos:', error)
+  }
+}
+
+// ---------------- EJECUTAR AL INICIAR ----------------
+onMounted(() => {
+  cargarAlumnos()
+})
+
+// ---------------- FILTROS ----------------
 const alumnosFiltrados = computed(() => {
   return alumnos.value.filter(alumno => {
     const coincideGlobal = !props.busquedaGlobal || 
@@ -249,11 +273,14 @@ const alumnosFiltrados = computed(() => {
   })
 })
 
+// ---------------- PAGINACIÓN ----------------
 const totalPages = computed(() => Math.ceil(alumnosFiltrados.value.length / filasPorPagina.value) || 1)
+
 const paginatedAlumnos = computed(() => {
   const start = (currentPage.value - 1) * filasPorPagina.value
   return alumnosFiltrados.value.slice(start, start + filasPorPagina.value)
 })
+
 const visiblePages = computed(() => {
   const pages = []
   for (let i = 1; i <= totalPages.value; i++) pages.push(i)
@@ -264,6 +291,7 @@ const goToPage = (page) => { currentPage.value = page }
 const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
 const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
 
+// ---------------- RESET FILTROS ----------------
 const resetFilters = () => {
   busquedaAlumno.value = ''
   filtroCarrera.value = ''
@@ -272,8 +300,10 @@ const resetFilters = () => {
   currentPage.value = 1
 }
 
+// ---------------- NUEVO ALUMNO ----------------
 const nuevoAlumno = () => router.push('/formulario-alumno')
 
+// ---------------- MODAL VER ----------------
 const showViewModal = ref(false)
 const alumnoVer = ref({})
 
@@ -286,6 +316,7 @@ const cerrarModalVer = () => {
   showViewModal.value = false
 }
 
+// ---------------- MODAL EDITAR ----------------
 const showModal = ref(false)
 const alumnoEditar = ref(null)
 
@@ -299,26 +330,88 @@ const cerrarModal = () => {
   alumnoEditar.value = null
 }
 
-const guardarCambios = () => {
-  if (!alumnoEditar.value) return
-
-  const index = alumnos.value.findIndex(a => a.id === alumnoEditar.value.id)
-  if (index !== -1) alumnos.value[index] = { ...alumnoEditar.value }
-
-  cerrarModal()
-  alert('✅ Cambios guardados correctamente')
+// ---------------- HELPERS ----------------
+const getIdCarrera = (nombreCarrera) => {
+  const mapa = {
+    'Contador Publico': 1,
+    'Ingenieria Civil': 2,
+    'Ingenieria en Gestion empresarial': 3,
+    'Ingenieria en Sistemas Computacionales': 4,
+    'Ingenieria Industrial': 5,
+  }
+  return mapa[nombreCarrera]
 }
 
-const eliminarAlumno = () => {
-  if (confirm(`¿Seguro que deseas eliminar a ${alumnoEditar.value.nombre}?`)) {
-    const index = alumnos.value.findIndex(a => a.id === alumnoEditar.value.id)
-    if (index !== -1) alumnos.value.splice(index, 1)
+const getEstatus = (estatus) => {
+  return estatus === 'Activo' ? 1 : 0
+}
 
-    cerrarModal()
-    alert('🗑️ Alumno eliminado correctamente')
+// ---------------- EDITAR ----------------
+const guardarCambios = async () => {
+  try {
+    const payload = {
+      id_carrera: getIdCarrera(alumnoEditar.value.carrera),
+      semestre: alumnoEditar.value.semestre,
+      estatus: getEstatus(alumnoEditar.value.estatus)
+    }
+
+    console.log('Actualizando:', payload)
+
+    const response = await fetch(`http://localhost:8000/api/alumnos/${alumnoEditar.value.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    })
+
+    const data = await response.json()
+    console.log('Respuesta update:', data)
+
+    if (response.ok) {
+      alert('✅ Alumno actualizado')
+      cerrarModal()
+      cargarAlumnos()
+    } else {
+      throw new Error(JSON.stringify(data))
+    }
+
+  } catch (error) {
+    console.error(error)
+    alert('❌ Error al actualizar')
+  }
+}
+
+// ---------------- ELIMINAR ----------------
+const eliminarAlumno = async () => {
+  if (!confirm(`¿Eliminar a ${alumnoEditar.value.nombre}?`)) return
+
+  try {
+    const response = await fetch(`http://localhost:8000/api/alumnos/${alumnoEditar.value.id}`, {
+      method: 'DELETE'
+    })
+
+    const data = await response.json()
+    console.log('Respuesta delete:', data)
+
+    if (response.ok) {
+      alert('🗑️ Alumno eliminado')
+      cerrarModal()
+      cargarAlumnos()
+    } else {
+      throw new Error(JSON.stringify(data))
+    }
+
+  } catch (error) {
+    console.error(error)
+    alert('❌ Error al eliminar')
   }
 }
 </script>
+
+
+
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');

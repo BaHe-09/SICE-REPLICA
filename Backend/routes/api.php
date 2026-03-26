@@ -1,7 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Api\ServiciosEscolaresController;
+
+// controllers
+use App\Http\Controllers\DashboardController;
+
+Route::get('/dashboard', [DashboardController::class, 'index']);
 
 // CALIFICACIONES
 Route::get('/calificaciones-grupo', [ServiciosEscolaresController::class, 'getCalificacionesGrupo']);

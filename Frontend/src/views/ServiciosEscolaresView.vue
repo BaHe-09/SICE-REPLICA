@@ -17,17 +17,13 @@
         <div class="stats-grid">
           
 
-<<<<<<< HEAD
-          <div class="stat-card primary">
-=======
           <div class="stat-card blue">
->>>>>>> 447a58c (Removiendo node_modules del repo)
             <svg xmlns="http://www.w3.org/2000/svg" class="icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 01-3-3V8a3 3 0 01-3-3V3a3 3 0 01-3-3H8a3 3 0 01-3 3v2a3 3 0 01-3 3v7a3 3 0 01-3 3v2h5m5-10v10" />
             </svg>
             <div class="info">
               <h3>Alumnos Activos</h3>
-              <p class="number">1,245</p>
+              <p class="number">{{ alumnosActivos }}</p>
               <a href="#" class="ver-link" @click.prevent="irAAlumnos">Ver Alumnos →</a>
             </div>
           </div>
@@ -39,7 +35,7 @@
             </svg>
             <div class="info">
               <h3>Inscripciones del Período</h3>
-              <p class="number">432</p>
+              <p class="number">{{ inscripcionesPeriodo }}</p>
               <a href="#" class="ver-link" @click.prevent="irAInscripciones">Ver Inscripciones →</a>
             </div>
           </div>
@@ -51,7 +47,7 @@
             </svg>
             <div class="info">
               <h3>Grupos Abiertos</h3>
-              <p class="number">24</p>
+              <p class="number">{{ gruposAbiertos }}</p>
               <a href="#" class="ver-link" @click.prevent="irAGrupos">Ver Grupos →</a>
             </div>
           </div>
@@ -62,7 +58,7 @@
             </svg>
             <div class="info">
               <h3>Evaluaciones Pendientes</h3>
-              <p class="number">16</p>
+              <p class="number">{{ evaluacionesPendientes }}</p>
               <a href="#" class="ver-link" @click.prevent="irAEvaluaciones">Ver Evaluaciones →</a>
             </div>
           </div>
@@ -148,13 +144,6 @@ const filtroEstatus = ref('')
 
 const notification = reactive({ message: '', type: '' })
 
-const inscripciones = ref([
-  { id: 1, noControl: '21456987', nombre: 'Sara Pérez', carrera: 'Ingeniería en Sistemas Computacionales', semestre: 6, fecha: '23 abr 2024' },
-  { id: 2, noControl: '21463254', nombre: 'Juan García', carrera: 'Ingeniería Industrial', semestre: 4, fecha: '22 abr 2024' },
-  { id: 3, noControl: '21454128', nombre: 'Mariela Gómez', carrera: 'Ingeniería Civil', semestre: 8, fecha: '22 abr 2024' },
-  { id: 4, noControl: '21454321', nombre: 'Ana Rodríguez', carrera: 'Lic. en Administración', semestre: 2, fecha: '22 abr 2024' }
-])
-
 const inscripcionesFiltradas = computed(() => inscripciones.value)
 
 const irAAlumnos = () => router.push('/alumnos')
@@ -171,6 +160,28 @@ const showNotification = (message, type) => {
   notification.type = type
   setTimeout(() => { notification.message = '' }, 3000)
 }
+
+import { onMounted } from 'vue'
+
+const alumnosActivos = ref(0)
+const inscripcionesPeriodo = ref(0)
+const gruposAbiertos = ref(0)
+const evaluacionesPendientes = ref(0)
+
+onMounted(async () => {
+  try {
+    const res = await fetch('http://localhost:8000/api/dashboard')
+    const data = await res.json()
+
+    alumnosActivos.value = data.kpis.alumnos
+    inscripcionesPeriodo.value = data.kpis.inscripciones
+    gruposAbiertos.value = data.kpis.grupos
+    evaluacionesPendientes.value = data.kpis.evaluaciones || 0
+
+  } catch (error) {
+    console.error(error)
+  }
+})
 </script>
 
 <style scoped>
@@ -226,11 +237,7 @@ const showNotification = (message, type) => {
   transform: translateY(-4px);
 }
 
-<<<<<<< HEAD
-.stat-card.primary {
-=======
 .stat-card.blue {
->>>>>>> 447a58c (Removiendo node_modules del repo)
   background: linear-gradient(135deg, #1B396A, #2563EB);
   color: white;
 }
@@ -258,11 +265,7 @@ const showNotification = (message, type) => {
   text-decoration: none;
   font-size: 0.95rem;
 }
-<<<<<<< HEAD
-.stat-card.primary .ver-link { color: white; }
-=======
 .stat-card.blue .ver-link { color: white; }
->>>>>>> 447a58c (Removiendo node_modules del repo)
 
 
 .accesos-rapidos {

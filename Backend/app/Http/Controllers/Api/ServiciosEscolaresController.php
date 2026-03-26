@@ -124,15 +124,42 @@ class ServiciosEscolaresController extends Controller
         ]);
     }
 
-    public function getGruposDisponibles()
-    {
-        // Puedes cambiar esto por una consulta real a la tabla 'grupo'
-        return response()->json([
-            ['id' => 1, 'materia' => 'Algoritmos', 'docente' => 'Mtro. Juan Morales', 'aula' => 'A-201', 'capacidad' => 30, 'inscritos' => 23],
-            ['id' => 2, 'materia' => 'Base de Datos', 'docente' => 'Dra. Ana Ruiz', 'aula' => 'B-103', 'capacidad' => 30, 'inscritos' => 28],
-            ['id' => 3, 'materia' => 'Redes', 'docente' => 'Mtro. Carlos Jiménez', 'aula' => 'A-204', 'capacidad' => 25, 'inscritos' => 19]
-        ]);
+public function getGruposDisponibles()
+{
+    try {
+        $grupos = DB::table('grupo as g')
+            ->leftJoin('materia as m', 'g.id_materia', '=', 'm.id_materia')
+            ->leftJoin('persona as p', 'g.id_docente', '=', 'p.id_persona')
+            ->leftJoin('aula as a', 'g.id_aula', '=', 'a.id_aula')
+            ->leftJoin('inscripcion as i', 'g.id_grupo', '=', 'i.id_grupo')
+            ->select(
+                'g.id_grupo',
+                'g.clave_grupo',
+                'm.nombre as materia',
+                DB::raw("COALESCE(CONCAT(p.nombre, ' ', p.apellido_paterno, ' ', p.apellido_materno), 'Sin docente') as docente"),
+                'a.nombre as aula',
+                'g.capacidad',
+                DB::raw("COUNT(CASE WHEN i.estatus IN ('activo','inscrito') THEN 1 END) as inscritos"),
+                DB::raw("GREATEST(g.capacidad - COUNT(CASE WHEN i.estatus IN ('activo','inscrito') THEN 1 END), 0) as disponibles")
+            )
+            ->groupBy(
+                'g.id_grupo',
+                'g.clave_grupo',
+                'm.nombre',
+                'p.nombre',
+                'p.apellido_paterno',
+                'p.apellido_materno',
+                'a.nombre',
+                'g.capacidad'
+            )
+            ->get();
+
+        return response()->json($grupos);
+
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
     }
+}
 
     public function inscribirAlumno(Request $request)
     {
@@ -143,11 +170,16 @@ class ServiciosEscolaresController extends Controller
                 'fecha_inscripcion' => now(),
                 'estatus' => 'ACTIVO'
             ]);
-            return response()->json(['message' => 'Inscripción exitosa', 'id' => $inscripcion->id_inscripcion]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
+
+        return response()->json([
+            'message' => 'Inscripción exitosa',
+            'id' => $inscripcion->id_inscripcion
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
     }
+}
 
     /**
      * EVALUACIONES: Criterios de evaluación
