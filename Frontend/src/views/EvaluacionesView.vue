@@ -1,6 +1,6 @@
 <!-- ============================================= -->
 <!-- src/views/EvaluacionesView.vue -->
-<!-- Iconos actualizados: Lupa + Guardar (bookmark) -->
+<!-- Conexión real al backend con Axios -->
 <!-- ============================================= -->
 
 <template>
@@ -31,9 +31,9 @@
           <option>Algoritmos y Programación</option>
         </select>
         
-        <!-- Botón Buscar con lupa -->
+        <!-- Botón Buscar -->
         <button @click="buscar" class="btn-buscar">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-btn" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
           </svg>
           Buscar
@@ -57,24 +57,9 @@
                 <input v-model="item.porcentaje" type="number" min="0" max="100" class="porcentaje-input"> %
               </td>
               <td class="text-center actions">
-                <!-- Botón Guardar por fila con icono bookmark -->
-                <button @click="guardarFila(item)" class="btn-guardar-fila">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-btn">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
-                  </svg>
-                </button>
-                
-                <button @click="editar(item)" class="btn-edit">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-                  </svg>
-                </button>
-
-                <button @click="eliminar(index)" class="btn-delete">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                  </svg>
-                </button>
+                <button @click="guardarFila(item)" class="btn-guardar-fila">Guardar</button>
+                <button @click="editar(item)" class="btn-edit">Editar</button>
+                <button @click="eliminar(index)" class="btn-delete">Eliminar</button>
               </td>
             </tr>
           </tbody>
@@ -93,11 +78,7 @@
           </div>
         </div>
         
-        <!-- Botón Guardar Todos con icono bookmark -->
         <button @click="guardarCambios" :disabled="totalPorcentaje !== 100" class="btn-guardar">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-btn">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
-          </svg>
           Guardar Todos los Cambios
         </button>
       </div>
@@ -132,21 +113,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
+import { getEvaluaciones, guardarEvaluaciones } from '../api/evaluaciones'
 
-const busquedaGlobal = ref('')
-
-const criterios = ref([
-  { nombre: 'Parcial 1', porcentaje: 30 },
-  { nombre: 'Parcial 2', porcentaje: 30 },
-  { nombre: 'Proyecto', porcentaje: 40 }
-])
-
-const totalPorcentaje = computed(() => criterios.value.reduce((sum, c) => sum + Number(c.porcentaje), 0))
-const circlePath = computed(() => `M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831`)
-
-// Filtros
+const criterios = ref([])
 const filtroPeriodo = ref('Ago/Dic 2024')
 const filtroMateria = ref('Algoritmos y Programación')
 
@@ -162,29 +133,43 @@ const abrirModalNueva = () => {
 }
 const cerrarModal = () => { showModal.value = false }
 
-const guardarNuevaEvaluacion = () => {
+// 🔹 Cargar evaluaciones al montar
+onMounted(async () => {
+  criterios.value = await getEvaluaciones(1) // ejemplo con id_grupo = 1
+})
+
+// 🔹 Total porcentaje
+const totalPorcentaje = computed(() => criterios.value.reduce((sum, c) => sum + Number(c.porcentaje), 0))
+const circlePath = computed(() => `M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831`)
+
+// 🔹 Guardar nueva evaluación
+const guardarNuevaEvaluacion = async () => {
   if (!nuevoNombre.value.trim()) return alert('Debes escribir un nombre')
-  criterios.value.push({ nombre: nuevoNombre.value.trim(), porcentaje: Number(nuevoPorcentaje.value) || 0 })
+  await guardarEvaluaciones({ nombre: nuevoNombre.value.trim(), porcentaje: Number(nuevoPorcentaje.value) || 0 })
+  criterios.value = await getEvaluaciones(1)
   cerrarModal()
 }
 
-// Acciones por fila
-const guardarFila = (item) => {
-  console.log('💾 Guardando fila:', item)
+// 🔹 Acciones por fila
+const guardarFila = async (item) => {
+  await guardarEvaluaciones(item)
   alert(`✅ Porcentaje de ${item.nombre} guardado`)
 }
-
 const editar = (item) => alert(`Editando: ${item.nombre}`)
 const eliminar = (index) => {
   if (confirm('¿Eliminar esta evaluación?')) criterios.value.splice(index, 1)
 }
 
-const guardarCambios = () => {
-  console.log('💾 Guardando todos los cambios...')
+// 🔹 Guardar todos
+const guardarCambios = async () => {
+  await guardarEvaluaciones(criterios.value)
   alert('✅ Evaluaciones guardadas correctamente')
 }
 
-const buscar = () => console.log('🔎 Buscando...')
+// 🔹 Buscar con filtros
+const buscar = async () => {
+  criterios.value = await getEvaluaciones(1) // aquí podrías pasar filtros si tu backend los soporta
+}
 </script>
 
 <style scoped>
