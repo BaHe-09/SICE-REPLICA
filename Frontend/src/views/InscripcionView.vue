@@ -73,13 +73,14 @@
                     <span class="inscritos-badge">{{ grupo.inscritos }} / {{ grupo.capacidad }}</span>
                   </td>
                   <td class="text-center">
-                    <button 
-                      v-if="grupo.inscritos < grupo.capacidad"
+                    <button
                       class="btn-inscribir"
-                      @click="inscribirAlumno(grupo)">
-                      Inscribir
+                      @click="inscribirAlumno(grupo)"
+                      :disabled="!alumnoSeleccionado || grupo.inscritos >= grupo.capacidad"
+                    >
+                      {{ grupo.inscritos >= grupo.capacidad ? 'Sin cupo' : 'Inscribir' }}
                     </button>
-                    <button v-else class="btn-lleno" disabled>Lleno</button>
+                    
                   </td>
                 </tr>
               </tbody>
@@ -106,40 +107,88 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, onMounted } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
+import axios from 'axios'
 
 const busquedaAlumno = ref('')
 const busquedaGrupo = ref('')
 const periodo = ref('Ago/Dic 2024')
 const alumnoSeleccionado = ref(null)
 
-const grupos = ref([
-  { id: 1, materia: 'Algoritmos y Programación', docente: 'Mtro. Juan Morales', aula: 'A-201', capacidad: 30, inscritos: 23 },
-  { id: 2, materia: 'Base de Datos', docente: 'Dra. Ana Ruiz', aula: 'B-103', capacidad: 30, inscritos: 28 },
-  { id: 3, materia: 'Administración de Redes', docente: 'Mtro. Carlos Jiménez', aula: 'A-204', capacidad: 25, inscritos: 19 }
-])
+const grupos = ref([])
 
 const notification = reactive({ message: '', type: '' })
 
-const gruposFiltrados = computed(() => grupos.value)
+const gruposFiltrados = computed(() => {
+  if (!busquedaGrupo.value.trim()) return grupos.value
 
-const seleccionarAlumno = () => {
-  if (busquedaAlumno.value.trim()) {
+  const texto = busquedaGrupo.value.toLowerCase()
+  return grupos.value.filter(grupo =>
+    grupo.materia.toLowerCase().includes(texto) ||
+    grupo.docente.toLowerCase().includes(texto) ||
+    grupo.aula.toLowerCase().includes(texto)
+  )
+})
+
+const seleccionarAlumno = async () => {
+  const termino = busquedaAlumno.value.trim()
+
+  if (!termino) {
+    showNotification('Escribe un nombre o número de control', 'error')
+    return
+  }
+
+  try {
+    const response = await axios.get('http://127.0.0.1:8000/api/buscar-alumno', {
+      params: { q: termino }
+    })
+
     alumnoSeleccionado.value = {
-      nombre: 'Sara Pérez',
-      noControl: '21456987',
-      carrera: 'Ingeniería en Sistemas Computacionales',
-      semestre: 6
+      id_alumno: response.data.id_alumno,
+      noControl: response.data.noControl,
+      nombre: response.data.nombre,
+      carrera: response.data.carrera,
+      semestre: response.data.semestre
     }
-    showNotification('Alumno seleccionado correctamente', 'success')
+
+    showNotification('Alumno encontrado correctamente', 'success')
+  } catch (error) {
+    console.error('Error al buscar alumno:', error)
+    alumnoSeleccionado.value = null
+
+    if (error.response?.status === 404) {
+      showNotification('Alumno no encontrado', 'error')
+    } else {
+      showNotification('Error al buscar alumno', 'error')
+    }
   }
 }
 
-const inscribirAlumno = (grupo) => {
-  const index = grupos.value.findIndex(g => g.id === grupo.id)
-  if (index !== -1) grupos.value[index].inscritos++
-  showNotification(`✅ Inscrito en ${grupo.materia}`, 'success')
+const inscribirAlumno = async (grupo) => {
+  if (!alumnoSeleccionado.value || !alumnoSeleccionado.value.id_alumno) {
+    showNotification('Primero debes buscar y seleccionar un alumno', 'error')
+    return
+  }
+
+  try {
+    const response = await axios.post('http://127.0.0.1:8000/api/inscribir', {
+      id_alumno: alumnoSeleccionado.value.id_alumno,
+      id_grupo: grupo.id
+    })
+
+    showNotification(response.data.message || `Inscripción realizada en ${grupo.materia}`, 'success')
+
+    await cargarGrupos()
+  } catch (error) {
+    console.error('Error al inscribir:', error)
+
+    if (error.response?.data?.error) {
+      showNotification(error.response.data.error, 'error')
+    } else {
+      showNotification('Error al realizar la inscripción', 'error')
+    }
+  }
 }
 
 const filtrarGrupos = () => {}
@@ -149,6 +198,20 @@ const showNotification = (message, type) => {
   notification.type = type
   setTimeout(() => { notification.message = '' }, 3000)
 }
+
+const cargarGrupos = async () => {
+  try {
+    const response = await axios.get('http://127.0.0.1:8000/api/grupos-disponibles')
+    grupos.value = response.data
+  } catch (error) {
+    console.error('Error al cargar grupos:', error)
+    showNotification('Error al cargar grupos desde la BD', 'error')
+  }
+}
+
+onMounted(() => {
+  cargarGrupos()
+})
 </script>
 
 <style scoped>

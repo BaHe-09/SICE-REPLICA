@@ -16,9 +16,12 @@ Route::get('/buscar-alumno', [ServiciosEscolaresController::class, 'buscarAlumno
 Route::get('/grupos-disponibles', [ServiciosEscolaresController::class, 'getGruposDisponibles']);
 Route::post('/inscribir', [ServiciosEscolaresController::class, 'inscribirAlumno']);
 
+
 // EVALUACIONES
 Route::get('/evaluaciones/{id_grupo}', [ServiciosEscolaresController::class, 'getEvaluaciones']);
 Route::post('/evaluaciones/guardar', [ServiciosEscolaresController::class, 'guardarEvaluaciones']);
+
+
 
 // 🔹 DASHBOARD
 Route::get('/resumen-escolar', [ServiciosEscolaresController::class, 'getResumen']);

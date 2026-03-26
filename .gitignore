@@ -14,3 +14,5 @@ node_modules/
 
 >>>>>>> 7f12851 (actualizo .gitignore)
 >>>>>>> a19e73a (feat: mejora completa de Servicios escolares y  Gestión de Grupos con filtros, CRUD y modal de edición)
+
+.env
