@@ -188,7 +188,7 @@
 
         <div class="modal-footer">
           <button class="btn-cancelar" @click="cerrarModal">Cancelar</button>
-          <button v-if="alumnoEditar.id" class="btn-eliminar" @click="eliminarAlumno">Eliminar</button>
+          <button v-if="alumnoEditar.id_alumno" class="btn-eliminar" @click="eliminarAlumno">Eliminar</button>
           <button class="btn-guardar" @click="guardarCambios">Guardar Cambios</button>
         </div>
       </div>
@@ -196,13 +196,16 @@
   </MainLayout>
 </template>
 
+
 <script setup>
 import { ref, computed, onMounted } from 'vue' // Añadimos onMounted
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 const router = useRouter()
 
+// Variables de estado y filtros
 const busquedaAlumno = ref('')
 const filtroCarrera = ref('')
 const filtroSemestre = ref('')
@@ -214,6 +217,7 @@ const props = defineProps({
   busquedaGlobal: { type: String, default: '' }
 })
 
+// Normalización para búsquedas
 const normalize = (text) => {
   if (!text) return ''
   return text
@@ -221,6 +225,8 @@ const normalize = (text) => {
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
+  if (!text) return ''
+  return text.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
 }
 
 // 1. Iniciamos con el array vacío
@@ -243,17 +249,192 @@ onMounted(() => {
   cargarAlumnosDesdeBD();
 });
 
+// Mapear estatus de texto a número (porque tu BD espera número)
+const estatusToNumber = (estatus) => {
+  const map = {
+    'Activo': 1,
+    'Baja Temporal': 2,
+    'Baja Definitiva': 3
+  }
+  return map[estatus] || 1
+}
+
+
+const getIdCarrera = (nombreCarrera) => {
+  const mapa = {
+    'Contador Publico': 1,
+    'Ingenieria Civil': 2,
+    'Ingenieria en Gestion empresarial': 3,
+    'Ingenieria en Sistemas Computacionales': 4,
+    'Ingenieria Industrial': 5,
+  }
+  return mapa[nombreCarrera] || null
+}
+
+const alumnos = ref([])
+
+
+// ==================== CARGAR ALUMNOS ====================
+const cargarAlumnosDesdeBD = async () => {
+  try {
+    const response = await fetch('http://localhost:8000/api/alumnos-full')
+    if (!response.ok) throw new Error('Error del servidor')
+    const data = await response.json()
+    alumnos.value = data
+    console.log('✅ Alumnos cargados:', data.length, 'registros')
+    console.log('Primer alumno:', data[0])
+  } catch (error) {
+    console.error("❌ Error cargando alumnos:", error)
+    alert("❌ No se pudo cargar la lista de alumnos. Verifica que el backend esté corriendo.")
+  }
+}
+
+onMounted(() => {
+  cargarAlumnosDesdeBD()
+})
+
+// ==================== MODALES ====================
+const showViewModal = ref(false)
+const alumnoVer = ref({})
+
+const abrirModalVer = (alumno) => {
+  alumnoVer.value = { ...alumno }
+  showViewModal.value = true
+}
+
+const cerrarModalVer = () => {
+  showViewModal.value = false
+}
+
+const showModal = ref(false)
+const alumnoEditar = ref({})
+
+// ==================== ABRIR MODAL EDITAR ====================
+const abrirModalEditar = (alumno) => {
+  console.log('🟡 Alumno clickeado para editar:', alumno)
+
+  alumnoEditar.value = {
+    id_alumno: alumno.id_alumno || alumno.id,
+    noControl: alumno.numero_control || alumno.noControl || '',
+    nombre: alumno.nombre || (alumno.persona?.nombre_completo || alumno.persona?.nombre || ''),
+    id_carrera: alumno.id_carrera,
+    carrera: alumno.carrera?.nombre_carrera || alumno.carrera || '',
+    semestre: alumno.semestre_actual || alumno.semestre || 1,
+    estatus: alumno.estatus || 'Activo'
+  }
+
+  console.log('🟢 Datos preparados para editar:', alumnoEditar.value)
+  showModal.value = true
+}
+
+const cerrarModal = () => {
+  showModal.value = false
+}
+
+// ==================== GUARDAR CAMBIOS (CORREGIDO) ====================
+
+const guardarCambios = async () => {
+  const id = alumnoEditar.value.id_alumno
+
+  if (!id) {
+    alert("❌ Error: No se encontró el ID del alumno")
+    console.error(alumnoEditar.value)
+    return
+  }
+
+  const payload = {
+    nombre: alumnoEditar.value.nombre, // 🔥 ESTA ES LA CLAVE
+    id_carrera: getIdCarrera(alumnoEditar.value.carrera),
+    semestre_actual: parseInt(alumnoEditar.value.semestre),
+    estatus: alumnoEditar.value.estatus === 'Activo' ? 1 : 0
+  }
+
+  try {
+    console.log('🔵 Enviando update:', payload)
+
+    const response = await fetch(`http://localhost:8000/api/alumnos/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    })
+
+    const data = await response.json()
+    console.log('🟢 Respuesta backend:', data)
+
+    if (response.ok) {
+      await cargarAlumnosDesdeBD()
+      cerrarModal()
+      alert('✅ Alumno actualizado correctamente')
+    } else {
+      throw new Error(JSON.stringify(data))
+    }
+
+  } catch (error) {
+    console.error('❌ ERROR:', error)
+    alert('❌ Error al actualizar alumno')
+  }
+}
+
+// ==================== ELIMINAR ALUMNO ====================
+
+const eliminarAlumno = async () => {
+  const id = alumnoEditar.value.id_alumno
+
+  if (!id) {
+    alert("❌ Error: No se encontró el ID del alumno")
+    return
+  }
+
+  if (!confirm("¿Seguro que quieres eliminar este alumno?")) return
+
+  try {
+    const response = await fetch(`http://localhost:8000/api/alumnos/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Accept': 'application/json'
+      }
+    })
+
+    const data = await response.json()
+    console.log('🗑️ Respuesta delete:', data)
+
+    if (response.ok) {
+      await cargarAlumnosDesdeBD() // 🔥 recargar lista
+      cerrarModal()
+      alert('🗑️ Alumno eliminado correctamente')
+    } else {
+      throw new Error(JSON.stringify(data))
+    }
+
+  } catch (error) {
+    console.error(error)
+    alert('❌ Error al eliminar alumno')
+  }
+}
+
+// ==================== FILTROS Y PAGINACIÓN ====================
 const alumnosFiltrados = computed(() => {
   return alumnos.value.filter(alumno => {
     // Filtro Global (del Layout)
     const coincideGlobal = !props.busquedaGlobal ||
       normalize(alumno.nombre).includes(normalize(props.busquedaGlobal)) ||
       alumno.noControl.toString().includes(props.busquedaGlobal)
+    const nombre = alumno.nombre || (alumno.persona && alumno.persona.nombre_completo) || ''
+
+    const coincideGlobal = !props.busquedaGlobal || 
+      normalize(nombre).includes(normalize(props.busquedaGlobal)) ||
+      (alumno.numero_control || alumno.noControl || '').toString().includes(props.busquedaGlobal)
 
     // Filtro Local (Busqueda arriba de la tabla)
     const coincideLocal = !busquedaAlumno.value ||
       normalize(alumno.nombre).includes(normalize(busquedaAlumno.value)) ||
       alumno.noControl.toString().includes(busquedaAlumno.value)
+    const coincideLocal = !busquedaAlumno.value || 
+      normalize(nombre).includes(normalize(busquedaAlumno.value)) ||
+      (alumno.numero_control || alumno.noControl || '').toString().includes(busquedaAlumno.value)
 
     // Filtros de Select (Normalizados para evitar fallos por acentos o mayúsculas)
     const coincideCarrera = !filtroCarrera.value || 
@@ -264,6 +445,14 @@ const alumnosFiltrados = computed(() => {
     
     const coincideEstatus = !filtroEstatus.value || 
                             normalize(alumno.estatus) === normalize(filtroEstatus.value)
+    const coincideCarrera = !filtroCarrera.value || 
+      normalize(alumno.carrera?.nombre_carrera || alumno.carrera || '').includes(normalize(filtroCarrera.value))
+
+    const coincideSemestre = !filtroSemestre.value || 
+      String(alumno.semestre_actual || alumno.semestre) === String(filtroSemestre.value)
+
+    const coincideEstatus = !filtroEstatus.value || 
+      normalize(alumno.estatus) === normalize(filtroEstatus.value)
 
     return coincideGlobal && coincideLocal && coincideCarrera && coincideSemestre && coincideEstatus
   })
@@ -271,15 +460,13 @@ const alumnosFiltrados = computed(() => {
 
 // Lógica de paginación (Se mantiene igual)
 const totalPages = computed(() => Math.ceil(alumnosFiltrados.value.length / filasPorPagina.value) || 1)
+
 const paginatedAlumnos = computed(() => {
   const start = (currentPage.value - 1) * filasPorPagina.value
   return alumnosFiltrados.value.slice(start, start + filasPorPagina.value)
 })
-const visiblePages = computed(() => {
-  const pages = []
-  for (let i = 1; i <= totalPages.value; i++) pages.push(i)
-  return pages
-})
+
+const visiblePages = computed(() => Array.from({ length: totalPages.value }, (_, i) => i + 1))
 
 const goToPage = (page) => { currentPage.value = page }
 const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
@@ -345,6 +532,7 @@ const editarAlumno = async (a) => {
   }
 }
 </script>
+
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
