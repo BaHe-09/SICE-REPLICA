@@ -109,6 +109,7 @@
   </MainLayout>
 </template>
 
+
 <script setup>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
@@ -132,6 +133,27 @@ const errors = reactive({})
 const notification = reactive({ message: '', type: '' })
 const isLoading = ref(false)
 
+// Mapeo nombre carrera → id_carrera (ajusta los números según tu tabla 'carrera')
+const getIdCarrera = (nombreCarrera) => {
+  
+  const mapa = {
+    'Contador Publico': 1,
+    'Ingenieria Civil': 2,
+    'Ingenieria en Gestion empresarial': 3,
+    'Ingenieria en Sistemas Computacionales': 4,
+    'Ingenieria Industrial': 5,
+  }
+  return mapa[nombreCarrera] || null
+}
+
+const getEstatus = (estatus) => {
+  return {
+    'Activo': 1,
+    'Baja Temporal': 0,
+    'Baja Definitiva': 0
+  }[estatus]
+}
+
 const validarFormulario = () => {
   Object.keys(errors).forEach(key => delete errors[key])
 
@@ -154,26 +176,64 @@ const guardarAlumno = async () => {
 
   isLoading.value = true
 
-  await new Promise(resolve => setTimeout(resolve, 1400))
+  const payload = {
+    numero_control: form.noControl,
+    nombre: form.nombre.trim(),
+    apellido_paterno: form.apellidoPaterno.trim(),
+    apellido_materno: form.apellidoMaterno.trim() || null,
+    genero: form.genero,
+    id_carrera: getIdCarrera(form.carrera),
+    semestre_actual: parseInt(form.semestre),
+    estatus: getEstatus(form.estatus), // 🔥 FIX IMPORTANTE
+    fecha_ingreso: form.fechaIngreso
+  }
 
-  showNotification('✅ Alumno guardado correctamente', 'success')
+  try {
+    // 🔍 DEBUG (AQUÍ VA EL console.log QUE ME PREGUNTASTE)
+    console.log('Formulario completo:', form)
+    console.log('Carrera seleccionada:', form.carrera)
+    console.log('ID carrera:', getIdCarrera(form.carrera))
+    console.log('Payload enviado:', payload)
 
-  setTimeout(() => {
+    const response = await fetch('http://localhost:8000/api/alumnos', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    })
+
+    const data = await response.json()
+
+    // 🔍 VER RESPUESTA REAL DEL BACKEND
+    console.log('Respuesta backend:', data)
+
+    if (response.ok) {
+      showNotification('✅ Alumno guardado correctamente', 'success')
+      setTimeout(() => router.push('/alumnos'), 1500)
+    } else {
+      throw new Error(JSON.stringify(data))
+    }
+
+  } catch (error) {
+    console.error('ERROR REAL:', error)
+    showNotification('❌ Error al guardar alumno', 'error')
+  } finally {
     isLoading.value = false
-    router.push('/alumnos')
-  }, 800)
+  }
 }
 
-const cancelar = () => {
-  router.push('/alumnos')
-}
+const cancelar = () => router.push('/alumnos')
 
 const showNotification = (message, type) => {
   notification.message = message
   notification.type = type
-  setTimeout(() => { notification.message = '' }, 3000)
+  setTimeout(() => { notification.message = '' }, 4000)
 }
 </script>
+
+
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
