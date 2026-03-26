@@ -16,6 +16,15 @@ Route::get('/alumnos-full', [ServiciosEscolaresController::class, 'getAlumnos'])
 Route::post('/alumnos', [ServiciosEscolaresController::class, 'store']);
 Route::get('/buscar-alumno', [ServiciosEscolaresController::class, 'buscarAlumnoInscripcion']);
 
+// Obtener lista
+Route::get('/alumnos-crud', [AlumnoController::class, 'index']);
+
+// Actualizar alumno
+Route::put('/alumnos/{id}', [AlumnoController::class, 'update']);
+
+// Eliminar alumno
+Route::delete('/alumnos/{id}', [AlumnoController::class, 'destroy']);
+
 // GRUPOS / INSCRIPCIÓN
 Route::get('/grupos-disponibles', [ServiciosEscolaresController::class, 'getGruposDisponibles']);
 Route::post('/inscribir', [ServiciosEscolaresController::class, 'inscribirAlumno']);
