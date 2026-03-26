@@ -188,7 +188,7 @@
 
         <div class="modal-footer">
           <button class="btn-cancelar" @click="cerrarModal">Cancelar</button>
-          <button v-if="alumnoEditar.id" class="btn-eliminar" @click="eliminarAlumno">Eliminar</button>
+          <button v-if="alumnoEditar.id_alumno" class="btn-eliminar" @click="eliminarAlumno">Eliminar</button>
           <button class="btn-guardar" @click="guardarCambios">Guardar Cambios</button>
         </div>
       </div>
@@ -196,15 +196,15 @@
   </MainLayout>
 </template>
 
-<script setup>
 
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 const router = useRouter()
 
-// ---------------- FILTROS ----------------
+// Variables de estado y filtros
 const busquedaAlumno = ref('')
 const filtroCarrera = ref('')
 const filtroSemestre = ref('')
@@ -216,94 +216,57 @@ const props = defineProps({
   busquedaGlobal: { type: String, default: '' }
 })
 
-// ---------------- NORMALIZAR TEXTO ----------------
+// Normalización para búsquedas
 const normalize = (text) => {
-  return text
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
+  if (!text) return ''
+  return text.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
 }
 
-// ---------------- LISTA DE ALUMNOS (BACKEND) ----------------
+// Mapear estatus de texto a número (porque tu BD espera número)
+const estatusToNumber = (estatus) => {
+  const map = {
+    'Activo': 1,
+    'Baja Temporal': 2,
+    'Baja Definitiva': 3
+  }
+  return map[estatus] || 1
+}
+
+
+const getIdCarrera = (nombreCarrera) => {
+  const mapa = {
+    'Contador Publico': 1,
+    'Ingenieria Civil': 2,
+    'Ingenieria en Gestion empresarial': 3,
+    'Ingenieria en Sistemas Computacionales': 4,
+    'Ingenieria Industrial': 5,
+  }
+  return mapa[nombreCarrera] || null
+}
+
 const alumnos = ref([])
 
-// ---------------- CARGAR ALUMNOS ----------------
-const cargarAlumnos = async () => {
+
+// ==================== CARGAR ALUMNOS ====================
+const cargarAlumnosDesdeBD = async () => {
   try {
-    const response = await fetch('http://localhost:8000/api/alumnos')
+    const response = await fetch('http://localhost:8000/api/alumnos-full')
+    if (!response.ok) throw new Error('Error del servidor')
     const data = await response.json()
-
-    console.log('Datos backend:', data)
-
-    alumnos.value = data.map(a => ({
-      id: a.id_alumno,
-      noControl: a.numero_control,
-      nombre: `${a.persona.nombre} ${a.persona.apellido_paterno} ${a.persona.apellido_materno || ''}`,
-      carrera: a.carrera.nombre,
-      semestre: a.semestre_actual,
-      estatus: a.estatus ? 'Activo' : 'Baja'
-    }))
-
+    alumnos.value = data
+    console.log('✅ Alumnos cargados:', data.length, 'registros')
+    console.log('Primer alumno:', data[0])
   } catch (error) {
-    console.error('Error cargando alumnos:', error)
+    console.error("❌ Error cargando alumnos:", error)
+    alert("❌ No se pudo cargar la lista de alumnos. Verifica que el backend esté corriendo.")
   }
 }
 
-// ---------------- EJECUTAR AL INICIAR ----------------
 onMounted(() => {
-  cargarAlumnos()
+  cargarAlumnosDesdeBD()
 })
 
-// ---------------- FILTROS ----------------
-const alumnosFiltrados = computed(() => {
-  return alumnos.value.filter(alumno => {
-    const coincideGlobal = !props.busquedaGlobal || 
-      normalize(alumno.nombre).includes(normalize(props.busquedaGlobal)) ||
-      alumno.noControl.includes(props.busquedaGlobal)
-
-    const coincideLocal = !busquedaAlumno.value || 
-      normalize(alumno.nombre).includes(normalize(busquedaAlumno.value)) ||
-      alumno.noControl.includes(busquedaAlumno.value)
-
-    const coincideCarrera = !filtroCarrera.value || alumno.carrera === filtroCarrera.value
-    const coincideSemestre = !filtroSemestre.value || alumno.semestre === parseInt(filtroSemestre.value)
-    const coincideEstatus = !filtroEstatus.value || alumno.estatus === filtroEstatus.value
-
-    return coincideGlobal && coincideLocal && coincideCarrera && coincideSemestre && coincideEstatus
-  })
-})
-
-// ---------------- PAGINACIÓN ----------------
-const totalPages = computed(() => Math.ceil(alumnosFiltrados.value.length / filasPorPagina.value) || 1)
-
-const paginatedAlumnos = computed(() => {
-  const start = (currentPage.value - 1) * filasPorPagina.value
-  return alumnosFiltrados.value.slice(start, start + filasPorPagina.value)
-})
-
-const visiblePages = computed(() => {
-  const pages = []
-  for (let i = 1; i <= totalPages.value; i++) pages.push(i)
-  return pages
-})
-
-const goToPage = (page) => { currentPage.value = page }
-const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
-const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
-
-// ---------------- RESET FILTROS ----------------
-const resetFilters = () => {
-  busquedaAlumno.value = ''
-  filtroCarrera.value = ''
-  filtroSemestre.value = ''
-  filtroEstatus.value = ''
-  currentPage.value = 1
-}
-
-// ---------------- NUEVO ALUMNO ----------------
-const nuevoAlumno = () => router.push('/formulario-alumno')
-
-// ---------------- MODAL VER ----------------
+// ==================== MODALES ====================
 const showViewModal = ref(false)
 const alumnoVer = ref({})
 
@@ -316,48 +279,53 @@ const cerrarModalVer = () => {
   showViewModal.value = false
 }
 
-// ---------------- MODAL EDITAR ----------------
 const showModal = ref(false)
-const alumnoEditar = ref(null)
+const alumnoEditar = ref({})
 
+// ==================== ABRIR MODAL EDITAR ====================
 const abrirModalEditar = (alumno) => {
-  alumnoEditar.value = { ...alumno }
+  console.log('🟡 Alumno clickeado para editar:', alumno)
+
+  alumnoEditar.value = {
+    id_alumno: alumno.id_alumno || alumno.id,
+    noControl: alumno.numero_control || alumno.noControl || '',
+    nombre: alumno.nombre || (alumno.persona?.nombre_completo || alumno.persona?.nombre || ''),
+    id_carrera: alumno.id_carrera,
+    carrera: alumno.carrera?.nombre_carrera || alumno.carrera || '',
+    semestre: alumno.semestre_actual || alumno.semestre || 1,
+    estatus: alumno.estatus || 'Activo'
+  }
+
+  console.log('🟢 Datos preparados para editar:', alumnoEditar.value)
   showModal.value = true
 }
 
 const cerrarModal = () => {
   showModal.value = false
-  alumnoEditar.value = null
 }
 
-// ---------------- HELPERS ----------------
-const getIdCarrera = (nombreCarrera) => {
-  const mapa = {
-    'Contador Publico': 1,
-    'Ingenieria Civil': 2,
-    'Ingenieria en Gestion empresarial': 3,
-    'Ingenieria en Sistemas Computacionales': 4,
-    'Ingenieria Industrial': 5,
-  }
-  return mapa[nombreCarrera]
-}
+// ==================== GUARDAR CAMBIOS (CORREGIDO) ====================
 
-const getEstatus = (estatus) => {
-  return estatus === 'Activo' ? 1 : 0
-}
-
-// ---------------- EDITAR ----------------
 const guardarCambios = async () => {
+  const id = alumnoEditar.value.id_alumno
+
+  if (!id) {
+    alert("❌ Error: No se encontró el ID del alumno")
+    console.error(alumnoEditar.value)
+    return
+  }
+
+  const payload = {
+    nombre: alumnoEditar.value.nombre, // 🔥 ESTA ES LA CLAVE
+    id_carrera: getIdCarrera(alumnoEditar.value.carrera),
+    semestre_actual: parseInt(alumnoEditar.value.semestre),
+    estatus: alumnoEditar.value.estatus === 'Activo' ? 1 : 0
+  }
+
   try {
-    const payload = {
-      id_carrera: getIdCarrera(alumnoEditar.value.carrera),
-      semestre: alumnoEditar.value.semestre,
-      estatus: getEstatus(alumnoEditar.value.estatus)
-    }
+    console.log('🔵 Enviando update:', payload)
 
-    console.log('Actualizando:', payload)
-
-    const response = await fetch(`http://localhost:8000/api/alumnos/${alumnoEditar.value.id}`, {
+    const response = await fetch(`http://localhost:8000/api/alumnos/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -367,50 +335,108 @@ const guardarCambios = async () => {
     })
 
     const data = await response.json()
-    console.log('Respuesta update:', data)
+    console.log('🟢 Respuesta backend:', data)
 
     if (response.ok) {
-      alert('✅ Alumno actualizado')
+      await cargarAlumnosDesdeBD()
       cerrarModal()
-      cargarAlumnos()
+      alert('✅ Alumno actualizado correctamente')
     } else {
       throw new Error(JSON.stringify(data))
     }
 
   } catch (error) {
-    console.error(error)
-    alert('❌ Error al actualizar')
+    console.error('❌ ERROR:', error)
+    alert('❌ Error al actualizar alumno')
   }
 }
 
-// ---------------- ELIMINAR ----------------
+// ==================== ELIMINAR ALUMNO ====================
+
 const eliminarAlumno = async () => {
-  if (!confirm(`¿Eliminar a ${alumnoEditar.value.nombre}?`)) return
+  const id = alumnoEditar.value.id_alumno
+
+  if (!id) {
+    alert("❌ Error: No se encontró el ID del alumno")
+    return
+  }
+
+  if (!confirm("¿Seguro que quieres eliminar este alumno?")) return
 
   try {
-    const response = await fetch(`http://localhost:8000/api/alumnos/${alumnoEditar.value.id}`, {
-      method: 'DELETE'
+    const response = await fetch(`http://localhost:8000/api/alumnos/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Accept': 'application/json'
+      }
     })
 
     const data = await response.json()
-    console.log('Respuesta delete:', data)
+    console.log('🗑️ Respuesta delete:', data)
 
     if (response.ok) {
-      alert('🗑️ Alumno eliminado')
+      await cargarAlumnosDesdeBD() // 🔥 recargar lista
       cerrarModal()
-      cargarAlumnos()
+      alert('🗑️ Alumno eliminado correctamente')
     } else {
       throw new Error(JSON.stringify(data))
     }
 
   } catch (error) {
     console.error(error)
-    alert('❌ Error al eliminar')
+    alert('❌ Error al eliminar alumno')
   }
 }
+
+// ==================== FILTROS Y PAGINACIÓN ====================
+const alumnosFiltrados = computed(() => {
+  return alumnos.value.filter(alumno => {
+    const nombre = alumno.nombre || (alumno.persona && alumno.persona.nombre_completo) || ''
+
+    const coincideGlobal = !props.busquedaGlobal || 
+      normalize(nombre).includes(normalize(props.busquedaGlobal)) ||
+      (alumno.numero_control || alumno.noControl || '').toString().includes(props.busquedaGlobal)
+
+    const coincideLocal = !busquedaAlumno.value || 
+      normalize(nombre).includes(normalize(busquedaAlumno.value)) ||
+      (alumno.numero_control || alumno.noControl || '').toString().includes(busquedaAlumno.value)
+
+    const coincideCarrera = !filtroCarrera.value || 
+      normalize(alumno.carrera?.nombre_carrera || alumno.carrera || '').includes(normalize(filtroCarrera.value))
+
+    const coincideSemestre = !filtroSemestre.value || 
+      String(alumno.semestre_actual || alumno.semestre) === String(filtroSemestre.value)
+
+    const coincideEstatus = !filtroEstatus.value || 
+      normalize(alumno.estatus) === normalize(filtroEstatus.value)
+
+    return coincideGlobal && coincideLocal && coincideCarrera && coincideSemestre && coincideEstatus
+  })
+})
+
+const totalPages = computed(() => Math.ceil(alumnosFiltrados.value.length / filasPorPagina.value) || 1)
+
+const paginatedAlumnos = computed(() => {
+  const start = (currentPage.value - 1) * filasPorPagina.value
+  return alumnosFiltrados.value.slice(start, start + filasPorPagina.value)
+})
+
+const visiblePages = computed(() => Array.from({ length: totalPages.value }, (_, i) => i + 1))
+
+const goToPage = (page) => { currentPage.value = page }
+const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
+const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
+
+const resetFilters = () => {
+  busquedaAlumno.value = ''
+  filtroCarrera.value = ''
+  filtroSemestre.value = ''
+  filtroEstatus.value = ''
+  currentPage.value = 1
+}
+
+const nuevoAlumno = () => router.push('/formulario-alumno')
 </script>
-
-
 
 
 <style scoped>
