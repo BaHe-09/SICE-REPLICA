@@ -1,6 +1,6 @@
 <!-- ============================================= -->
 <!-- src/views/CalificacionesView.vue -->
-<!-- Iconos actualizados: Lupa + Guardar (bookmark) -->
+<!-- Conexión real al backend con Axios -->
 <!-- ============================================= -->
 
 <template>
@@ -27,9 +27,9 @@
           <option>IS-601-A</option>
         </select>
 
-        <!-- Botón Buscar con lupa -->
+        <!-- Botón Buscar -->
         <button @click="buscar" class="btn-buscar">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icon-btn" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
           </svg>
           Buscar
@@ -40,12 +40,12 @@
 
       <!-- PROMEDIO GENERAL -->
       <div class="average-card">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#1B396A" class="avg-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" class="avg-icon" viewBox="0 0 24 24" stroke="#1B396A">
           <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
         </svg>
         <div class="avg-text">
           <span class="avg-label">Promedio General</span>
-          <span class="avg-number">8.76</span>
+          <span class="avg-number">{{ promedioGeneral }}</span>
         </div>
       </div>
 
@@ -77,11 +77,8 @@
                 <span v-else class="final-normal">{{ calcularFinal(alumno) }}</span>
               </td>
               <td class="text-center">
-                <!-- Botón Guardar por fila con icono bookmark -->
                 <button @click="guardarFila(alumno)" class="btn-guardar-fila">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-btn">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
-                  </svg>
+                  Guardar
                 </button>
               </td>
             </tr>
@@ -89,12 +86,9 @@
         </table>
       </div>
 
-      <!-- Botón Guardar Todas con icono bookmark -->
+      <!-- Botón Guardar Todas -->
       <div class="actions-bar">
         <button @click="guardarTodo" class="btn-guardar">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-btn">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
-          </svg>
           Guardar Todas las Calificaciones
         </button>
       </div>
@@ -104,23 +98,33 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
+import { getCalificacionesGrupo, guardarCalificaciones } from '../api/calificaciones'
 
-const filtroPeriodo = ref('Mayo - Dic 2024')
-const filtroCarrera = ref('Ingeniería en Sistemas Computacionales')
-const filtroMateria = ref('Algoritmos y Programación')
-const filtroGrupo = ref('IS-601-A')
+const filtroPeriodo = ref('')
+const filtroCarrera = ref('')
+const filtroMateria = ref('')
+const filtroGrupo = ref('')
 
-const alumnos = ref([
-  { control: '21456987', nombre: 'Sara Pérez', p1: 8, p2: 9.5, proy: 8 },
-  { control: '21463254', nombre: 'Juan García', p1: 7, p2: 8.5, proy: 9 },
-  { control: '21454128', nombre: 'Mariela Gómez', p1: 6, p2: 6.5, proy: 10 },
-  { control: '21454321', nombre: 'Ana Rodríguez', p1: 9, p2: 0, proy: 0 },
-  { control: '21451986', nombre: 'Carlos Torres', p1: 0, p2: 0, proy: 0 }
-])
+const alumnos = ref([])
 
-const calcularFinal = (a) => ((Number(a.p1) * 0.3 + Number(a.p2) * 0.3 + Number(a.proy) * 0.4)).toFixed(1)
+// 🔹 Cargar calificaciones al montar la vista
+onMounted(async () => {
+  alumnos.value = await getCalificacionesGrupo()
+})
+
+// 🔹 Calcular promedio general
+const promedioGeneral = computed(() => {
+  if (alumnos.value.length === 0) return 0
+  const sum = alumnos.value.reduce((acc, a) => acc + Number(calcularFinal(a)), 0)
+  return (sum / alumnos.value.length).toFixed(2)
+})
+
+// 🔹 Calcular final por alumno
+const calcularFinal = (a) => (
+  (Number(a.p1) * 0.3 + Number(a.p2) * 0.3 + Number(a.proy) * 0.4).toFixed(1)
+)
 
 const esNC = (a) => {
   const final = Number(calcularFinal(a))
@@ -128,10 +132,29 @@ const esNC = (a) => {
   return final < 6.0 || todasCero
 }
 
-const buscar = () => console.log('🔎 Buscando...')
-const guardarFila = (alumno) => alert(`✅ Fila de ${alumno.nombre} guardada`)
-const guardarTodo = () => alert('✅ Todas las calificaciones guardadas correctamente')
+// 🔹 Buscar con filtros
+const buscar = async () => {
+  alumnos.value = await getCalificacionesGrupo({
+    periodo: filtroPeriodo.value,
+    carrera: filtroCarrera.value,
+    materia: filtroMateria.value,
+    grupo: filtroGrupo.value
+  })
+}
+
+// 🔹 Guardar una fila
+const guardarFila = async (alumno) => {
+  await guardarCalificaciones([alumno])
+  alert(`✅ Calificación de ${alumno.nombre} guardada`)
+}
+
+// 🔹 Guardar todas
+const guardarTodo = async () => {
+  await guardarCalificaciones(alumnos.value)
+  alert('✅ Todas las calificaciones guardadas correctamente')
+}
 </script>
+
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');

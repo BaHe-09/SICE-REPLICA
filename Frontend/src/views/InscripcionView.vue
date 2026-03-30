@@ -219,12 +219,11 @@
                     </span>
                   </td>
                   <td class="text-center">
-                    <button
+                    <button 
                       v-if="grupo.inscritos < grupo.capacidad"
-                      class="btn-elegir"
-                      @click="elegirGrupo(grupo)"
-                    >
-                      Elegir
+                      class="btn-inscribir"
+                      @click="inscribirAlumno(grupo)">
+                      Inscribir
                     </button>
                     <span v-else class="badge-lleno">Sin lugares</span>
                   </td>
@@ -320,7 +319,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, reactive } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 // ── Estado general ────────────────────────────────────────────────

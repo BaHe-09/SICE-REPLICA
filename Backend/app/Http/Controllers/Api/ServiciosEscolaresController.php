@@ -70,6 +70,56 @@ class ServiciosEscolaresController extends Controller
         }
     }
 
+    public function inscribirAlumno(Request $request)
+    {
+        try {
+            $request->validate([
+                'id_alumno' => 'required|integer|exists:alumno,id_alumno',
+                'id_grupo'  => 'required|integer|exists:grupo,id_grupo',
+            ]);
+
+            $grupo = Grupo::find($request->id_grupo);
+
+            if (!$grupo) {
+                return response()->json(['error' => 'Grupo no encontrado'], 404);
+            }
+
+            $yaInscrito = Inscripcion::where('id_alumno', $request->id_alumno)
+                ->where('id_grupo', $request->id_grupo)
+                ->exists();
+
+            if ($yaInscrito) {
+                return response()->json(['error' => 'El alumno ya está inscrito en este grupo'], 409);
+            }
+
+            $totalInscritos = Inscripcion::where('id_grupo', $request->id_grupo)->count();
+
+            if ($totalInscritos >= $grupo->capacidad) {
+                return response()->json(['error' => 'El grupo ya no tiene cupo disponible'], 409);
+            }
+
+            $inscripcion = Inscripcion::create([
+                'id_alumno'         => $request->id_alumno,
+                'id_grupo'          => $request->id_grupo,
+                'fecha_inscripcion' => now(),
+                'estatus'           => 'Activo'
+            ]);
+
+            return response()->json([
+                'message' => 'Inscripción realizada correctamente',
+                'id'      => $inscripcion->id_inscripcion
+            ], 201);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'error' => 'Datos inválidos',
+                'details' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     public function store(Request $request)
     {
         try {
@@ -126,24 +176,39 @@ class ServiciosEscolaresController extends Controller
 
     public function getGruposDisponibles()
     {
-        // Puedes cambiar esto por una consulta real a la tabla 'grupo'
-        return response()->json([
-            ['id' => 1, 'materia' => 'Algoritmos', 'docente' => 'Mtro. Juan Morales', 'aula' => 'A-201', 'capacidad' => 30, 'inscritos' => 23],
-            ['id' => 2, 'materia' => 'Base de Datos', 'docente' => 'Dra. Ana Ruiz', 'aula' => 'B-103', 'capacidad' => 30, 'inscritos' => 28],
-            ['id' => 3, 'materia' => 'Redes', 'docente' => 'Mtro. Carlos Jiménez', 'aula' => 'A-204', 'capacidad' => 25, 'inscritos' => 19]
-        ]);
-    }
-
-    public function inscribirAlumno(Request $request)
-    {
         try {
-            $inscripcion = Inscripcion::create([
-                'id_alumno' => $request->id_alumno,
-                'id_periodo' => 1,
-                'fecha_inscripcion' => now(),
-                'estatus' => 'ACTIVO'
-            ]);
-            return response()->json(['message' => 'Inscripción exitosa', 'id' => $inscripcion->id_inscripcion]);
+            $grupos = DB::table('grupo as g')
+                ->join('materia as m', 'g.id_materia', '=', 'm.id_materia')
+                ->join('docente as d', 'g.id_docente', '=', 'd.id_docente')
+                ->join('empleado as e', 'd.id_empleado', '=', 'e.id_empleado')
+                ->join('persona as p', 'e.id_persona', '=', 'p.id_persona')
+                ->join('aula as a', 'g.id_aula', '=', 'a.id_aula')
+                ->leftJoin('inscripcion as i', 'g.id_grupo', '=', 'i.id_grupo')
+                ->select(
+                    'g.id_grupo as id',
+                    'm.nombre as materia',
+                    DB::raw("TRIM(CONCAT(
+                        COALESCE(p.nombre, ''), ' ',
+                        COALESCE(p.apellido_paterno, ''), ' ',
+                        COALESCE(p.apellido_materno, '')
+                    )) as docente"),
+                    'a.nombre as aula',
+                    'g.capacidad',
+                    DB::raw('COUNT(i.id_inscripcion) as inscritos')
+                )
+                ->groupBy(
+                    'g.id_grupo',
+                    'm.nombre',
+                    'p.nombre',
+                    'p.apellido_paterno',
+                    'p.apellido_materno',
+                    'a.nombre',
+                    'g.capacidad'
+                )
+                ->orderBy('m.nombre')
+                ->get();
+
+            return response()->json($grupos);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
