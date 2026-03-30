@@ -198,7 +198,6 @@
 
 
 <script setup>
-import { ref, computed, onMounted } from 'vue' // Añadimos onMounted
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -220,34 +219,8 @@ const props = defineProps({
 // Normalización para búsquedas
 const normalize = (text) => {
   if (!text) return ''
-  return text
-    .toString()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-  if (!text) return ''
   return text.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
 }
-
-// 1. Iniciamos con el array vacío
-const alumnos = ref([])
-
-// 2. Función para traer los datos reales de tu Laravel
-const cargarAlumnosDesdeBD = async () => {
-  try {
-    const response = await fetch('http://localhost:8000/api/alumnos-full');
-    if (!response.ok) throw new Error('Error al conectar con el servidor');
-    const data = await response.json();
-    alumnos.value = data; 
-  } catch (error) {
-    console.error("Error cargando alumnos:", error);
-  }
-};
-
-// 3. Ejecutar la carga al abrir la vista
-onMounted(() => {
-  cargarAlumnosDesdeBD();
-});
 
 // Mapear estatus de texto a número (porque tu BD espera número)
 const estatusToNumber = (estatus) => {
@@ -418,33 +391,16 @@ const eliminarAlumno = async () => {
 // ==================== FILTROS Y PAGINACIÓN ====================
 const alumnosFiltrados = computed(() => {
   return alumnos.value.filter(alumno => {
-    // Filtro Global (del Layout)
-    const coincideGlobal = !props.busquedaGlobal ||
-      normalize(alumno.nombre).includes(normalize(props.busquedaGlobal)) ||
-      alumno.noControl.toString().includes(props.busquedaGlobal)
     const nombre = alumno.nombre || (alumno.persona && alumno.persona.nombre_completo) || ''
 
     const coincideGlobal = !props.busquedaGlobal || 
       normalize(nombre).includes(normalize(props.busquedaGlobal)) ||
       (alumno.numero_control || alumno.noControl || '').toString().includes(props.busquedaGlobal)
 
-    // Filtro Local (Busqueda arriba de la tabla)
-    const coincideLocal = !busquedaAlumno.value ||
-      normalize(alumno.nombre).includes(normalize(busquedaAlumno.value)) ||
-      alumno.noControl.toString().includes(busquedaAlumno.value)
     const coincideLocal = !busquedaAlumno.value || 
       normalize(nombre).includes(normalize(busquedaAlumno.value)) ||
       (alumno.numero_control || alumno.noControl || '').toString().includes(busquedaAlumno.value)
 
-    // Filtros de Select (Normalizados para evitar fallos por acentos o mayúsculas)
-    const coincideCarrera = !filtroCarrera.value || 
-                            normalize(alumno.carrera) === normalize(filtroCarrera.value)
-    
-    const coincideSemestre = !filtroSemestre.value || 
-                             alumno.semestre.toString() === filtroSemestre.value.toString()
-    
-    const coincideEstatus = !filtroEstatus.value || 
-                            normalize(alumno.estatus) === normalize(filtroEstatus.value)
     const coincideCarrera = !filtroCarrera.value || 
       normalize(alumno.carrera?.nombre_carrera || alumno.carrera || '').includes(normalize(filtroCarrera.value))
 
@@ -458,7 +414,6 @@ const alumnosFiltrados = computed(() => {
   })
 })
 
-// Lógica de paginación (Se mantiene igual)
 const totalPages = computed(() => Math.ceil(alumnosFiltrados.value.length / filasPorPagina.value) || 1)
 
 const paginatedAlumnos = computed(() => {
@@ -481,56 +436,6 @@ const resetFilters = () => {
 }
 
 const nuevoAlumno = () => router.push('/formulario-alumno')
-const verAlumno = (a) => alert(`Ver: ${a.nombre}`)
-const editarAlumno = async (a) => {
-  try {
-    const nuevoNoControl = prompt('Número de control:', a.noControl)
-    if (nuevoNoControl === null) return
-
-    const nuevoSemestre = prompt('Semestre:', a.semestre)
-    if (nuevoSemestre === null) return
-
-    const nuevoEstatusTexto = prompt(
-      'Estatus: 1 = Activo, 2 = Baja Temporal, 3 = Baja Definitiva',
-      a.estatus === 'Activo' ? '1' : a.estatus === 'Baja Temporal' ? '2' : '3'
-    )
-    if (nuevoEstatusTexto === null) return
-
-    const nuevaCarreraId = prompt(
-      'ID de carrera:',
-      '1'
-    )
-    if (nuevaCarreraId === null) return
-
-    const response = await fetch(`http://127.0.0.1:8000/api/alumnos/${a.id ?? a.id_alumno}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({
-        noControl: nuevoNoControl,
-        carrera: Number(nuevaCarreraId),
-        semestre: Number(nuevoSemestre),
-        estatus: Number(nuevoEstatusTexto)
-      })
-    })
-
-    const data = await response.json()
-
-    if (!response.ok) {
-      console.error(data)
-      alert('Error al actualizar alumno')
-      return
-    }
-
-    alert('Alumno actualizado correctamente')
-    await cargarAlumnosDesdeBD()
-  } catch (error) {
-    console.error('Error actualizando alumno:', error)
-    alert('Ocurrió un error al actualizar')
-  }
-}
 </script>
 
 
