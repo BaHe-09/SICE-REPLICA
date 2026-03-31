@@ -473,7 +473,6 @@ const nuevaInscripcion = () => router.push('/inscripcion')
 }
 .btn-reintentar:hover { background: #B91C1C; }
 
-/* ── Accesos Rápidos ────────────────────────────────────────────── */
 .accesos-seccion { margin-bottom: 2rem; }
 
 .seccion-titulo {
