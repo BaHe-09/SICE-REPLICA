@@ -5,14 +5,14 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/dashboard'
+      redirect: '/inicio'
     },
 
     { path: '/login', name: 'Login', component: () => import('@/views/LoginView.vue') },
 
     {
-      path: '/dashboard',
-      name: 'Dashboard',
+      path: '/inicio',
+      name: 'Inicio',
       component: () => import('@/views/DashboardView.vue')
     },
 

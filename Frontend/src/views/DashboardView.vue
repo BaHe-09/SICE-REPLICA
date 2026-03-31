@@ -1,160 +1,220 @@
 <template>
   <MainLayout v-slot="{ busquedaGlobal }">
-    <div class="dashboard-page">
+    <div class="inicio-page">
 
-      <div class="dashboard-header">
-        <h1 class="page-title">Dashboard</h1>
-        <p class="welcome-text">Bienvenido al Sistema Integral de Control Escolar</p>
+      <div class="inicio-header">
+        <div>
+          <h1 class="page-title">Inicio</h1>
+          <p class="welcome-text">Bienvenido al Sistema Integral de Control Escolar</p>
+        </div>
+        <span class="fecha-actual">{{ fechaHoy }}</span>
+      </div>
+
+
+      <div class="barra-carga" :class="{ visible: cargando }">
+        <div class="barra-progreso"></div>
       </div>
 
 
       <div class="kpi-grid">
         <div class="kpi-card" v-for="(kpi, index) in kpis" :key="index">
-          <div class="kpi-icon-wrapper">
-            <svg xmlns="http://www.w3.org/2000/svg" class="kpi-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div class="kpi-icono-wrapper" :style="{ background: kpi.fondo }">
+            <svg xmlns="http://www.w3.org/2000/svg" class="kpi-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path :d="kpi.iconPath" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" />
             </svg>
           </div>
-          <div class="kpi-content">
-            <p class="kpi-title">{{ kpi.title }}</p>
-            <p class="kpi-value">{{ kpi.value }}</p>
-            <p v-if="kpi.trend" class="kpi-trend" :class="{ positive: kpi.trend.includes('+'), negative: kpi.trend.includes('-') }">
+          <div class="kpi-contenido">
+            <p class="kpi-etiqueta">{{ kpi.title }}</p>
+            <p class="kpi-valor">{{ kpi.value }}</p>
+            <p v-if="kpi.trend" class="kpi-tendencia"
+               :class="{ positivo: kpi.trend.includes('+'), negativo: kpi.trend.includes('-') }">
               {{ kpi.trend }}
             </p>
           </div>
         </div>
       </div>
 
+      <div class="fila-graficas">
 
-      <div class="charts-row">
 
-        <div class="chart-card">
-          <h3 class="chart-title">Alumnos por Carrera</h3>
-          <div class="bar-chart">
-            <div v-for="(item, i) in carreraData" :key="i" class="bar-item">
-              <div class="bar-label">{{ item.carrera }}</div>
-              <div class="bar-container">
-                <div class="bar-fill" :style="{ width: item.porcentaje + '%' }"></div>
+        <div class="grafica-card">
+          <h3 class="grafica-titulo">Alumnos por carrera</h3>
+          <div v-if="carreraData.length > 0" class="grafica-barras">
+            <div v-for="(item, i) in carreraData" :key="i" class="barra-item">
+              <div class="barra-etiqueta" :title="item.carrera">{{ item.carrera }}</div>
+              <div class="barra-contenedor">
+                <div class="barra-relleno" :style="{ width: item.porcentaje + '%' }"></div>
               </div>
-              <div class="bar-value">{{ item.porcentaje }}%</div>
+              <div class="barra-valor">{{ item.porcentaje }}%</div>
             </div>
+          </div>
+          <div v-else class="estado-vacio-grafica">
+            <p>Sin datos disponibles</p>
           </div>
         </div>
 
 
-        <div class="chart-card">
-          <h3 class="chart-title">Distribución por Semestre</h3>
-          <div class="pie-container">
-            <div class="pie-chart">
-              <div class="pie-segment" style="background: conic-gradient(#1B396A 0deg 120deg, #D6D6D6 120deg 240deg, #6B7280 240deg 360deg);"></div>
-            </div>
-            <div class="pie-legend">
-              <div v-for="(item, i) in semestreData" :key="i" class="legend-item">
-                <span class="legend-color" :style="{ backgroundColor: item.color }"></span>
-                <span class="legend-text">{{ item.semestre }}° Semestre — {{ item.cantidad }}</span>
+        <div class="grafica-card">
+          <h3 class="grafica-titulo">Alumnos por semestre</h3>
+          <div v-if="semestreData.length > 0" class="grafica-barras">
+            <div v-for="(item, i) in semestreData" :key="i" class="barra-item">
+              <div class="barra-etiqueta">{{ item.semestre }}° Semestre</div>
+              <div class="barra-contenedor">
+                <div class="barra-relleno barra-acento"
+                     :style="{ width: calcularPorcentajeSemestre(item.cantidad) + '%' }"></div>
               </div>
+              <div class="barra-valor">{{ item.cantidad }}</div>
             </div>
+          </div>
+          <div v-else class="estado-vacio-grafica">
+            <p>Sin datos disponibles</p>
           </div>
         </div>
       </div>
 
+      <div class="fila-inferior">
 
-      <div class="bottom-row">
 
-        <div class="recent-activity">
-          <h3 class="section-title">Actividad Reciente</h3>
-          <div class="activity-list">
-            <div v-for="(act, i) in recentActivity" :key="i" class="activity-item">
-              <div class="activity-dot"></div>
-              <div class="activity-info">
-                <p class="activity-desc">{{ act.descripcion }}</p>
-                <p class="activity-time">{{ act.tiempo }}</p>
+        <div class="panel-card">
+          <h3 class="panel-titulo">Actividad reciente</h3>
+          <div class="lista-actividad">
+            <div v-for="(act, i) in recentActivity" :key="i" class="item-actividad">
+              <div class="punto-actividad"></div>
+              <div class="info-actividad">
+                <p class="desc-actividad">{{ act.descripcion }}</p>
+                <p class="tiempo-actividad">{{ act.tiempo }}</p>
               </div>
+            </div>
+            <div v-if="recentActivity.length === 0" class="estado-vacio-grafica">
+              <p>Sin actividad reciente</p>
             </div>
           </div>
         </div>
 
-
-        <div class="quick-actions">
-          <h3 class="section-title">Acciones Rápidas</h3>
-          <div class="actions-grid">
-            <button @click="nuevaInscripcion" class="quick-btn">
-              <span class="btn-icon">+</span>
-              Nueva Inscripción
+        <div class="panel-card">
+          <h3 class="panel-titulo">Acciones rápidas</h3>
+          <div class="grilla-acciones">
+            <button @click="nuevaInscripcion" class="btn-accion btn-primario">
+              <svg xmlns="http://www.w3.org/2000/svg" class="accion-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
+              Nueva inscripción
             </button>
-            <button @click="irAAlumnos" class="quick-btn">
-              Ver Lista de Alumnos
+            <button @click="irAAlumnos" class="btn-accion">
+              <svg xmlns="http://www.w3.org/2000/svg" class="accion-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              Lista de alumnos
             </button>
-            <button @click="irAGrupos" class="quick-btn">
-              Gestión de Grupos
+            <button @click="irAGrupos" class="btn-accion">
+              <svg xmlns="http://www.w3.org/2000/svg" class="accion-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Gestión de grupos
             </button>
-            <button @click="irACalificaciones" class="quick-btn">
-              Cargar Calificaciones
+            <button @click="irACalificaciones" class="btn-accion">
+              <svg xmlns="http://www.w3.org/2000/svg" class="accion-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              Cargar calificaciones
             </button>
           </div>
         </div>
       </div>
+
     </div>
   </MainLayout>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
-const router = useRouter()
+const router  = useRouter()
+const cargando = ref(true)
+const error    = ref(null)
 
-// KPIs (estructura original conservada)
+const fechaHoy = computed(() => {
+  return new Date().toLocaleDateString('es-MX', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  })
+})
+
 const kpis = ref([
-  { title: 'Alumnos Activos', value: '0', iconPath: 'M17 20h5v-2a3 3 0 01-3-3V8a3 3 0 01-3-3V3a3 3 0 01-3-3H8a3 3 0 01-3 3v2a3 3 0 01-3 3v7a3 3 0 01-3 3v2h5m5-10v10', trend: '' },
-  { title: 'Inscripciones', value: '0', iconPath: 'M12 6v12m-3-9h6m-6 6h6', trend: '' },
-  { title: 'Baja Temporal', value: '0', iconPath: 'M13 10V3L4 14h7v7l9-11h-7z', trend: '' },
-  { title: 'Baja Definitiva', value: '0', iconPath: 'M6 18L18 6M6 6h12v12', trend: '' },
-  { title: 'Grupos Activos', value: '0', iconPath: 'M17 20h5v-2a3 3 0 01-3-3V8a3 3 0 01-3-3V3a3 3 0 01-3-3H8a3 3 0 01-3 3v2a3 3 0 01-3 3v7a3 3 0 01-3 3v2h5m5-10v10', trend: '' },
-  { title: 'Promedio General', value: '0', iconPath: 'M14 10h4.764a2 2 0 011.789 2.894L18 19H6l-2.236-6.106A2 2 0 015.236 10H10', trend: '' }
+  {
+    title: 'Alumnos activos',
+    value: '0',
+    iconPath: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
+    fondo: '#DBEAFE', trend: ''
+  },
+  {
+    title: 'Inscripciones',
+    value: '0',
+    iconPath: 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z',
+    fondo: '#DCFCE7', trend: ''
+  },
+  {
+    title: 'Baja temporal',
+    value: '0',
+    iconPath: 'M13 10V3L4 14h7v7l9-11h-7z',
+    fondo: '#FEF3C7', trend: ''
+  },
+  {
+    title: 'Baja definitiva',
+    value: '0',
+    iconPath: 'M6 18L18 6M6 6l12 12',
+    fondo: '#FEE2E2', trend: ''
+  },
+  {
+    title: 'Grupos activos',
+    value: '0',
+    iconPath: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z',
+    fondo: '#F3E8FF', trend: ''
+  },
+  {
+    title: 'Promedio general',
+    value: '0',
+    iconPath: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
+    fondo: '#E0F2FE', trend: ''
+  }
 ])
 
-const carreraData = ref([])
-const semestreData = ref([])
+const carreraData    = ref([])
+const semestreData   = ref([])
 const recentActivity = ref([])
 
-const loading = ref(true)
-const error = ref(null)
+const maxSemestre = computed(() =>
+  semestreData.value.reduce((max, s) => Math.max(max, s.cantidad), 1)
+)
 
-// Cargar datos reales
+const calcularPorcentajeSemestre = (cantidad) =>
+  Math.round((cantidad / maxSemestre.value) * 100)
+
 onMounted(async () => {
   try {
     const res = await fetch('http://localhost:8000/api/dashboard')
-
     if (!res.ok) throw new Error('Error en API')
-
     const data = await res.json()
 
-    // KPIs dinámicos (sin romper estructura)
-    kpis.value[0].value = data.kpis?.alumnos ?? 0
-    kpis.value[1].value = data.kpis?.inscripciones ?? 0
-    kpis.value[2].value = data.kpis?.bajas_temporales ?? 0
+    kpis.value[0].value = data.kpis?.alumnos          ?? 0
+    kpis.value[1].value = data.kpis?.inscripciones     ?? 0
+    kpis.value[2].value = data.kpis?.bajas_temporales  ?? 0
     kpis.value[3].value = data.kpis?.bajas_definitivas ?? 0
-    kpis.value[4].value = data.kpis?.grupos ?? 0
-    kpis.value[5].value = data.kpis?.promedio ?? 0
+    kpis.value[4].value = data.kpis?.grupos            ?? 0
+    kpis.value[5].value = data.kpis?.promedio          ?? 0
 
-    // Carreras
     const total = data.carreras?.reduce((acc, c) => acc + c.total, 0) || 1
-
     carreraData.value = (data.carreras || []).map(c => ({
-      carrera: c.nombre,
-      porcentaje: Math.round((c.total / total) * 100)
+      carrera:     c.nombre,
+      porcentaje:  Math.round((c.total / total) * 100)
     }))
 
-    // Semestres
     semestreData.value = (data.semestres || []).map(s => ({
       semestre: s.semestre_actual,
-      cantidad: s.total,
-      color: '#1B396A'
+      cantidad: s.total
     }))
 
-    // Actividad reciente (puedes conectar a bitacora luego)
     recentActivity.value = [
       { descripcion: 'Datos cargados desde el sistema', tiempo: 'Ahora' }
     ]
@@ -163,269 +223,247 @@ onMounted(async () => {
     console.error(err)
     error.value = 'Error cargando datos'
   } finally {
-    loading.value = false
+    cargando.value = false
   }
 })
 
-// Navegación
-const nuevaInscripcion = () => router.push('/inscripcion')
-const irAAlumnos = () => router.push('/alumnos')
-const irAGrupos = () => router.push('/gestion-grupos')
+const nuevaInscripcion  = () => router.push('/inscripcion')
+const irAAlumnos        = () => router.push('/alumnos')
+const irAGrupos         = () => router.push('/gestion-grupos')
 const irACalificaciones = () => router.push('/calificaciones')
 </script>
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
-.dashboard-page {
+.inicio-page {
   max-width: 100%;
   background: #F5F5F5;
   font-family: 'Montserrat', sans-serif;
   padding-bottom: 2rem;
 }
 
-.dashboard-header {
-  margin-bottom: 2rem;
+
+.inicio-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.4rem;
 }
 .page-title {
   color: #1A1A1A;
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 700;
   letter-spacing: -0.02em;
+  margin: 0 0 4px;
 }
 .welcome-text {
   color: #6B7280;
-  font-size: 1.1rem;
-  margin-top: 4px;
+  font-size: 0.95rem;
+  margin: 0;
+}
+.fecha-actual {
+  font-size: 0.88rem;
+  color: #6B7280;
+  font-weight: 500;
+  text-transform: capitalize;
+  white-space: nowrap;
+  padding-top: 4px;
+}
+
+
+.barra-carga {
+  height: 3px;
+  background: transparent;
+  border-radius: 2px;
+  margin-bottom: 1.2rem;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.barra-carga.visible { opacity: 1; }
+.barra-progreso {
+  height: 100%;
+  width: 40%;
+  background: #1B396A;
+  border-radius: 2px;
+  animation: deslizar 1.2s ease-in-out infinite;
+}
+@keyframes deslizar {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
 }
 
 
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 .kpi-card {
   background: #FFFFFF;
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 1.2rem 1.4rem;
   display: flex;
   align-items: center;
-  gap: 1.2rem;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.07);
+  gap: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
   border: 1px solid #E5E7EB;
-  transition: transform 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 .kpi-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.09);
 }
-.kpi-icon-wrapper {
-  width: 52px;
-  height: 52px;
-  background: #F5F5F5;
+.kpi-icono-wrapper {
+  width: 46px;
+  height: 46px;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
-.kpi-icon {
-  width: 28px;
-  height: 28px;
-  stroke: #1B396A;
-}
-.kpi-content .kpi-title {
-  font-size: 0.95rem;
-  color: #6B7280;
-  margin: 0;
-}
-.kpi-content .kpi-value {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #1A1A1A;
-  margin: 4px 0 2px;
-}
-.kpi-trend {
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-.kpi-trend.positive { color: #16A34A; }
-.kpi-trend.negative { color: #DC2626; }
+.kpi-icono { width: 24px; height: 24px; stroke: #1B396A; }
+.kpi-etiqueta { font-size: 0.85rem; color: #6B7280; margin: 0; }
+.kpi-valor    { font-size: 1.7rem; font-weight: 700; color: #1A1A1A; margin: 2px 0; }
+.kpi-tendencia { font-size: 0.82rem; font-weight: 600; margin: 0; }
+.kpi-tendencia.positivo { color: #16A34A; }
+.kpi-tendencia.negativo { color: #DC2626; }
 
 
-.charts-row {
+.fila-graficas {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-bottom: 2.5rem;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
-.chart-card {
+.grafica-card {
   background: #FFFFFF;
   border-radius: 12px;
-  padding: 1.8rem;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.07);
+  padding: 1.4rem 1.6rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
   border: 1px solid #E5E7EB;
 }
-.chart-title {
-  margin: 0 0 1.2rem;
-  font-size: 1.1rem;
+.grafica-titulo {
+  margin: 0 0 1rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #1A1A1A;
 }
-
-
-.bar-chart {
+.grafica-barras {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
 }
-.bar-item {
+.barra-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
-.bar-label {
-  width: 110px;
-  font-size: 0.95rem;
+.barra-etiqueta {
+  width: 120px;
+  font-size: 0.85rem;
   color: #1A1A1A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
 }
-.bar-container {
+.barra-contenedor {
   flex: 1;
-  height: 12px;
+  height: 10px;
   background: #E5E7EB;
   border-radius: 9999px;
   overflow: hidden;
 }
-.bar-fill {
+.barra-relleno {
   height: 100%;
   background: #1B396A;
   border-radius: 9999px;
-  transition: width 1s ease;
+  transition: width 0.9s ease;
 }
-.bar-value {
-  width: 42px;
+.barra-acento { background: #B38E5D; }
+.barra-valor {
+  width: 36px;
   text-align: right;
   font-weight: 600;
+  font-size: 0.88rem;
   color: #1B396A;
+  flex-shrink: 0;
+}
+.estado-vacio-grafica {
+  text-align: center;
+  padding: 2rem 0;
+  color: #9CA3AF;
+  font-size: 0.9rem;
 }
 
 
-.pie-container {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-}
-.pie-chart {
-  width: 180px;
-  height: 180px;
-  border-radius: 50%;
-  position: relative;
-}
-.pie-segment {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-}
-.pie-legend {
-  flex: 1;
-}
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-.legend-color {
-  width: 14px;
-  height: 14px;
-  border-radius: 3px;
-}
-
-
-.bottom-row {
+.fila-inferior {
   display: grid;
   grid-template-columns: 2fr 1fr;
-  gap: 1.5rem;
+  gap: 1rem;
 }
-
-
-.recent-activity {
+.panel-card {
   background: #FFFFFF;
   border-radius: 12px;
-  padding: 1.8rem;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.07);
+  padding: 1.4rem 1.6rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
   border: 1px solid #E5E7EB;
 }
-.section-title {
-  margin: 0 0 1.2rem;
-  font-size: 1.1rem;
+.panel-titulo {
+  margin: 0 0 1rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #1A1A1A;
 }
-.activity-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-.activity-item {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-}
-.activity-dot {
-  width: 8px;
-  height: 8px;
+
+/* Actividad reciente */
+.lista-actividad { display: flex; flex-direction: column; gap: 0.85rem; }
+.item-actividad  { display: flex; gap: 10px; align-items: flex-start; }
+.punto-actividad {
+  width: 8px; height: 8px;
   background: #1B396A;
   border-radius: 50%;
   margin-top: 6px;
+  flex-shrink: 0;
 }
-.activity-info {
-  flex: 1;
-}
-.activity-desc {
-  margin: 0;
-  color: #1A1A1A;
-  font-size: 0.98rem;
-}
-.activity-time {
-  margin: 2px 0 0;
-  color: #6B7280;
-  font-size: 0.85rem;
-}
+.desc-actividad  { margin: 0; color: #1A1A1A; font-size: 0.93rem; }
+.tiempo-actividad { margin: 2px 0 0; color: #6B7280; font-size: 0.82rem; }
 
-
-.quick-actions {
-  background: #FFFFFF;
-  border-radius: 12px;
-  padding: 1.8rem;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.07);
-  border: 1px solid #E5E7EB;
-}
-.actions-grid {
+/* Acciones rápidas */
+.grilla-acciones {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 0.75rem;
 }
-.quick-btn {
-  background: #1B396A;
-  color: white;
-  border: none;
-  padding: 14px 20px;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
+.btn-accion {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  font-size: 1rem;
-  transition: background 0.2s;
+  gap: 6px;
+  padding: 14px 10px;
+  background: #F5F5F5;
+  color: #1A1A1A;
+  border: 1px solid #E5E7EB;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-align: center;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  transition: background 0.15s, border-color 0.15s;
+  line-height: 1.3;
 }
-.quick-btn:hover {
-  background: #1D4ED8;
+.btn-accion:hover { background: #E5E7EB; }
+.btn-accion.btn-primario {
+  background: #1B396A;
+  color: white;
+  border-color: #1B396A;
 }
-.btn-icon {
-  font-size: 1.4rem;
-  line-height: 1;
-}
+.btn-accion.btn-primario:hover { background: #1D4ED8; border-color: #1D4ED8; }
+.accion-icono { width: 22px; height: 22px; stroke: currentColor; flex-shrink: 0; }
 </style>
