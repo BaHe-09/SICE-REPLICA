@@ -220,6 +220,27 @@
         </div>
       </div>
 
+      <!-- Modal de confirmación de eliminación -->
+      <div v-if="showModalEliminar" class="modal-overlay" @click.self="cancelarEliminar">
+        <div class="modal-content modal-confirm">
+          <div class="modal-header">
+            <h3>Confirmar eliminación</h3>
+            <button @click="cancelarEliminar" class="close-btn">×</button>
+          </div>
+          <div class="modal-body">
+            <p class="confirm-texto">¿Está seguro de que desea eliminar el grupo de <strong>{{ grupoAEliminar?.materia }}</strong>?</p>
+            <p class="confirm-sub">Esta acción no se puede deshacer.</p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-cancelar" @click="cancelarEliminar">Cancelar</button>
+            <button class="btn-eliminar" @click="confirmarEliminar">
+              <span v-if="cargando" class="spinner-btn"></span>
+              {{ cargando ? 'Eliminando...' : 'Eliminar' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </MainLayout>
 </template>
@@ -512,23 +533,34 @@ const guardarGrupo = () => {
   })
 }
 
-const eliminarGrupoDesdeModal = () => {
-  simularCarga('Eliminando grupo...', () => {
-    if (grupoEditar.value.id) {
-      const index = grupos.value.findIndex(g => g.id === grupoEditar.value.id)
-      if (index !== -1) grupos.value.splice(index, 1)
-    }
-    cerrarModal()
-  })
+const showModalEliminar = ref(false)
+const grupoAEliminar = ref(null)
+
+// Eliminar desde la tabla
+const eliminarGrupo = (grupo) => {
+  grupoAEliminar.value = grupo
+  showModalEliminar.value = true
 }
 
-const eliminarGrupo = (grupo) => {
-  if (confirm(`¿Eliminar el grupo de ${grupo.materia}?`)) {
-    simularCarga('Eliminando grupo...', () => {
-      const index = grupos.value.findIndex(g => g.id === grupo.id)
-      if (index !== -1) grupos.value.splice(index, 1)
-    })
-  }
+// Eliminar desde el modal de edición
+const eliminarGrupoDesdeModal = () => {
+  grupoAEliminar.value = { ...grupoEditar.value }
+  cerrarModal()
+  showModalEliminar.value = true
+}
+
+const cancelarEliminar = () => {
+  showModalEliminar.value = false
+  grupoAEliminar.value = null
+}
+
+const confirmarEliminar = () => {
+  simularCarga('Eliminando grupo...', () => {
+    const index = grupos.value.findIndex(g => g.id === grupoAEliminar.value.id)
+    if (index !== -1) grupos.value.splice(index, 1)
+    showModalEliminar.value = false
+    grupoAEliminar.value = null
+  })
 }
 
 const verDetalle = (grupo) => {}
@@ -584,8 +616,8 @@ const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
 .btn-accion { padding: 7px 16px; border-radius: 6px; font-size: 0.92rem; cursor: pointer; font-weight: 600; border: none; }
 .btn-accion.ver { background: #F5F5F5; color: #1A1A1A; border: 1px solid #E5E7EB; }
 .btn-accion.editar { background: #1B396A; color: white; }
-.btn-accion.evaluaciones { background: #2563EB; color: white; }
-.btn-accion.calificaciones { background: #6B7280; color: white; }
+.btn-accion.evaluaciones { background: #1B396A; color: white; }
+.btn-accion.calificaciones { background: #DBEAFE; color: #1B396A; }
 .btn-accion.eliminar { background: #DC2626; color: white; }
 
 .pagination { margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; color: #6B7280; }
@@ -716,4 +748,9 @@ const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
   outline-offset: -2px;
 }
 .grupos-page:focus { outline: none; }
+
+/* ── Modal de confirmación ── */
+.modal-confirm { width: 440px; }
+.confirm-texto { font-size: 1rem; color: #1A1A1A; margin: 0 0 8px; }
+.confirm-sub { font-size: 0.88rem; color: #DC2626; margin: 0; }
 </style>

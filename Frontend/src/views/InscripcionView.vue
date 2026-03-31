@@ -3,7 +3,8 @@
     <div class="inscripcion-page" ref="paginaRef" @keydown="manejarTeclado" tabindex="-1">
 
       <div class="breadcrumb">
-        Servicios Escolares <span class="arrow">›</span> Inscripción
+        <router-link to="/servicios-escolares" class="breadcrumb-link">Servicios Escolares</router-link>
+        <span class="arrow">›</span> Inscripción
       </div>
 
       <h1 class="page-title">Inscripción</h1>
@@ -219,11 +220,12 @@
                     </span>
                   </td>
                   <td class="text-center">
-                    <button 
+                    <button
                       v-if="grupo.inscritos < grupo.capacidad"
-                      class="btn-inscribir"
-                      @click="inscribirAlumno(grupo)">
-                      Inscribir
+                      class="btn-elegir"
+                      @click="inscribirAlumno(grupo)"
+                    >
+                      Elegir
                     </button>
                     <span v-else class="badge-lleno">Sin lugares</span>
                   </td>
@@ -314,12 +316,20 @@
         </div>
 
       </div>
+      <!-- Footer institucional -->
+      <footer class="footer-institucional">
+        <span>Sistema Integral de Control Escolar</span>
+        <span class="footer-sep">·</span>
+        <span>Servicios Escolares</span>
+        <span class="footer-sep">·</span>
+        <span>{{ new Date().getFullYear() }}</span>
+      </footer>
     </div>
   </MainLayout>
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 // ── Estado general ────────────────────────────────────────────────
@@ -437,7 +447,7 @@ const filtrarGrupos = () => {
 const prevPage = () => { if (currentPage.value > 1) { currentPage.value--; filaActiva.value = -1 } }
 const nextPage = () => { if (currentPage.value < totalPages.value) { currentPage.value++; filaActiva.value = -1 } }
 
-const elegirGrupo = (grupo) => {
+const inscribirAlumno = (grupo) => {
   grupoSeleccionado.value = grupo
   paso.value = 3
 }
@@ -506,7 +516,7 @@ const manejarTeclado = (e) => {
       e.preventDefault(); prevPage()
     } else if (e.key === 'Enter' && filaActiva.value >= 0) {
       const grupo = gruposFiltrados.value[filaActiva.value]
-      if (grupo && grupo.inscritos < grupo.capacidad) elegirGrupo(grupo)
+      if (grupo && grupo.inscritos < grupo.capacidad) inscribirAlumno(grupo)
     }
   }
 }
@@ -745,7 +755,14 @@ onUnmounted(() => {
   padding: 8px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem;
   transition: background 0.2s;
 }
-.btn-elegir:hover { background: #2563EB; }
+.btn-elegir:hover { background: #1D4ED8; }
+
+.btn-inscribir {
+  background: #1B396A; color: white; border: none;
+  padding: 8px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem;
+  transition: background 0.2s;
+}
+.btn-inscribir:hover { background: #1D4ED8; }
 .badge-lleno {
   display: inline-block; background: #F5F5F5; color: #9CA3AF;
   border: 1px solid #E5E7EB; border-radius: 8px;
@@ -830,4 +847,28 @@ onUnmounted(() => {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ── Breadcrumb navegable ── */
+.breadcrumb-link {
+  color: #6B7280;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.breadcrumb-link:hover {
+  color: #1B396A;
+  text-decoration: underline;
+}
+
+/* ── Footer institucional ── */
+.footer-institucional {
+  margin-top: 2.5rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid #E5E7EB;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+  color: #9CA3AF;
+}
+.footer-sep { color: #D1D5DB; }
 </style>
