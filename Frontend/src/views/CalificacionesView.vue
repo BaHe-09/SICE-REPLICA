@@ -412,7 +412,10 @@
   <!-- ── TOAST ── -->
   <transition name="toast-slide">
     <div v-if="toast.visible" class="toast" :class="toast.tipo">
-      <span class="toast-icono">{{ toast.tipo === 'exito' ? '✓' : '⚠' }}</span>
+      <span class="toast-icono">
+        <svg v-if="toast.tipo === 'exito'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg>
+        <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </span>
       {{ toast.mensaje }}
     </div>
   </transition>
@@ -512,10 +515,10 @@ const clasePromedio = (val) => {
 }
 
 const colorNota = (n) => {
-  if (n >= 9) return '#22C55E'
-  if (n >= 7) return '#005187'
-  if (n >= 6) return '#EAB308'
-  return '#EF4444'
+  if (n >= 9) return '#16A34A'
+  if (n >= 7) return '#1B396A'
+  if (n >= 6) return '#F59E0B'
+  return '#DC2626'
 }
 
 const mostrarToast = (mensaje, tipo = 'exito') => {

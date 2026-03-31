@@ -115,7 +115,7 @@
               <circle
                 cx="60" cy="60" r="50"
                 fill="none"
-                :stroke="totalPorcentaje === 100 ? '#22C55E' : totalPorcentaje > 100 ? '#EF4444' : '#005187'"
+                :stroke="totalPorcentaje === 100 ? '#16A34A' : totalPorcentaje > 100 ? '#DC2626' : '#1B396A'"
                 stroke-width="10"
                 stroke-linecap="round"
                 :stroke-dasharray="`${Math.min(totalPorcentaje, 100) * 3.14159} 314.159`"
@@ -319,8 +319,8 @@
           <div class="total-porcentaje" :class="{ completo: totalPorcentaje === 100, excedido: totalPorcentaje > 100 }">
             <span>Total acumulado:</span>
             <strong>{{ totalPorcentaje }}%</strong>
-            <span v-if="totalPorcentaje === 100" class="check-ok">✓ Correcto</span>
-            <span v-else-if="totalPorcentaje > 100" class="alerta-exceso">⚠ Excede el 100%</span>
+            <span v-if="totalPorcentaje === 100" class="check-ok">Correcto</span>
+            <span v-else-if="totalPorcentaje > 100" class="alerta-exceso">Excede el 100%</span>
             <span v-else class="alerta-faltante">Faltan {{ 100 - totalPorcentaje }}% por asignar</span>
           </div>
 
@@ -438,7 +438,10 @@
   <!-- ── NOTIFICACIÓN TOAST ── -->
   <transition name="toast-slide">
     <div v-if="toast.visible" class="toast" :class="toast.tipo">
-      <span class="toast-icono">{{ toast.tipo === 'exito' ? '✓' : '⚠' }}</span>
+      <span class="toast-icono">
+        <svg v-if="toast.tipo === 'exito'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg>
+        <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </span>
       {{ toast.mensaje }}
     </div>
   </transition>
@@ -494,11 +497,11 @@ const estadisticas = ref({
 
 // ── Distribución de calificaciones ──
 const distribucionCalifs = ref([
-  { etiqueta: '< 6 (Reprobado)', cantidad: 5, porcentaje: 15, color: '#EF4444' },
-  { etiqueta: '6 – 6.9', cantidad: 7, porcentaje: 21, color: '#F97316' },
-  { etiqueta: '7 – 7.9', cantidad: 10, porcentaje: 31, color: '#EAB308' },
-  { etiqueta: '8 – 8.9', cantidad: 6, porcentaje: 18, color: '#22C55E' },
-  { etiqueta: '9 – 10', cantidad: 4, porcentaje: 12, color: '#005187' },
+  { etiqueta: '< 6 (Reprobado)', cantidad: 5, porcentaje: 15, color: '#DC2626' },
+  { etiqueta: '6 – 6.9',         cantidad: 7, porcentaje: 21, color: '#F59E0B' },
+  { etiqueta: '7 – 7.9',         cantidad: 10, porcentaje: 31, color: '#F59E0B' },
+  { etiqueta: '8 – 8.9',         cantidad: 6, porcentaje: 18, color: '#1B396A' },
+  { etiqueta: '9 – 10',          cantidad: 4, porcentaje: 12, color: '#16A34A' },
 ])
 
 // ── Lista de materias con indicadores ──
@@ -527,17 +530,17 @@ const statusClass = computed(() => {
 })
 
 const statusMensaje = computed(() => {
-  if (totalPorcentaje.value === 100) return '✓ El total es correcto'
-  if (totalPorcentaje.value > 100) return `⚠ Excede en ${totalPorcentaje.value - 100}%`
+  if (totalPorcentaje.value === 100) return 'El total es correcto'
+  if (totalPorcentaje.value > 100) return `Excede en ${totalPorcentaje.value - 100}%`
   return `Faltan ${100 - totalPorcentaje.value}% por asignar`
 })
 
 // ── Helpers ──
 const colorNivel = (avance) => {
-  if (avance >= 90) return '#22C55E'
-  if (avance >= 70) return '#005187'
-  if (avance >= 50) return '#EAB308'
-  return '#EF4444'
+  if (avance >= 90) return '#16A34A'
+  if (avance >= 70) return '#1B396A'
+  if (avance >= 50) return '#F59E0B'
+  return '#DC2626'
 }
 
 const nivelTexto = (avance) => {
@@ -808,8 +811,8 @@ const generarReporte = async () => {
   box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 1.2rem 1.6rem;
   display: flex; flex-direction: column; align-items: center; gap: 0.75rem; min-width: 200px;
 }
-.progreso-circular-wrap { position: relative; width: 130px; height: 130px; }
-.svg-circular  { width: 130px; height: 130px; }
+.progreso-circular-wrap { position: relative; width: 100px; height: 100px; }
+.svg-circular  { width: 100px; height: 100px; }
 .progreso-texto {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;
 }
