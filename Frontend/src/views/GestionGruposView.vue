@@ -68,8 +68,12 @@
       </div>
 
       <!-- Indicador de búsqueda por número de control activa -->
-      <div v-if="busquedaControl.trim()" class="control-aviso">
-        Mostrando grupos donde está inscrito el alumno con número de control: <strong>{{ busquedaControl }}</strong>
+      <div v-if="errorCarga" class="error-carga">
+        {{ errorCarga }}
+      </div>
+
+      <div v-if="busquedaControlAplicada" class="control-aviso">
+        Mostrando grupos donde está inscrito el alumno con número de control: <strong>{{ busquedaControlAplicada }}</strong>
       </div>
 
       <div class="table-container" :class="{ 'loading-state': cargando }">
@@ -249,13 +253,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 const router = useRouter()
 
 const busquedaControl = ref('')
+const busquedaControlAplicada = ref('')
 const busquedaGrupo = ref('')
 const filtroCarrera = ref('')
 const filtroSemestre = ref('')
@@ -335,6 +340,7 @@ const manejarTeclado = (e) => {
 }
 
 onMounted(() => {
+  cargarGrupos()
   window.addEventListener('keydown', manejarTeclado)
   nextTick(() => paginaRef.value?.focus())
 })
@@ -343,104 +349,54 @@ onUnmounted(() => {
 })
 
 // ── Datos ────────────────────────────────────────────────────────
-const grupos = ref([
-  {
-    id: 1,
-    materia: 'Base de Datos I',
-    docente: 'Mtro. Pedro Sánchez Gómez',
-    aula: 'B-101',
-    capacidad: 30,
-    inscritos: 24,
-    carrera: 'Ingeniería en Sistemas Computacionales',
-    semestre: 6,
-    horario: { dia: 'Lunes y Miércoles', horaInicio: '07:00', horaFin: '09:00' },
-    alumnos: [
-      { noControl: '21456987', nombre: 'Sara Pérez' },
-      { noControl: '21456900', nombre: 'Luis Gómez' },
-      { noControl: '20301122', nombre: 'Ana Torres' }
-    ]
+const grupos = ref([])
+const errorCarga = ref('')
+
+// Normalizar grupo desde la respuesta del backend
+const normalizarGrupo = (g) => ({
+  id:        g.id_grupo || g.id,
+  materia:   g.materia?.nombre_materia || g.nombre_materia || g.materia || '',
+  docente:   g.docente?.nombre_completo || g.nombre_docente || g.docente || '',
+  aula:      g.aula || '',
+  capacidad: g.capacidad || 30,
+  inscritos: g.inscritos ?? g.total_inscritos ?? 0,
+  carrera:   g.carrera?.nombre_carrera || g.nombre_carrera || g.carrera || '',
+  semestre:  g.semestre || g.semestre_grupo || 1,
+  horario: {
+    dia:        g.dia || g.horario?.dia || '',
+    horaInicio: g.hora_inicio || g.horario?.horaInicio || '',
+    horaFin:    g.hora_fin    || g.horario?.horaFin    || ''
   },
-  {
-    id: 2,
-    materia: 'Contabilidad Financiera',
-    docente: 'Mtro. Luis Ramírez',
-    aula: 'G-301',
-    capacidad: 35,
-    inscritos: 22,
-    carrera: 'Contador Público',
-    semestre: 4,
-    horario: { dia: 'Martes y Jueves', horaInicio: '09:00', horaFin: '11:00' },
-    alumnos: [
-      { noControl: '21456988', nombre: 'Pedro Ruiz' },
-      { noControl: '20301123', nombre: 'María López' }
-    ]
-  },
-  {
-    id: 3,
-    materia: 'Algoritmos y Programación',
-    docente: 'Mtro. Juan Morales López',
-    aula: 'A-201',
-    capacidad: 30,
-    inscritos: 27,
-    carrera: 'Ingeniería en Sistemas Computacionales',
-    semestre: 5,
-    horario: { dia: 'Lunes, Miércoles y Viernes', horaInicio: '11:00', horaFin: '13:00' },
-    alumnos: [
-      { noControl: '21456987', nombre: 'Sara Pérez' },
-      { noControl: '21000001', nombre: 'Carlos Hernández' }
-    ]
-  },
-  {
-    id: 4,
-    materia: 'Inteligencia Artificial',
-    docente: 'Mtro. Roberto Campos Rivera',
-    aula: 'C-301',
-    capacidad: 20,
-    inscritos: 15,
-    carrera: 'Ingeniería en Sistemas Computacionales',
-    semestre: 8,
-    horario: { dia: 'Martes y Jueves', horaInicio: '13:00', horaFin: '15:00' },
-    alumnos: [
-      { noControl: '21000002', nombre: 'Diana Flores' }
-    ]
-  },
-  {
-    id: 5,
-    materia: 'Redes y Comunicaciones',
-    docente: 'Dra. Laura Ortega Ruiz',
-    aula: 'D-405',
-    capacidad: 25,
-    inscritos: 23,
-    carrera: 'Ingeniería Industrial',
-    semestre: 7,
-    horario: { dia: 'Viernes', horaInicio: '07:00', horaFin: '10:00' },
-    alumnos: [
-      { noControl: '21000003', nombre: 'Roberto Jiménez' },
-      { noControl: '20301122', nombre: 'Ana Torres' }
-    ]
-  },
-  {
-    id: 6,
-    materia: 'Desarrollo Web Avanzado',
-    docente: 'Dra. Sofía Herrera López',
-    aula: 'E-112',
-    capacidad: 35,
-    inscritos: 32,
-    carrera: 'Ingeniería en Sistemas Computacionales',
-    semestre: 7,
-    horario: { dia: 'Lunes y Miércoles', horaInicio: '15:00', horaFin: '17:00' },
-    alumnos: [
-      { noControl: '21456987', nombre: 'Sara Pérez' },
-      { noControl: '21000004', nombre: 'Lucía Vargas' }
-    ]
+  alumnos: (g.alumnos || []).map(a => ({
+    noControl: a.numero_control || a.noControl || '',
+    nombre:    a.nombre || ''
+  }))
+})
+
+const cargarGrupos = async () => {
+  cargando.value = true
+  errorCarga.value = ''
+  mensajeCarga.value = 'Cargando grupos...'
+  try {
+    const response = await fetch('http://localhost:8000/api/grupos')
+    if (!response.ok) throw new Error('Error del servidor')
+    const data = await response.json()
+    grupos.value = data.map(normalizarGrupo)
+    console.log('✅ Grupos cargados:', grupos.value.length, 'registros')
+  } catch (error) {
+    console.error('❌ Error cargando grupos:', error)
+    errorCarga.value = 'No se pudo cargar la lista de grupos. Verifica que el servidor esté activo.'
+  } finally {
+    cargando.value = false
+    mensajeCarga.value = ''
   }
-])
+}
 
 const gruposFiltrados = computed(() => {
   return grupos.value.filter(g => {
     // Prioridad: número de control del alumno inscrito
-    const coincideControl = !busquedaControl.value ||
-      g.alumnos.some(a => a.noControl.includes(busquedaControl.value.trim()))
+    const coincideControl = !busquedaControlAplicada.value ||
+      g.alumnos.some(a => a.noControl === busquedaControlAplicada.value.trim())
     // Secundario: materia o docente
     const coincideBusqueda = !busquedaGrupo.value ||
       g.materia.toLowerCase().includes(busquedaGrupo.value.toLowerCase()) ||
@@ -462,6 +418,7 @@ const visiblePages = computed(() => {
 
 const aplicarFiltros = () => {
   simularCarga('Aplicando filtros...', () => {
+    busquedaControlAplicada.value = busquedaControl.value
     currentPage.value = 1
     filaActiva.value = -1
   })
@@ -469,6 +426,7 @@ const aplicarFiltros = () => {
 const limpiarFiltros = () => {
   simularCarga('Limpiando filtros...', () => {
     busquedaControl.value = ''
+    busquedaControlAplicada.value = ''
     busquedaGrupo.value = ''
     filtroCarrera.value = ''
     filtroSemestre.value = ''
@@ -522,18 +480,39 @@ const cerrarModal = () => {
   grupoEditar.value = {}
 }
 
-const guardarGrupo = () => {
+const guardarGrupo = async () => {
   const esEdicion = !!grupoEditar.value.id
-  simularCarga(esEdicion ? 'Guardando cambios...' : 'Creando grupo...', () => {
-    if (esEdicion) {
-      const index = grupos.value.findIndex(g => g.id === grupoEditar.value.id)
-      if (index !== -1) grupos.value[index] = { ...grupoEditar.value, horario: { ...grupoEditar.value.horario } }
-    } else {
-      grupoEditar.value.id = Date.now()
-      grupos.value.push({ ...grupoEditar.value, horario: { ...grupoEditar.value.horario } })
+  cargando.value = true
+  mensajeCarga.value = esEdicion ? 'Guardando cambios...' : 'Creando grupo...'
+  try {
+    const payload = {
+      nombre_materia: grupoEditar.value.materia,
+      nombre_docente: grupoEditar.value.docente,
+      aula:           grupoEditar.value.aula,
+      carrera:        grupoEditar.value.carrera,
+      semestre:       grupoEditar.value.semestre,
+      capacidad:      grupoEditar.value.capacidad,
+      dia:            grupoEditar.value.horario.dia,
+      hora_inicio:    grupoEditar.value.horario.horaInicio,
+      hora_fin:       grupoEditar.value.horario.horaFin
     }
+    const url    = esEdicion ? `http://localhost:8000/api/grupos/${grupoEditar.value.id}` : 'http://localhost:8000/api/grupos'
+    const method = esEdicion ? 'PUT' : 'POST'
+    const response = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    if (!response.ok) throw new Error('Error del servidor')
+    console.log(`✅ Grupo ${esEdicion ? 'actualizado' : 'creado'} correctamente`)
+    await cargarGrupos()
     cerrarModal()
-  })
+  } catch (error) {
+    console.error('❌ Error guardando grupo:', error)
+  } finally {
+    cargando.value = false
+    mensajeCarga.value = ''
+  }
 }
 
 const showModalEliminar = ref(false)
@@ -557,13 +536,25 @@ const cancelarEliminar = () => {
   grupoAEliminar.value = null
 }
 
-const confirmarEliminar = () => {
-  simularCarga('Eliminando grupo...', () => {
-    const index = grupos.value.findIndex(g => g.id === grupoAEliminar.value.id)
-    if (index !== -1) grupos.value.splice(index, 1)
+const confirmarEliminar = async () => {
+  cargando.value = true
+  mensajeCarga.value = 'Eliminando grupo...'
+  try {
+    const response = await fetch(`http://localhost:8000/api/grupos/${grupoAEliminar.value.id}`, {
+      method: 'DELETE',
+      headers: { 'Accept': 'application/json' }
+    })
+    if (!response.ok) throw new Error('Error del servidor')
+    console.log('✅ Grupo eliminado correctamente')
+    await cargarGrupos()
     showModalEliminar.value = false
     grupoAEliminar.value = null
-  })
+  } catch (error) {
+    console.error('❌ Error eliminando grupo:', error)
+  } finally {
+    cargando.value = false
+    mensajeCarga.value = ''
+  }
 }
 
 const verDetalle = (grupo) => {}
@@ -576,7 +567,7 @@ const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
 
 .grupos-page { width: 100%; background: #F5F5F5; }
 
-.page-title { color: #1A1A1A; font-size: 2.4rem; font-weight: 700; margin-bottom: 1.8rem; }
+.page-title { color: #1A1A1A; font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; }
 
 /* ── Breadcrumb ── */
 .breadcrumb {
@@ -815,4 +806,12 @@ const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
 .modal-confirm { width: 440px; }
 .confirm-texto { font-size: 1rem; color: #1A1A1A; margin: 0 0 8px; }
 .confirm-sub { font-size: 0.88rem; color: #DC2626; margin: 0; }
+
+/* ── Error de carga ── */
+.error-carga {
+  background: #FEF2F2; border: 1px solid #FECACA;
+  color: #DC2626; border-radius: 8px;
+  padding: 10px 16px; margin-bottom: 1rem;
+  font-size: 0.9rem; font-weight: 500;
+}
 </style>

@@ -317,11 +317,7 @@
       </div>
       <!-- Footer institucional -->
       <footer class="footer-institucional">
-        <span>Sistema Integral de Control Escolar</span>
-        <span class="footer-sep">·</span>
-        <span>Servicios Escolares</span>
-        <span class="footer-sep">·</span>
-        <span>{{ new Date().getFullYear() }}</span>
+        © {{ new Date().getFullYear() }} Tecnológico Nacional de México · Todos los derechos reservados
       </footer>
     </div>
   </MainLayout>
@@ -329,6 +325,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 // ── Estado general ────────────────────────────────────────────────
@@ -371,30 +368,40 @@ const busquedaNombre = ref('')
 const resultadosBusqueda = ref([])
 const alumnoSeleccionado = ref(null)
 
-// Datos mock de alumnos
-const alumnosMock = [
-  { noControl: '21456987', nombre: 'Sara Pérez González', carrera: 'Ingeniería en Sistemas Computacionales', semestre: 6 },
-  { noControl: '21456988', nombre: 'Pedro Ruiz Martínez', carrera: 'Contador Público', semestre: 4 },
-  { noControl: '20301122', nombre: 'Ana Torres López', carrera: 'Ingeniería Industrial', semestre: 7 },
-  { noControl: '21000001', nombre: 'Carlos Hernández Vega', carrera: 'Ingeniería en Sistemas Computacionales', semestre: 5 },
-  { noControl: '21000002', nombre: 'Diana Flores Soto', carrera: 'Ingeniería en Gestión Empresarial', semestre: 3 },
-]
+const normalizarAlumno = (a) => ({
+  noControl: a.numero_control || a.noControl || '',
+  nombre:    a.nombre || a.persona?.nombre_completo || a.persona?.nombre || '',
+  carrera:   a.carrera?.nombre_carrera || a.carrera || '',
+  semestre:  a.semestre_actual || a.semestre || 1,
+  id_alumno: a.id_alumno || a.id
+})
 
-const buscarAlumno = () => {
-  const ctrl = busquedaControl.value.trim()
-  const nombre = busquedaNombre.value.trim().toLowerCase()
+const buscarAlumno = async () => {
+  const ctrl   = busquedaControl.value.trim()
+  const nombre = busquedaNombre.value.trim()
   if (!ctrl && !nombre) return
 
-  simularCarga('Buscando alumno...', () => {
-    resultadosBusqueda.value = alumnosMock.filter(a => {
-      const coincideControl = !ctrl || a.noControl.includes(ctrl)
-      const coincideNombre = !nombre || a.nombre.toLowerCase().includes(nombre)
-      return coincideControl && coincideNombre
-    })
+  cargando.value = true
+  mensajeCarga.value = 'Buscando alumno...'
+  try {
+    const params = new URLSearchParams()
+    if (ctrl)   params.append('numero_control', ctrl)
+    if (nombre) params.append('nombre', nombre)
+    const response = await fetch(`http://localhost:8000/api/alumnos-full?${params}`)
+    if (!response.ok) throw new Error('Error del servidor')
+    const data = await response.json()
+    resultadosBusqueda.value = data.map(normalizarAlumno)
     if (resultadosBusqueda.value.length === 0) {
       showNotification('No se encontró ningún alumno con esos datos.', 'error')
     }
-  })
+    console.log('✅ Búsqueda de alumnos:', resultadosBusqueda.value.length, 'resultado(s)')
+  } catch (error) {
+    console.error('❌ Error buscando alumno:', error)
+    showNotification('No se pudo conectar con el servidor. Verifica que esté activo.', 'error')
+  } finally {
+    cargando.value = false
+    mensajeCarga.value = ''
+  }
 }
 
 const elegirAlumno = (alumno) => {
@@ -413,14 +420,39 @@ const currentPage = ref(1)
 const porPagina = 5
 const grupoSeleccionado = ref(null)
 
-const grupos = ref([
-  { id: 1, materia: 'Algoritmos y Programación', docente: 'Mtro. Juan Morales', aula: 'A-201', capacidad: 30, inscritos: 23, horario: { dia: 'Lunes y Miércoles', horaInicio: '07:00', horaFin: '09:00' } },
-  { id: 2, materia: 'Base de Datos I', docente: 'Dra. Ana Ruiz', aula: 'B-103', capacidad: 30, inscritos: 28, horario: { dia: 'Martes y Jueves', horaInicio: '09:00', horaFin: '11:00' } },
-  { id: 3, materia: 'Administración de Redes', docente: 'Mtro. Carlos Jiménez', aula: 'A-204', capacidad: 25, inscritos: 19, horario: { dia: 'Viernes', horaInicio: '11:00', horaFin: '14:00' } },
-  { id: 4, materia: 'Inteligencia Artificial', docente: 'Mtro. Roberto Campos', aula: 'C-301', capacidad: 20, inscritos: 20, horario: { dia: 'Lunes y Miércoles', horaInicio: '13:00', horaFin: '15:00' } },
-  { id: 5, materia: 'Desarrollo Web Avanzado', docente: 'Dra. Sofía Herrera', aula: 'E-112', capacidad: 35, inscritos: 32, horario: { dia: 'Martes y Jueves', horaInicio: '15:00', horaFin: '17:00' } },
-  { id: 6, materia: 'Contabilidad Financiera', docente: 'Mtro. Luis Ramírez', aula: 'G-301', capacidad: 35, inscritos: 22, horario: { dia: 'Lunes, Miércoles y Viernes', horaInicio: '07:00', horaFin: '09:00' } },
-])
+const grupos = ref([])
+
+const normalizarGrupoInscripcion = (g) => ({
+  id:        g.id_grupo || g.id,
+  materia:   g.materia?.nombre_materia || g.nombre_materia || g.materia || '',
+  docente:   g.docente?.nombre_completo || g.nombre_docente || g.docente || '',
+  aula:      g.aula || '',
+  capacidad: g.capacidad || 30,
+  inscritos: g.inscritos ?? g.total_inscritos ?? 0,
+  horario: {
+    dia:        g.dia || g.horario?.dia || '',
+    horaInicio: g.hora_inicio || g.horario?.horaInicio || '',
+    horaFin:    g.hora_fin    || g.horario?.horaFin    || ''
+  }
+})
+
+const cargarGruposDisponibles = async () => {
+  cargando.value = true
+  mensajeCarga.value = 'Cargando grupos disponibles...'
+  try {
+    const response = await fetch('http://localhost:8000/api/grupos')
+    if (!response.ok) throw new Error('Error del servidor')
+    const data = await response.json()
+    grupos.value = data.map(normalizarGrupoInscripcion)
+    console.log('✅ Grupos cargados para inscripción:', grupos.value.length)
+  } catch (error) {
+    console.error('❌ Error cargando grupos:', error)
+    showNotification('No se pudieron cargar los grupos disponibles.', 'error')
+  } finally {
+    cargando.value = false
+    mensajeCarga.value = ''
+  }
+}
 
 const gruposFiltrados = computed(() => {
   const q = busquedaGrupo.value.toLowerCase()
@@ -452,12 +484,26 @@ const inscribirAlumno = (grupo) => {
 }
 
 // ── Paso 3: Confirmación ──────────────────────────────────────────
-const confirmarInscripcion = () => {
-  simularCarga('Registrando inscripción...', () => {
-    const idx = grupos.value.findIndex(g => g.id === grupoSeleccionado.value.id)
-    if (idx !== -1) grupos.value[idx].inscritos++
+const confirmarInscripcion = async () => {
+  cargando.value = true
+  mensajeCarga.value = 'Registrando inscripción...'
+  try {
+    const payload = {
+      id_alumno: alumnoSeleccionado.value.id_alumno,
+      id_grupo:  grupoSeleccionado.value.id,
+      periodo:   periodo.value
+    }
+    const response = await fetch('http://localhost:8000/api/inscripciones', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    if (!response.ok) throw new Error('Error del servidor')
+    console.log('✅ Inscripción registrada correctamente')
     showNotification(`Inscripción confirmada: ${alumnoSeleccionado.value.nombre} en ${grupoSeleccionado.value.materia}`, 'success')
-    // Resetear todo
+    // Recargar grupos para actualizar el contador de inscritos
+    await cargarGruposDisponibles()
+    // Resetear flujo
     paso.value = 1
     alumnoSeleccionado.value = null
     grupoSeleccionado.value = null
@@ -466,7 +512,13 @@ const confirmarInscripcion = () => {
     busquedaGrupo.value = ''
     currentPage.value = 1
     filaActiva.value = -1
-  }, 1000)
+  } catch (error) {
+    console.error('❌ Error registrando inscripción:', error)
+    showNotification('No se pudo registrar la inscripción. Intenta de nuevo.', 'error')
+  } finally {
+    cargando.value = false
+    mensajeCarga.value = ''
+  }
 }
 
 // ── Navegación por teclado ────────────────────────────────────────
@@ -521,8 +573,14 @@ const manejarTeclado = (e) => {
 }
 
 onMounted(() => {
+  cargarGruposDisponibles()
   window.addEventListener('keydown', manejarTeclado)
   nextTick(() => paginaRef.value?.focus())
+})
+
+// Recargar grupos al entrar al paso 2 por si cambiaron
+watch(paso, (val) => {
+  if (val === 2) cargarGruposDisponibles()
 })
 onUnmounted(() => {
   window.removeEventListener('keydown', manejarTeclado)
@@ -542,19 +600,21 @@ onUnmounted(() => {
 .breadcrumb { color: #6B7280; font-size: 0.92rem; margin-bottom: 1rem; }
 .arrow { color: #1A1A1A; font-weight: bold; }
 
-.page-title { font-size: 2.4rem; font-weight: 700; color: #1A1A1A; margin-bottom: 0.4rem; }
+.page-title { font-size: 1.75rem; font-weight: 700; color: #1A1A1A; margin-bottom: 0.4rem; }
 .subtitle { color: #6B7280; margin-bottom: 1.8rem; font-size: 0.95rem; }
 
 /* Toast */
 .toast {
-  position: fixed; top: 90px; right: 30px;
-  padding: 14px 24px; border-radius: 8px; color: white;
-  font-weight: 500; box-shadow: 0 6px 20px rgba(0,0,0,0.25);
-  z-index: 9999; animation: slideIn 0.3s ease;
+  position: fixed; bottom: 2rem; right: 2rem;
+  padding: 0.9rem 1.4rem; border-radius: 10px; color: white;
+  font-weight: 700; font-size: 0.9rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  z-index: 9999; animation: slideInToast 0.3s ease;
+  display: flex; align-items: center; gap: 0.6rem;
 }
-.toast.success { background: #16A34A; }
+.toast.success { background: #1B396A; }
 .toast.error { background: #DC2626; }
-@keyframes slideIn { from { transform: translateX(120%); } to { transform: translateX(0); } }
+@keyframes slideInToast { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
 /* Barra de pasos */
 .pasos-barra {
@@ -854,16 +914,12 @@ onUnmounted(() => {
 
 /* ── Footer institucional ── */
 .footer-institucional {
-  margin-top: 2.5rem;
-  padding-top: 1.2rem;
-  border-top: 1px solid #E5E7EB;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.82rem;
+  text-align: center;
   color: #9CA3AF;
+  font-size: 0.82rem;
+  padding-top: 2rem;
+  margin-top: 1rem;
 }
-.footer-sep { color: #D1D5DB; }
 
 /* ── Filtro grupos (paso 2) ── */
 .filtros-card-inline {
