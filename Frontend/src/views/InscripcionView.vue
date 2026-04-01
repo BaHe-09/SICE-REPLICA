@@ -9,15 +9,6 @@
 
       <h1 class="page-title">Inscripción</h1>
       <p class="subtitle">Busque al alumno por número de control o nombre, y asígnelo a un grupo disponible.</p>
-      <div class="atajos-barra">
-        <span><kbd>Ctrl+F</kbd> Enfocar número de control</span>
-        <span><kbd>Ctrl+B</kbd> Buscar alumno</span>
-        <span><kbd>Ctrl+L</kbd> Limpiar búsqueda</span>
-        <span><kbd>↑↓</kbd> Navegar grupos</span>
-        <span><kbd>←→</kbd> Cambiar página</span>
-        <span><kbd>Enter</kbd> Elegir grupo seleccionado</span>
-        <span><kbd>Esc</kbd> Retroceder paso</span>
-      </div>
 
       <!-- Toast de notificación -->
       <div v-if="notification.message" class="toast" :class="notification.type">
@@ -167,18 +158,26 @@
           </div>
 
           <!-- Filtro de grupos -->
-          <div class="filtro-grupos-row">
-            <div class="input-con-icono flex-1">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          <div class="filtros-card-inline">
+            <div class="filtros-label">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+              </svg>
+              Filtrar:
+            </div>
+            <div class="busqueda-grupos-wrap">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16" class="icono-lupa-gris">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
               </svg>
               <input
                 type="text"
                 v-model="busquedaGrupo"
-                placeholder="Buscar por materia o docente..."
+                placeholder="Materia o docente..."
+                class="input-busqueda-grupos"
               />
+              <button v-if="busquedaGrupo" @click="busquedaGrupo = ''" class="btn-limpiar-busqueda-g">✕</button>
             </div>
-            <button class="btn-filtrar" @click="filtrarGrupos">Filtrar</button>
+            <button class="btn-filtrar-inline" @click="filtrarGrupos">Filtrar</button>
           </div>
 
           <!-- Tabla de grupos -->
@@ -699,13 +698,7 @@ onUnmounted(() => {
 .btn-siguiente svg { width: 16px; height: 16px; stroke: white; }
 
 /* Paso 2: tabla de grupos */
-.filtro-grupos-row {
-  display: flex; gap: 12px; align-items: center; margin-bottom: 1.2rem;
-}
-.btn-filtrar {
-  background: #1B396A; color: white; border: none;
-  padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer;
-}
+
 
 .table-container {
   border-radius: 12px; overflow: hidden;
@@ -871,4 +864,44 @@ onUnmounted(() => {
   color: #9CA3AF;
 }
 .footer-sep { color: #D1D5DB; }
+
+/* ── Filtro grupos (paso 2) ── */
+.filtros-card-inline {
+  background: #FFFFFF;
+  border-radius: 12px;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  padding: 0.75rem 1.1rem;
+  display: flex; align-items: center; gap: 0.6rem;
+  flex-wrap: wrap; margin-bottom: 1.2rem;
+}
+.filtros-label {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 0.82rem; font-weight: 700; color: #6B7280; white-space: nowrap;
+}
+.filtros-label svg { stroke: #6B7280; }
+.busqueda-grupos-wrap {
+  display: flex; align-items: center; gap: 8px;
+  background: #FFFFFF; border: 1px solid #E5E7EB;
+  border-radius: 8px; padding: 0 12px;
+  flex: 1; min-width: 200px;
+}
+.icono-lupa-gris { stroke: #6B7280; flex-shrink: 0; }
+.input-busqueda-grupos {
+  border: none; background: transparent;
+  padding: 8px 0; font-size: 0.875rem;
+  font-family: inherit; outline: none; flex: 1; color: #1A1A1A;
+}
+.input-busqueda-grupos::placeholder { color: #9CA3AF; }
+.btn-limpiar-busqueda-g {
+  background: none; border: none; color: #6B7280;
+  cursor: pointer; font-size: 0.9rem; padding: 2px; line-height: 1;
+}
+.btn-filtrar-inline {
+  background: #1B396A; color: white; border: none;
+  padding: 9px 20px; border-radius: 8px;
+  font-weight: 600; cursor: pointer; font-size: 0.875rem;
+  white-space: nowrap; transition: background 0.2s;
+}
+.btn-filtrar-inline:hover { background: #1D4ED8; }
 </style>

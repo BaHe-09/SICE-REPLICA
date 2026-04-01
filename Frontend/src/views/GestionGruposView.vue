@@ -2,50 +2,53 @@
   <MainLayout v-slot="{ busquedaGlobal }">
     <div class="grupos-page" @keydown="manejarTeclado" tabindex="-1" ref="paginaRef">
 
-      <h1 class="page-title">Gestión de Grupos</h1>
-      <div class="atajos-barra">
-        <span><kbd>Ctrl+M</kbd> Nuevo grupo</span>
-        <span><kbd>Ctrl+F</kbd> Buscar por número de control</span>
-        <span><kbd>Ctrl+B</kbd> Buscar por materia</span>
-        <span><kbd>Ctrl+L</kbd> Limpiar filtros</span>
-        <span><kbd>↑↓</kbd> Navegar filas</span>
-        <span><kbd>Enter</kbd> Editar fila seleccionada</span>
-        <span><kbd>Esc</kbd> Cerrar modal</span>
+      <div class="breadcrumb">
+        <router-link to="/servicios-escolares" class="breadcrumb-link">Servicios Escolares</router-link>
+        <span class="sep">›</span>
+        <span class="activo">Gestión de Grupos</span>
       </div>
+      <h1 class="page-title">Gestión de Grupos</h1>
 
-      <div class="filters-bar">
+      <div class="filtros-card">
+        <div class="filtros-label">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+          </svg>
+          Filtrar:
+        </div>
 
-        <!-- Búsqueda prioritaria por número de control -->
-        <div class="search-group search-control">
-          <svg xmlns="http://www.w3.org/2000/svg" class="search-icon-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 01-14 0 7 7 0 0114 0z" />
+        <!-- Búsqueda principal: número de control -->
+        <div class="busqueda-control-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16" class="icono-lupa">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
           <input
             type="text"
-            placeholder="Número de control del alumno"
+            placeholder="No. de Control del alumno (principal)..."
             v-model="busquedaControl"
-            class="search-input"
+            class="input-busqueda-control"
             ref="inputControlRef"
             @keyup.enter="aplicarFiltros"
-          >
+          />
+          <button v-if="busquedaControl" @click="busquedaControl = ''" class="btn-limpiar-busqueda">✕</button>
         </div>
 
-        <!-- Búsqueda secundaria por materia o docente -->
-        <div class="search-group">
-          <svg xmlns="http://www.w3.org/2000/svg" class="search-icon-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 01-14 0 7 7 0 0114 0z" />
+        <!-- Búsqueda secundaria: materia o docente -->
+        <div class="busqueda-secundaria-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16" class="icono-lupa-gris">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
           <input
             type="text"
             placeholder="Materia o docente..."
             v-model="busquedaGrupo"
-            class="search-input"
+            class="input-busqueda-secundaria"
             ref="inputBusquedaRef"
             @keyup.enter="aplicarFiltros"
-          >
+          />
         </div>
 
-        <select v-model="filtroCarrera" class="filter-select" @change="aplicarFiltros">
+        <select v-model="filtroCarrera" class="filtro-select" @change="aplicarFiltros">
           <option value="">Carrera</option>
           <option value="Ingeniería en Sistemas Computacionales">Ingeniería en Sistemas Computacionales</option>
           <option value="Ingeniería Industrial">Ingeniería Industrial</option>
@@ -54,7 +57,7 @@
           <option value="Contador Público">Contador Público</option>
         </select>
 
-        <select v-model="filtroSemestre" class="filter-select" @change="aplicarFiltros">
+        <select v-model="filtroSemestre" class="filtro-select" @change="aplicarFiltros">
           <option value="">Semestre</option>
           <option v-for="n in 8" :key="n" :value="n">{{ n }}° Semestre</option>
         </select>
@@ -575,17 +578,81 @@ const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
 
 .page-title { color: #1A1A1A; font-size: 2.4rem; font-weight: 700; margin-bottom: 1.8rem; }
 
-.filters-bar { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.8rem; flex-wrap: nowrap; }
+/* ── Breadcrumb ── */
+.breadcrumb {
+  color: #6B7280; font-size: 0.875rem;
+  margin-bottom: 0.6rem;
+  display: flex; align-items: center; gap: 0.4rem;
+}
+.breadcrumb .sep { color: #E5E7EB; }
+.breadcrumb .activo { color: #1B396A; font-weight: 600; }
+.breadcrumb-link { color: #6B7280; text-decoration: none; transition: color 0.15s; }
+.breadcrumb-link:hover { color: #1B396A; }
 
-.search-group { position: relative; flex: 0 0 260px; min-width: 260px; }
-.search-input { width: 100%; padding: 12px 14px 12px 48px; border: 1px solid #E5E7EB; border-radius: 8px; font-size: 1rem; background: #FFFFFF; }
-.search-icon-svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; stroke: #6B7280; }
+/* ── Barra de filtros ── */
+.filtros-card {
+  background: #FFFFFF;
+  border-radius: 12px;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  padding: 0.9rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.filtros-label {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 0.82rem; font-weight: 700; color: #6B7280; white-space: nowrap;
+}
+.filtros-label svg { stroke: #6B7280; }
 
-.filter-select { padding: 12px 14px; border: 1px solid #E5E7EB; border-radius: 8px; font-size: 1rem; flex: 1 1 180px; min-width: 180px; background: #FFFFFF; }
+.busqueda-control-wrap {
+  display: flex; align-items: center; gap: 8px;
+  background: #DBEAFE; border: 1.5px solid #1B396A;
+  border-radius: 8px; padding: 0 12px;
+  flex: 1; min-width: 200px;
+}
+.icono-lupa { stroke: #1B396A; flex-shrink: 0; }
+.input-busqueda-control {
+  border: none; background: transparent;
+  padding: 9px 0; font-size: 0.875rem;
+  font-family: inherit; outline: none; flex: 1; color: #1A1A1A;
+}
+.input-busqueda-control::placeholder { color: #9CA3AF; }
+.btn-limpiar-busqueda {
+  background: none; border: none; color: #6B7280;
+  cursor: pointer; font-size: 0.9rem; padding: 2px; line-height: 1;
+}
 
-.btn-filtrar { background: #1B396A; color: white; border: none; padding: 12px 28px; border-radius: 8px; font-weight: 600; cursor: pointer; }
-.btn-limpiar { background: #F5F5F5; color: #1A1A1A; border: 1px solid #E5E7EB; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; }
-.btn-nuevo { background: #1B396A; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+.busqueda-secundaria-wrap {
+  display: flex; align-items: center; gap: 8px;
+  background: #FFFFFF; border: 1px solid #E5E7EB;
+  border-radius: 8px; padding: 0 12px;
+  flex: 1; min-width: 180px;
+}
+.icono-lupa-gris { stroke: #6B7280; flex-shrink: 0; }
+.input-busqueda-secundaria {
+  border: none; background: transparent;
+  padding: 9px 0; font-size: 0.875rem;
+  font-family: inherit; outline: none; flex: 1; color: #1A1A1A;
+}
+.input-busqueda-secundaria::placeholder { color: #9CA3AF; }
+
+.filtro-select {
+  padding: 9px 10px; border: 1px solid #E5E7EB;
+  border-radius: 8px; font-size: 0.82rem;
+  font-family: inherit; color: #1A1A1A;
+  background: #F5F5F5; outline: none;
+}
+.filtro-select:focus { border-color: #1B396A; }
+
+.btn-filtrar { background: #1B396A; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.875rem; white-space: nowrap; transition: background 0.2s; }
+.btn-filtrar:hover { background: #1D4ED8; }
+.btn-limpiar { background: #F5F5F5; color: #1A1A1A; border: 1px solid #E5E7EB; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.875rem; white-space: nowrap; }
+.btn-nuevo { background: #1B396A; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.875rem; white-space: nowrap; transition: background 0.2s; }
+.btn-nuevo:hover { background: #1D4ED8; }
 
 .table-container { background: #FFFFFF; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.07); border: 1px solid #E5E7EB; }
 .grupos-table { width: 100%; border-collapse: collapse; }
@@ -655,10 +722,6 @@ const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
 .btn-eliminar { background: #DC2626; color: white; border: none; }
 .btn-guardar { background: #1B396A; color: white; border: none; }
 
-.search-control .search-input {
-  border-color: #1B396A;
-  border-width: 2px;
-}
 
 .control-aviso {
   background: #EFF6FF;
@@ -712,7 +775,6 @@ const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.filters-bar { flex-wrap: wrap; }
 
 /* ── Navegación por teclado ── */
 .atajos-barra {
