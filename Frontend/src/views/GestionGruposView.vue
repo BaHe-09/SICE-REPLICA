@@ -268,6 +268,7 @@ const filasPorPagina = ref(10)
 const currentPage = ref(1)
 const cargando = ref(false)
 const mensajeCarga = ref('')
+const errorCarga = ref('')
 
 const filaActiva = ref(-1)
 const inputControlRef = ref(null)
@@ -350,7 +351,8 @@ onUnmounted(() => {
 
 // ── Datos ────────────────────────────────────────────────────────
 const grupos = ref([])
-const errorCarga = ref('')
+
+
 
 // Normalizar grupo desde la respuesta del backend
 const normalizarGrupo = (g) => ({

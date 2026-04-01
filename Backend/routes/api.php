@@ -26,8 +26,13 @@ Route::put('/alumnos/{id}', [AlumnoController::class, 'update']);
 Route::delete('/alumnos/{id}', [AlumnoController::class, 'destroy']);
 
 // GRUPOS / INSCRIPCIÓN
+use App\Http\Controllers\Api\GrupoController;
 Route::get('/grupos-disponibles', [ServiciosEscolaresController::class, 'getGruposDisponibles']);
 Route::post('/inscribir', [ServiciosEscolaresController::class, 'inscribirAlumno']);
+Route::get('/grupos', [GrupoController::class, 'index']);
+Route::post('/grupos', [GrupoController::class, 'store']);
+Route::put('/grupos/{id}', [GrupoController::class, 'update']);
+Route::delete('/grupos/{id}', [GrupoController::class, 'destroy']);
 
 
 // EVALUACIONES
