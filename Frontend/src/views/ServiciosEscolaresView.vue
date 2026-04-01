@@ -4,6 +4,8 @@
 
       <!-- Breadcrumb -->
       <nav class="breadcrumb">
+        <router-link to="/inicio" class="breadcrumb-link">Inicio</router-link>
+        <span class="sep">›</span>
         <span class="breadcrumb-actual">Servicios Escolares</span>
       </nav>
 
@@ -12,7 +14,7 @@
         <h1 class="page-title">Servicios Escolares</h1>
       </div>
 
-      <!-- Toast de notificación -->
+      <!-- Toast de notificación — fijo abajo a la derecha -->
       <transition name="toast-slide">
         <div v-if="notificacion.visible" class="toast" :class="notificacion.tipo">
           <svg v-if="notificacion.tipo === 'exito'" xmlns="http://www.w3.org/2000/svg"
@@ -85,8 +87,8 @@
 
         <!-- Evaluaciones Pendientes -->
         <div class="stat-card">
-          <div class="stat-icono-wrapper stat-icono-morado">
-            <svg xmlns="http://www.w3.org/2000/svg" class="stat-icono-morado-svg" fill="none"
+          <div class="stat-icono-wrapper stat-icono-azul-suave">
+            <svg xmlns="http://www.w3.org/2000/svg" class="stat-icono-azul-suave-svg" fill="none"
                  viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round"
                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
@@ -194,9 +196,9 @@
         </div>
       </div>
 
-      <!-- Footer institucional -->
+      <!-- Footer institucional — consistente con el resto del sistema -->
       <footer class="pie-pagina">
-        © 2026 Tecnológico Nacional de México | Todos los derechos reservados
+        © 2026 Tecnológico Nacional de México · Todos los derechos reservados
       </footer>
 
     </div>
@@ -210,7 +212,6 @@ import MainLayout from '@/layouts/MainLayout.vue'
 
 const router = useRouter()
 
-// ── Estado ──────────────────────────────────────────────────────
 const cargando               = ref(false)
 const errorCarga             = ref(false)
 const alumnosActivos         = ref(0)
@@ -227,7 +228,6 @@ const mostrarNotificacion = (mensaje, tipo = 'exito') => {
   timerNotif = setTimeout(() => { notificacion.value.visible = false }, 3500)
 }
 
-// ── Carga de datos ───────────────────────────────────────────────
 const cargarDatos = async () => {
   cargando.value   = true
   errorCarga.value = false
@@ -236,10 +236,10 @@ const cargarDatos = async () => {
     if (!res.ok) throw new Error('Error en la respuesta del servidor')
     const data = await res.json()
 
-    alumnosActivos.value         = data.kpis?.alumnos        ?? 0
-    inscripcionesPeriodo.value   = data.kpis?.inscripciones  ?? 0
-    gruposAbiertos.value         = data.kpis?.grupos         ?? 0
-    evaluacionesPendientes.value = data.kpis?.evaluaciones   ?? 0
+    alumnosActivos.value         = data.kpis?.alumnos       ?? 0
+    inscripcionesPeriodo.value   = data.kpis?.inscripciones ?? 0
+    gruposAbiertos.value         = data.kpis?.grupos        ?? 0
+    evaluacionesPendientes.value = data.kpis?.evaluaciones  ?? 0
 
   } catch (error) {
     console.error('Error cargando datos del dashboard:', error)
@@ -251,7 +251,6 @@ const cargarDatos = async () => {
 
 onMounted(() => { cargarDatos() })
 
-// ── Navegación ───────────────────────────────────────────────────
 const irAAlumnos       = () => router.push('/alumnos')
 const irAInscripciones = () => router.push('/inscripcion')
 const irAGrupos        = () => router.push('/gestion-grupos')
@@ -262,7 +261,6 @@ const nuevaInscripcion = () => router.push('/inscripcion')
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
-/* ── Variables ─────────────────────────────────────────────────── */
 .servicios-page {
   --azul:        #1B396A;
   --azul-hover:  #1D4ED8;
@@ -284,10 +282,20 @@ const nuevaInscripcion = () => router.push('/inscripcion')
 
 /* ── Breadcrumb ─────────────────────────────────────────────────── */
 .breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   color: var(--gris);
   font-size: 0.88rem;
   margin-bottom: 0.75rem;
 }
+.breadcrumb .sep { color: #E5E7EB; }
+.breadcrumb-link {
+  color: var(--gris);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.breadcrumb-link:hover { color: var(--azul); }
 .breadcrumb-actual {
   color: var(--azul);
   font-weight: 600;
@@ -303,7 +311,7 @@ const nuevaInscripcion = () => router.push('/inscripcion')
   margin: 0;
 }
 
-/* ── Toast ──────────────────────────────────────────────────────── */
+/* ── Toast — fijo abajo a la derecha (consistente con todo el sistema) ── */
 .toast {
   position: fixed;
   bottom: 2rem;
@@ -311,12 +319,12 @@ const nuevaInscripcion = () => router.push('/inscripcion')
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 20px;
+  padding: 0.9rem 1.4rem;
   border-radius: 10px;
   color: white;
-  font-weight: 500;
-  font-size: 0.93rem;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+  font-weight: 700;
+  font-size: 0.9rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
   z-index: 3000;
   font-family: 'Montserrat', sans-serif;
   max-width: 380px;
@@ -325,8 +333,8 @@ const nuevaInscripcion = () => router.push('/inscripcion')
 .toast.error { background: var(--rojo); }
 .toast-icono { width: 20px; height: 20px; flex-shrink: 0; }
 
-.toast-slide-enter-active, .toast-slide-leave-active { transition: all 0.35s ease; }
-.toast-slide-enter-from, .toast-slide-leave-to { opacity: 0; transform: translateX(110%); }
+.toast-slide-enter-active, .toast-slide-leave-active { transition: all 0.3s ease; }
+.toast-slide-enter-from, .toast-slide-leave-to { opacity: 0; transform: translateX(100%); }
 
 /* ── Tarjetas de estadísticas ───────────────────────────────────── */
 .stats-grid {
@@ -352,7 +360,7 @@ const nuevaInscripcion = () => router.push('/inscripcion')
   box-shadow: 0 8px 20px rgba(0,0,0,0.09);
 }
 
-/* Tarjeta azul — fondo sólido sin gradiente */
+/* Tarjeta azul principal */
 .stat-azul {
   background: var(--azul);
   border-color: var(--azul);
@@ -377,17 +385,14 @@ const nuevaInscripcion = () => router.push('/inscripcion')
 }
 .stat-icono-wrapper svg { width: 22px; height: 22px; stroke: var(--azul); }
 
-.stat-icono-verde   { background: #DCFCE7; }
-.stat-icono-verde   svg { stroke: var(--verde) !important; }
-.stat-icono-naranja { background: #FEF3C7; }
-.stat-icono-naranja svg { stroke: var(--amarillo) !important; }
-.stat-icono-morado  { background: #EDE9FE; }
-.stat-icono-morado  svg { stroke: #7C3AED !important; }
-
-/* Nombres específicos para los svgs dentro de wrappers */
-.stat-icono-verde-svg   { width: 22px; height: 22px; stroke: var(--verde); }
-.stat-icono-naranja-svg { width: 22px; height: 22px; stroke: var(--amarillo); }
-.stat-icono-morado-svg  { width: 22px; height: 22px; stroke: #7C3AED; }
+/* Colores de ícono dentro de paleta oficial */
+.stat-icono-verde        { background: #DCFCE7; }
+.stat-icono-verde-svg    { width: 22px; height: 22px; stroke: var(--verde); }
+.stat-icono-naranja      { background: #FEF3C7; }
+.stat-icono-naranja-svg  { width: 22px; height: 22px; stroke: var(--amarillo); }
+/* Evaluaciones: azul suave en lugar de morado (dentro de paleta oficial) */
+.stat-icono-azul-suave     { background: var(--azul-suave); }
+.stat-icono-azul-suave-svg { width: 22px; height: 22px; stroke: var(--azul); }
 
 .stat-info { display: flex; flex-direction: column; gap: 2px; }
 
@@ -473,6 +478,7 @@ const nuevaInscripcion = () => router.push('/inscripcion')
 }
 .btn-reintentar:hover { background: #B91C1C; }
 
+/* ── Accesos Rápidos ────────────────────────────────────────────── */
 .accesos-seccion { margin-bottom: 2rem; }
 
 .seccion-titulo {
@@ -506,7 +512,6 @@ const nuevaInscripcion = () => router.push('/inscripcion')
   border-color: var(--azul);
 }
 
-/* Kardex deshabilitado */
 .acceso-deshabilitado {
   cursor: not-allowed;
   opacity: 0.6;
@@ -528,14 +533,14 @@ const nuevaInscripcion = () => router.push('/inscripcion')
 }
 .acceso-icono svg { width: 22px; height: 22px; }
 
-.acceso-verde   { background: #DCFCE7; }
-.acceso-verde svg   { stroke: var(--verde); }
-.acceso-azul    { background: var(--azul-suave); }
-.acceso-azul svg    { stroke: var(--azul); }
+.acceso-verde    { background: #DCFCE7; }
+.acceso-verde svg    { stroke: var(--verde); }
+.acceso-azul     { background: var(--azul-suave); }
+.acceso-azul svg     { stroke: var(--azul); }
 .acceso-amarillo { background: #FEF3C7; }
 .acceso-amarillo svg { stroke: var(--amarillo); }
-.acceso-gris    { background: #F3F4F6; }
-.acceso-gris svg    { stroke: var(--gris); }
+.acceso-gris     { background: #F3F4F6; }
+.acceso-gris svg     { stroke: var(--gris); }
 
 .acceso-contenido { flex: 1; }
 .acceso-contenido h4 {
@@ -573,7 +578,7 @@ const nuevaInscripcion = () => router.push('/inscripcion')
   font-family: 'Montserrat', sans-serif;
 }
 
-/* ── Footer ─────────────────────────────────────────────────────── */
+/* ── Footer — consistente con CalificacionesView y EvaluacionesView ── */
 .pie-pagina {
   text-align: center;
   color: #9CA3AF;
