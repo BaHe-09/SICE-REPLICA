@@ -39,6 +39,13 @@ Route::delete('/grupos/{id}', [GrupoController::class, 'destroy']);
 Route::get('/evaluaciones/{id_grupo}', [ServiciosEscolaresController::class, 'getEvaluaciones']);
 Route::post('/evaluaciones/guardar', [ServiciosEscolaresController::class, 'guardarEvaluaciones']);
 
+// INSCRIPCIÓN
+Route::prefix('inscripcion')->group(function () {
+    Route::get('/buscar-alumno', [InscripcionController::class, 'buscarAlumno']);
+    Route::get('/grupos', [InscripcionController::class, 'gruposDisponibles']);
+    Route::post('/registrar', [InscripcionController::class, 'inscribirAlumno']);
+});
+
 
 
 // 🔹 DASHBOARD
