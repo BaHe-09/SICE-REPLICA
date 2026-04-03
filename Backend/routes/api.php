@@ -1,9 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;                  
 
 // controllers
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AlumnoController;               
+use App\Http\Controllers\Api\ServiciosEscolaresController;
 
 Route::get('/dashboard', [DashboardController::class, 'index']);
 
@@ -16,12 +19,13 @@ Route::get('/alumnos-full', [ServiciosEscolaresController::class, 'getAlumnos'])
 Route::post('/alumnos', [ServiciosEscolaresController::class, 'store']);
 Route::get('/buscar-alumno', [ServiciosEscolaresController::class, 'buscarAlumnoInscripcion']);
 
+// === CRUD COMPLETO DE ALUMNOS===
+Route::apiResource('alumnos', AlumnoController::class);
+
 // Obtener lista
 Route::get('/alumnos-crud', [AlumnoController::class, 'index']);
-
 // Actualizar alumno
 Route::put('/alumnos/{id}', [AlumnoController::class, 'update']);
-
 // Eliminar alumno
 Route::delete('/alumnos/{id}', [AlumnoController::class, 'destroy']);
 
@@ -34,12 +38,16 @@ Route::post('/grupos', [GrupoController::class, 'store']);
 Route::put('/grupos/{id}', [GrupoController::class, 'update']);
 Route::delete('/grupos/{id}', [GrupoController::class, 'destroy']);
 
-
 // EVALUACIONES
 Route::get('/evaluaciones/{id_grupo}', [ServiciosEscolaresController::class, 'getEvaluaciones']);
 Route::post('/evaluaciones/guardar', [ServiciosEscolaresController::class, 'guardarEvaluaciones']);
 
-
+// INSCRIPCIÓN
+Route::prefix('inscripcion')->group(function () {
+    Route::get('/buscar-alumno', [InscripcionController::class, 'buscarAlumno']);
+    Route::get('/grupos', [InscripcionController::class, 'gruposDisponibles']);
+    Route::post('/registrar', [InscripcionController::class, 'inscribirAlumno']);
+});
 
 // 🔹 DASHBOARD
 Route::get('/resumen-escolar', [ServiciosEscolaresController::class, 'getResumen']);
