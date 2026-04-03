@@ -357,22 +357,19 @@ const grupos = ref([])
 // Normalizar grupo desde la respuesta del backend
 const normalizarGrupo = (g) => ({
   id:        g.id_grupo || g.id,
-  materia:   g.materia?.nombre_materia || g.nombre_materia || g.materia || '',
-  docente:   g.docente?.nombre_completo || g.nombre_docente || g.docente || '',
+  materia:   g.materia || '',
+  docente:   g.docente || '',
   aula:      g.aula || '',
   capacidad: g.capacidad || 30,
-  inscritos: g.inscritos ?? g.total_inscritos ?? 0,
-  carrera:   g.carrera?.nombre_carrera || g.nombre_carrera || g.carrera || '',
-  semestre:  g.semestre || g.semestre_grupo || 1,
+  inscritos: g.inscritos ?? 0,
+  carrera:   g.carrera || '',
+  semestre:  g.semestre || 0,
   horario: {
     dia:        g.dia || g.horario?.dia || '',
     horaInicio: g.hora_inicio || g.horario?.horaInicio || '',
-    horaFin:    g.hora_fin    || g.horario?.horaFin    || ''
+    horaFin:    g.hora_fin || g.horario?.horaFin || ''
   },
-  alumnos: (g.alumnos || []).map(a => ({
-    noControl: a.numero_control || a.noControl || '',
-    nombre:    a.nombre || ''
-  }))
+  alumnos: []
 })
 
 const cargarGrupos = async () => {

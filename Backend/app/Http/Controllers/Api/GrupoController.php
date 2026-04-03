@@ -34,32 +34,45 @@ class GrupoController extends Controller
     }
 
     public function store(\Illuminate\Http\Request $request)
-    {
-        try {
-            $id = DB::table('grupo')->insertGetId([
-                'clave_grupo' => $request->clave_grupo ?? 'G-NEW',
-                'id_materia'  => $request->id_materia ?? null,
-                'id_docente'  => $request->id_docente ?? null,
-                'id_aula'     => $request->id_aula ?? null,
-                'capacidad'   => $request->capacidad ?? 30,
-            ]);
-            return response()->json(['message' => 'Grupo creado', 'id' => $id], 201);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
-    }
+{
+    try {
+        $id_materia = DB::table('materia')->where('nombre', $request->nombre_materia)->value('id_materia');
+        $id_aula = DB::table('aula')->where('nombre', $request->aula)->value('id_aula');
+        $id_docente = DB::table('persona')->where(
+            DB::raw("CONCAT(nombre, ' ', apellido_paterno)"), $request->nombre_docente
+        )->value('id_persona');
 
-    public function update(\Illuminate\Http\Request $request, $id)
-    {
-        try {
-            DB::table('grupo')->where('id_grupo', $id)->update([
-                'capacidad' => $request->capacidad ?? 30,
-            ]);
-            return response()->json(['message' => 'Grupo actualizado']);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
-        }
+        $id = DB::table('grupo')->insertGetId([
+            'clave_grupo' => $request->clave_grupo ?? 'G-NEW',
+            'id_materia'  => $id_materia,
+            'id_docente'  => $id_docente,
+            'id_aula'     => $id_aula,
+            'id_periodo'  => 1,
+            'capacidad'   => $request->capacidad ?? 30,
+            'estatus'     => 1,
+        ]);
+        return response()->json(['message' => 'Grupo creado', 'id' => $id], 201);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
     }
+}
+
+     public function update(\Illuminate\Http\Request $request, $id)
+     {
+         try {
+             $id_materia = DB::table('materia')->where('nombre', $request->nombre_materia)->value('id_materia');
+             $id_aula = DB::table('aula')->where('nombre', $request->aula)->value('id_aula');
+
+             DB::table('grupo')->where('id_grupo', $id)->update([
+                 'id_materia'  => $id_materia ?? DB::table('grupo')->where('id_grupo', $id)->value('id_materia'),
+                 'id_aula'     => $id_aula ?? DB::table('grupo')->where('id_grupo', $id)->value('id_aula'),
+                 'capacidad'   => $request->capacidad ?? 30,
+             ]);
+             return response()->json(['message' => 'Grupo actualizado']);
+         } catch (\Exception $e) {
+             return response()->json(['error' => $e->getMessage()], 500);
+         }
+     }
 
     public function destroy($id)
     {
