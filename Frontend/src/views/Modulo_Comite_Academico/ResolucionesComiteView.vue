@@ -172,12 +172,12 @@
             </label>
             <select v-model="formModal.solicitud_id" class="campo-input" :class="{ 'campo-error': errModal.solicitud_id }" @change="errModal.solicitud_id = ''">
               <option value="">Selecciona una solicitud</option>
-              <option v-for="s in solicitudesSinResolucion" :key="s.id" :value="s.id">
+              <option v-for="s in solicitudesSinRes" :key="s.id" :value="s.id">
                 {{ s.folio }} — {{ s.solicitante }}
               </option>
             </select>
             <span v-if="errModal.solicitud_id" class="mensaje-error">{{ errModal.solicitud_id }}</span>
-            <span v-if="solicitudesSinResolucion.length === 0" class="campo-nota-aviso">
+            <span v-if="solicitudesSinRes.length === 0" class="campo-nota-aviso">
               No hay solicitudes pendientes sin resolución
             </span>
           </div>
@@ -220,135 +220,182 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
-const router   = useRouter()
-const cargando = ref(false)
-const busqueda    = ref('')
+const router = useRouter()
+const route  = useRoute()
+
+const cargando     = ref(false)
+const errorCarga   = ref(false)
+const busqueda     = ref('')
 const filtroSesion = ref('')
 const filtroTipo   = ref('')
 const mostrarModal = ref(false)
-const toast = ref({ visible: false, mensaje: '', tipo: 'exito' })
+
+const tiposSolicitud    = ref([])
+const sesiones          = ref([])
+const solicitudesSinRes = ref([])
+const resoluciones      = ref([])
 
 const formModal = ref({ sesion_id: '', solicitud_id: '', decision: '' })
 const errModal  = ref({ sesion_id: '', solicitud_id: '', decision: '' })
 
-const tiposSolicitud = ref([
-  { id: 1, nombre: 'Baja de materia' },
-  { id: 2, nombre: 'Cambio de carrera' },
-  { id: 3, nombre: 'Equivalencia' },
-  { id: 4, nombre: 'Titulación' },
-  { id: 5, nombre: 'Recurse de materia' },
-])
+const notificacion = ref({ visible: false, mensaje: '', tipo: 'exito' })
+let timerNotif = null
+const mostrarNotificacion = (mensaje, tipo = 'exito') => {
+  if (timerNotif) clearTimeout(timerNotif)
+  notificacion.value = { visible: true, mensaje, tipo }
+  timerNotif = setTimeout(() => { notificacion.value.visible = false }, 3500)
+}
 
-const sesiones = ref([
-  { id: 1, fecha: '2026-03-05', descripcion: 'Sesión ordinaria de marzo' },
-  { id: 2, fecha: '2026-04-10', descripcion: 'Sesión ordinaria de abril' },
-])
+// ── Carga inicial ─────────────────────────────────────────────
+const cargarTipos = async () => {
+  try {
+    const res = await fetch('http://localhost:8000/api/comite/tipos-solicitud')
+    if (!res.ok) throw new Error()
+    tiposSolicitud.value = await res.json()
+  } catch { /* silencioso */ }
+}
 
-// Solicitudes: incluye resolucion_id para filtrar las pendientes
-const solicitudesStore = ref([
-  { id: 1,  folio: 'SOL-001', solicitante: 'García Morales, Ana Sofía',    tipo: 'Baja de materia',    estatus: 'Aprobada',    resolucion_id: 1 },
-  { id: 2,  folio: 'SOL-002', solicitante: 'Hernández López, Carlos',       tipo: 'Cambio de carrera',  estatus: 'Rechazada',   resolucion_id: 2 },
-  { id: 3,  folio: 'SOL-003', solicitante: 'Martínez Sánchez, Laura',       tipo: 'Equivalencia',       estatus: 'Aprobada',    resolucion_id: 3 },
-  { id: 5,  folio: 'SOL-005', solicitante: 'Pérez Gómez, María',            tipo: 'Baja de materia',    estatus: 'En revisión', resolucion_id: null },
-  { id: 6,  folio: 'SOL-006', solicitante: 'López Díaz, Fernando',          tipo: 'Recurse de materia', estatus: 'Pendiente',   resolucion_id: null },
-  { id: 7,  folio: 'SOL-007', solicitante: 'Sánchez Ruiz, Alejandra',       tipo: 'Equivalencia',       estatus: 'Pendiente',   resolucion_id: null },
-])
+const cargarSesiones = async () => {
+  try {
+    const res = await fetch('http://localhost:8000/api/comite/sesiones')
+    if (!res.ok) throw new Error()
+    const data = await res.json()
+    sesiones.value = Array.isArray(data) ? data : data.data ?? []
+  } catch { /* silencioso */ }
+}
 
-const resoluciones = ref([
-  { id: 1, folio_solicitud: 'SOL-001', solicitud_id: 1, solicitante: 'García Morales, Ana Sofía',    tipo: 'Baja de materia',   sesion_id: 1, fecha_sesion: '2026-03-05', decision: 'Se aprueba la baja de la materia Cálculo II por causas justificadas. El alumno podrá cursarla en el siguiente periodo.', fecha: '2026-03-05' },
-  { id: 2, folio_solicitud: 'SOL-002', solicitud_id: 2, solicitante: 'Hernández López, Carlos',       tipo: 'Cambio de carrera',  sesion_id: 1, fecha_sesion: '2026-03-05', decision: 'Se rechaza la solicitud de cambio de carrera. El alumno no cumple con el promedio mínimo requerido de 8.0 en las materias de ciclo básico.', fecha: '2026-03-05' },
-  { id: 3, folio_solicitud: 'SOL-003', solicitud_id: 3, solicitante: 'Martínez Sánchez, Laura',       tipo: 'Equivalencia',       sesion_id: 2, fecha_sesion: '2026-04-10', decision: 'Se aprueban las equivalencias solicitadas para las materias cursadas en la UNAM durante el intercambio académico.', fecha: '2026-04-10' },
-])
+const cargarSolicitudesSinResolucion = async () => {
+  try {
+    const res = await fetch('http://localhost:8000/api/comite/solicitudes?sin_resolucion=1')
+    if (!res.ok) throw new Error()
+    const data = await res.json()
+    solicitudesSinRes.value = Array.isArray(data) ? data : data.data ?? []
+  } catch { /* silencioso */ }
+}
 
-const solicitudesSinResolucion = computed(() =>
-  solicitudesStore.value.filter(s => !s.resolucion_id)
-)
+const cargarResoluciones = async () => {
+  cargando.value   = true
+  errorCarga.value = false
+  try {
+    const params = new URLSearchParams()
+    if (filtroSesion.value) params.append('sesion_id', filtroSesion.value)
+    if (filtroTipo.value)   params.append('tipo',      filtroTipo.value)
+    const url = 'http://localhost:8000/api/comite/resoluciones' + (params.toString() ? '?' + params : '')
+    const res = await fetch(url)
+    if (!res.ok) throw new Error('Error en la respuesta del servidor')
+    const data = await res.json()
+    resoluciones.value = Array.isArray(data) ? data : data.data ?? []
+  } catch (error) {
+    console.error('Error cargando resoluciones:', error)
+    errorCarga.value = true
+  } finally {
+    cargando.value = false
+  }
+}
 
-const resolucionesFiltradas = computed(() => {
-  return resoluciones.value.filter(r => {
-    const q = busqueda.value.toLowerCase()
-    const coincide  = !q || r.folio_solicitud.toLowerCase().includes(q) || r.solicitante.toLowerCase().includes(q)
-    const sesion = !filtroSesion.value || r.sesion_id === filtroSesion.value
-    const tipo   = !filtroTipo.value   || r.tipo === filtroTipo.value
-    return coincide && sesion && tipo
-  })
+onMounted(() => {
+  // Pre-filtrar si viene desde SesionesView con ?sesion=ID
+  if (route.query.sesion) filtroSesion.value = route.query.sesion
+  // Pre-llenar modal si viene con ?solicitud=ID
+  if (route.query.solicitud) {
+    formModal.value.solicitud_id = route.query.solicitud
+    mostrarModal.value = true
+  }
+  cargarTipos()
+  cargarSesiones()
+  cargarSolicitudesSinResolucion()
+  cargarResoluciones()
 })
 
+// ── Filtrado local reactivo ────────────────────────────────────
+const resolucionesFiltradas = computed(() =>
+  resoluciones.value.filter(r => {
+    const q       = busqueda.value.toLowerCase()
+    const coincide = !q || r.folio_solicitud?.toLowerCase().includes(q) || r.solicitante?.toLowerCase().includes(q)
+    const sesion  = !filtroSesion.value || String(r.sesion_id) === String(filtroSesion.value)
+    const tipo    = !filtroTipo.value   || r.tipo === filtroTipo.value
+    return coincide && sesion && tipo
+  })
+)
+
+// ── Buscar en el backend ───────────────────────────────────────
+const filtrar = async () => {
+  cargando.value   = true
+  errorCarga.value = false
+  try {
+    const params = new URLSearchParams()
+    if (busqueda.value)     params.append('q',        busqueda.value)
+    if (filtroSesion.value) params.append('sesion_id', filtroSesion.value)
+    if (filtroTipo.value)   params.append('tipo',      filtroTipo.value)
+    const url = 'http://localhost:8000/api/comite/resoluciones' + (params.toString() ? '?' + params : '')
+    const res = await fetch(url)
+    if (!res.ok) throw new Error()
+    const data = await res.json()
+    resoluciones.value = Array.isArray(data) ? data : data.data ?? []
+  } catch (error) {
+    console.error('Error filtrando resoluciones:', error)
+    errorCarga.value = true
+  } finally {
+    cargando.value = false
+  }
+}
+
+// ── Modal ─────────────────────────────────────────────────────
+const abrirModalNueva = () => {
+  formModal.value    = { sesion_id: '', solicitud_id: '', decision: '' }
+  errModal.value     = { sesion_id: '', solicitud_id: '', decision: '' }
+  mostrarModal.value = true
+}
+const cerrarModal = () => { mostrarModal.value = false }
+
+// ── Guardar resolución ────────────────────────────────────────
+const guardarResolucion = async () => {
+  errModal.value = { sesion_id: '', solicitud_id: '', decision: '' }
+  if (!formModal.value.sesion_id)       errModal.value.sesion_id    = 'Selecciona una sesión'
+  if (!formModal.value.solicitud_id)    errModal.value.solicitud_id = 'Selecciona una solicitud'
+  if (!formModal.value.decision.trim()) errModal.value.decision     = 'La decisión es requerida'
+  if (Object.values(errModal.value).some(e => e)) return
+
+  cargando.value = true
+  try {
+    const res = await fetch('http://localhost:8000/api/comite/resoluciones', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sesion_comite_id:    formModal.value.sesion_id,
+        solicitud_comite_id: formModal.value.solicitud_id,
+        decision:            formModal.value.decision.trim(),
+      }),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.message || 'Error del servidor')
+    }
+    mostrarNotificacion('Resolución registrada correctamente')
+    cerrarModal()
+    // Recargar listas para reflejar el nuevo estado en la BD
+    await Promise.all([cargarResoluciones(), cargarSolicitudesSinResolucion()])
+  } catch (error) {
+    console.error('Error guardando resolución:', error)
+    mostrarNotificacion(error.message || 'No se pudo registrar la resolución.', 'error')
+  } finally {
+    cargando.value = false
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────────
 const formatearFechaCorta = (f) => {
   if (!f) return '—'
   const [a, m, d] = f.split('-')
   const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
   return `${parseInt(d)} ${meses[parseInt(m)-1]} ${a}`
 }
-
 const iniciales = (n) => n ? n.split(' ').slice(0,2).map(x => x[0]).join('').toUpperCase() : '?'
-
-const abrirModalNueva = () => {
-  formModal.value = { sesion_id: '', solicitud_id: '', decision: '' }
-  errModal.value  = { sesion_id: '', solicitud_id: '', decision: '' }
-  mostrarModal.value = true
-}
-
-const cerrarModal = () => { mostrarModal.value = false }
-
-const guardarResolucion = async () => {
-  errModal.value = { sesion_id: '', solicitud_id: '', decision: '' }
-  if (!formModal.value.sesion_id)    errModal.value.sesion_id    = 'Selecciona una sesión'
-  if (!formModal.value.solicitud_id) errModal.value.solicitud_id = 'Selecciona una solicitud'
-  if (!formModal.value.decision.trim()) errModal.value.decision  = 'La decisión es requerida'
-  if (Object.values(errModal.value).some(e => e)) return
-
-  cargando.value = true
-  try {
-    await new Promise(r => setTimeout(r, 800))
-
-    const solicitud = solicitudesStore.value.find(s => s.id === formModal.value.solicitud_id)
-    const sesion    = sesiones.value.find(s => s.id === formModal.value.sesion_id)
-    const nuevaId   = resoluciones.value.length + 1
-
-    // Registrar la resolución
-    resoluciones.value.unshift({
-      id: nuevaId,
-      folio_solicitud: solicitud.folio,
-      solicitud_id:    solicitud.id,
-      solicitante:     solicitud.solicitante,
-      tipo:            solicitud.tipo,
-      sesion_id:       sesion.id,
-      fecha_sesion:    sesion.fecha,
-      decision:        formModal.value.decision,
-      fecha:           new Date().toISOString().split('T')[0],
-    })
-
-    // Actualizar el estatus de la solicitud asociada visualmente
-    solicitud.resolucion_id = nuevaId
-    solicitud.estatus = 'Aprobada' // En un sistema real, vendría del backend
-
-    mostrarToast('Resolución registrada correctamente')
-    cerrarModal()
-  } finally {
-    cargando.value = false
-  }
-}
-
-const verDetalle = (res) => {
-  // En implementación real: router.push(`/comite/resoluciones/${res.id}`)
-  alert(`Folio: ${res.folio_solicitud}\nSolicitante: ${res.solicitante}\nDecisión: ${res.decision}`)
-}
-
-const filtrar = async () => {
-  cargando.value = true
-  await new Promise(r => setTimeout(r, 300))
-  cargando.value = false
-}
-
-const mostrarToast = (mensaje, tipo = 'exito') => {
-  toast.value = { visible: true, mensaje, tipo }
-  setTimeout(() => { toast.value.visible = false }, 3500)
-}
+const verDetalle = (res) => router.push(`/comite/resoluciones/${res.id}`)
 </script>
 
 <style scoped>

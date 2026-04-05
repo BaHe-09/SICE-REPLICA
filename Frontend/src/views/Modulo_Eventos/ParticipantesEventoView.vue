@@ -246,91 +246,167 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 const router = useRouter()
-const cargando = ref(false)
+const route  = useRoute()
+
+const cargando            = ref(false)
+const errorCarga          = ref(false)
 const mostrarModalRegistro = ref(false)
-const busquedaModal = ref('')
-const alumnoEncontrado = ref(null)
-const toast = ref({ visible: false, mensaje: '', tipo: 'exito' })
+const busquedaModal       = ref('')
+const alumnoEncontrado    = ref(null)
+const buscandoAlumno      = ref(false)
 
-const evento = ref({
-  id: 1, nombre: 'Semana de Ingeniería 2026',
-  fecha: '2026-04-15', lugar: 'Auditorio Principal',
-  participantes: 3, cupo_maximo: 80,
+const evento       = ref({ id: null, nombre: '', fecha: '', lugar: '', participantes: 0, cupo_maximo: null })
+const participantes = ref([])
+
+const notificacion = ref({ visible: false, mensaje: '', tipo: 'exito' })
+let timerNotif = null
+const mostrarNotificacion = (mensaje, tipo = 'exito') => {
+  if (timerNotif) clearTimeout(timerNotif)
+  notificacion.value = { visible: true, mensaje, tipo }
+  timerNotif = setTimeout(() => { notificacion.value.visible = false }, 3500)
+}
+
+// ── Carga inicial ─────────────────────────────────────────────
+const cargarEvento = async () => {
+  try {
+    const res = await fetch(`http://localhost:8000/api/eventos/${route.params.id}`)
+    if (!res.ok) throw new Error()
+    evento.value = await res.json()
+  } catch (error) {
+    console.error('Error cargando evento:', error)
+    errorCarga.value = true
+  }
+}
+
+const cargarParticipantes = async () => {
+  cargando.value   = true
+  errorCarga.value = false
+  try {
+    const res = await fetch(`http://localhost:8000/api/eventos/${route.params.id}/participantes`)
+    if (!res.ok) throw new Error('Error en la respuesta del servidor')
+    const data = await res.json()
+    participantes.value = Array.isArray(data) ? data : data.data ?? []
+  } catch (error) {
+    console.error('Error cargando participantes:', error)
+    errorCarga.value = true
+  } finally {
+    cargando.value = false
+  }
+}
+
+onMounted(() => {
+  cargarEvento()
+  cargarParticipantes()
 })
-
-const participantes = ref([
-  { control: '21110001', nombre: 'García Morales, Ana Sofía', carrera: 'Ing. en Sistemas', semestre: 6, constancia_emitida: true },
-  { control: '21110002', nombre: 'Hernández López, Carlos', carrera: 'Ing. en Sistemas', semestre: 4, constancia_emitida: false },
-  { control: '21110003', nombre: 'Martínez Sánchez, Laura', carrera: 'Ing. Industrial', semestre: 8, constancia_emitida: false },
-])
 
 const porcentajeOcupacion = computed(() => {
   if (!evento.value.cupo_maximo) return 0
   return Math.round((evento.value.participantes / evento.value.cupo_maximo) * 100)
 })
 
+// ── Búsqueda de alumno con debounce ───────────────────────────
+let debounce = null
+const buscarAlumnoModal = () => {
+  alumnoEncontrado.value = null
+  if (busquedaModal.value.length < 3) return
+  clearTimeout(debounce)
+  debounce = setTimeout(async () => {
+    buscandoAlumno.value = true
+    try {
+      const res = await fetch(`http://localhost:8000/api/alumnos/buscar?no_control=${encodeURIComponent(busquedaModal.value)}`)
+      if (!res.ok) throw new Error()
+      const data = await res.json()
+      alumnoEncontrado.value = data ?? null
+    } catch {
+      alumnoEncontrado.value = null
+    } finally {
+      buscandoAlumno.value = false
+    }
+  }, 400)
+}
+
+// ── Registrar participante ────────────────────────────────────
+const registrarParticipante = async () => {
+  if (!alumnoEncontrado.value) return
+  cargando.value = true
+  try {
+    const res = await fetch(`http://localhost:8000/api/eventos/${route.params.id}/participantes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ no_control: alumnoEncontrado.value.control }),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.message || 'Error del servidor')
+    }
+    const nombreGuardado = alumnoEncontrado.value.nombre
+    mostrarModalRegistro.value = false
+    busquedaModal.value = ''
+    alumnoEncontrado.value = null
+    await Promise.all([cargarEvento(), cargarParticipantes()])
+    mostrarNotificacion(`${nombreGuardado} registrado correctamente`)
+  } catch (error) {
+    console.error('Error registrando participante:', error)
+    mostrarNotificacion(error.message || 'No se pudo registrar al participante.', 'error')
+  } finally {
+    cargando.value = false
+  }
+}
+
+// ── Emitir constancia ─────────────────────────────────────────
+const emitirConstancia = async (p) => {
+  cargando.value = true
+  try {
+    const res = await fetch(`http://localhost:8000/api/eventos/${route.params.id}/participantes/${p.control}/constancia`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+    })
+    if (!res.ok) throw new Error()
+    p.constancia_emitida = true
+    mostrarNotificacion('Constancia emitida correctamente')
+  } catch (error) {
+    console.error('Error emitiendo constancia:', error)
+    mostrarNotificacion('No se pudo emitir la constancia.', 'error')
+  } finally {
+    cargando.value = false
+  }
+}
+
+// ── Eliminar participante ─────────────────────────────────────
+const eliminarParticipante = async (p) => {
+  if (!confirm(`¿Eliminar a ${p.nombre} de este evento?`)) return
+  cargando.value = true
+  try {
+    const res = await fetch(`http://localhost:8000/api/eventos/${route.params.id}/participantes/${p.control}`, {
+      method: 'DELETE',
+    })
+    if (!res.ok) throw new Error()
+    participantes.value = participantes.value.filter(x => x.control !== p.control)
+    evento.value.participantes--
+    mostrarNotificacion('Participante eliminado')
+  } catch (error) {
+    console.error('Error eliminando participante:', error)
+    mostrarNotificacion('No se pudo eliminar al participante.', 'error')
+  } finally {
+    cargando.value = false
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────────
 const formatearFecha = (f) => {
   if (!f) return '—'
   const [a, m, d] = f.split('-')
   const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
   return `${parseInt(d)} de ${meses[parseInt(m) - 1]} de ${a}`
 }
-
 const iniciales = (nombre) => {
   if (!nombre) return '?'
   return nombre.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
-}
-
-const buscarAlumnoModal = () => {
-  if (busquedaModal.value.length < 3) { alumnoEncontrado.value = null; return }
-  // Simulación de búsqueda
-  const mock = [
-    { control: '21110010', nombre: 'Ramírez Flores, Jorge', carrera: 'Ing. en Sistemas', semestre: 5 },
-    { control: '21110011', nombre: 'Torres Vega, Mónica', carrera: 'Ing. Industrial', semestre: 3 },
-  ]
-  alumnoEncontrado.value = mock.find(a => a.control.includes(busquedaModal.value)) || null
-}
-
-const registrarParticipante = async () => {
-  if (!alumnoEncontrado.value) return
-  cargando.value = true
-  try {
-    await new Promise(r => setTimeout(r, 700))
-    participantes.value.push({ ...alumnoEncontrado.value, constancia_emitida: false })
-    evento.value.participantes++
-    mostrarModalRegistro.value = false
-    busquedaModal.value = ''
-    alumnoEncontrado.value = null
-    mostrarToast(`${alumnoEncontrado.value?.nombre || 'Alumno'} registrado correctamente`)
-  } finally {
-    cargando.value = false
-  }
-}
-
-const emitirConstancia = async (p) => {
-  cargando.value = true
-  await new Promise(r => setTimeout(r, 600))
-  p.constancia_emitida = true
-  cargando.value = false
-  mostrarToast('Constancia emitida correctamente')
-}
-
-const eliminarParticipante = (p) => {
-  if (confirm(`¿Eliminar a ${p.nombre} de este evento?`)) {
-    participantes.value = participantes.value.filter(x => x.control !== p.control)
-    evento.value.participantes--
-    mostrarToast('Participante eliminado')
-  }
-}
-
-const mostrarToast = (mensaje, tipo = 'exito') => {
-  toast.value = { visible: true, mensaje, tipo }
-  setTimeout(() => { toast.value.visible = false }, 3500)
 }
 </script>
 

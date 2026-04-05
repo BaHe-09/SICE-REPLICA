@@ -237,31 +237,65 @@ import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 const router = useRouter()
-const cargando = ref(false)
+
+// ── Estado ──────────────────────────────────────────────────
+const cargando       = ref(false)
+const errorCarga     = ref(false)
 const busquedaNombre = ref('')
-const filtroTipo = ref('')
+const filtroTipo     = ref('')
 
-const tiposEvento = ref([
-  { id: 1, nombre: 'Académico' },
-  { id: 2, nombre: 'Cultural' },
-  { id: 3, nombre: 'Deportivo' },
-  { id: 4, nombre: 'Institucional' },
-])
+const tiposEvento = ref([])
+const eventos     = ref([])
 
-const eventos = ref([
-  { id: 1, nombre: 'Semana de Ingeniería 2026', tipo: 'Académico', fecha: '2026-04-15', lugar: 'Auditorio Principal', participantes: 45, cupo_maximo: 80, activo: true },
-  { id: 2, nombre: 'Festival Cultural de Primavera', tipo: 'Cultural', fecha: '2026-04-22', lugar: 'Plaza Cívica', participantes: 120, cupo_maximo: 200, activo: true },
-  { id: 3, nombre: 'Torneo Interfacultades', tipo: 'Deportivo', fecha: '2026-05-03', lugar: 'Cancha Principal', participantes: 60, cupo_maximo: 60, activo: true },
-  { id: 4, nombre: 'Conferencia de Innovación Tecnológica', tipo: 'Académico', fecha: '2025-11-20', lugar: 'Sala de Videoconferencias', participantes: 95, cupo_maximo: 100, activo: false },
-  { id: 5, nombre: 'Ceremonia de Graduación 2025', tipo: 'Institucional', fecha: '2025-12-10', lugar: 'Auditorio Principal', participantes: 350, cupo_maximo: null, activo: false },
-])
+const notificacion = ref({ visible: false, mensaje: '', tipo: 'exito' })
+let timerNotif = null
 
+const mostrarNotificacion = (mensaje, tipo = 'exito') => {
+  if (timerNotif) clearTimeout(timerNotif)
+  notificacion.value = { visible: true, mensaje, tipo }
+  timerNotif = setTimeout(() => { notificacion.value.visible = false }, 3500)
+}
+
+// ── Carga de tipos de evento ─────────────────────────────────
+const cargarTipos = async () => {
+  try {
+    const res = await fetch('http://localhost:8000/api/tipos-evento')
+    if (!res.ok) throw new Error()
+    tiposEvento.value = await res.json()
+  } catch {
+    // Si falla, el selector de filtro queda vacío
+  }
+}
+
+// ── Carga principal de eventos ───────────────────────────────
+const cargarEventos = async () => {
+  cargando.value   = true
+  errorCarga.value = false
+  try {
+    const res = await fetch('http://localhost:8000/api/eventos')
+    if (!res.ok) throw new Error('Error en la respuesta del servidor')
+    const data = await res.json()
+    eventos.value = Array.isArray(data) ? data : data.data ?? []
+  } catch (error) {
+    console.error('Error cargando eventos:', error)
+    errorCarga.value = true
+  } finally {
+    cargando.value = false
+  }
+}
+
+onMounted(() => {
+  cargarTipos()
+  cargarEventos()
+})
+
+// ── Computed ─────────────────────────────────────────────────
 const eventosProximos = computed(() =>
   eventos.value.filter(e => e.activo)
 )
 
-const eventosFiltrados = computed(() => {
-  return eventos.value
+const eventosFiltrados = computed(() =>
+  eventos.value
     .filter(e => !e.activo)
     .filter(e => {
       const coincideNombre = !busquedaNombre.value ||
@@ -269,8 +303,30 @@ const eventosFiltrados = computed(() => {
       const coincideTipo = !filtroTipo.value || e.tipo === filtroTipo.value
       return coincideNombre && coincideTipo
     })
-})
+)
 
+// ── Buscar con filtros ────────────────────────────────────────
+const filtrar = async () => {
+  cargando.value   = true
+  errorCarga.value = false
+  try {
+    const params = new URLSearchParams()
+    if (busquedaNombre.value) params.append('nombre', busquedaNombre.value)
+    if (filtroTipo.value)     params.append('tipo',   filtroTipo.value)
+    const url = 'http://localhost:8000/api/eventos' + (params.toString() ? '?' + params : '')
+    const res = await fetch(url)
+    if (!res.ok) throw new Error()
+    const data = await res.json()
+    eventos.value = Array.isArray(data) ? data : data.data ?? []
+  } catch (error) {
+    console.error('Error filtrando eventos:', error)
+    errorCarga.value = true
+  } finally {
+    cargando.value = false
+  }
+}
+
+// ── Helpers ──────────────────────────────────────────────────
 const formatearFecha = (fechaStr) => {
   if (!fechaStr) return '—'
   const [anio, mes, dia] = fechaStr.split('-')
@@ -292,15 +348,7 @@ const colorFondoTipo = (tipo) => {
   const mapa = { 'Académico': '#DBEAFE', 'Cultural': '#FEF3C7', 'Deportivo': '#DCFCE7', 'Institucional': '#EDE9FE' }
   return mapa[tipo] || '#F3F4F6'
 }
-const estiloBadgeTipo = (tipo) => {
-  return { background: colorFondoTipo(tipo), color: colorTipo(tipo) }
-}
-
-const filtrar = async () => {
-  cargando.value = true
-  await new Promise(r => setTimeout(r, 300))
-  cargando.value = false
-}
+const estiloBadgeTipo = (tipo) => ({ background: colorFondoTipo(tipo), color: colorTipo(tipo) })
 </script>
 
 <style scoped>

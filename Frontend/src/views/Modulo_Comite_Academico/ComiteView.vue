@@ -194,29 +194,46 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 const router = useRouter()
-const cargando = ref(false)
 
-const kpis = ref({ pendientes: 8, resueltas: 34, sesiones: 2 })
+const cargando   = ref(false)
+const errorCarga = ref(false)
 
-const solicitudesPendientes = ref([
-  { id: 1, folio: 'SOL-009', solicitante: 'García Morales, Ana', tipo: 'Baja de materia', fecha: '2026-03-28', estatus: 'Pendiente' },
-  { id: 2, folio: 'SOL-010', solicitante: 'Hernández López, Carlos', tipo: 'Cambio de carrera', fecha: '2026-03-27', estatus: 'En revisión' },
-  { id: 3, folio: 'SOL-011', solicitante: 'Martínez Sánchez, Laura', tipo: 'Equivalencia', fecha: '2026-03-26', estatus: 'Pendiente' },
-  { id: 4, folio: 'SOL-012', solicitante: 'Rodríguez Torres, José', tipo: 'Baja de materia', fecha: '2026-03-25', estatus: 'En revisión' },
-  { id: 5, folio: 'SOL-013', solicitante: 'Pérez Gómez, María', tipo: 'Titulación', fecha: '2026-03-24', estatus: 'Pendiente' },
-])
+const kpis                 = ref({ pendientes: 0, resueltas: 0, sesiones: 0 })
+const solicitudesPendientes = ref([])
+const sesionesRecientes    = ref([])
 
-const sesionesRecientes = ref([
-  { id: 1, fecha: '2026-04-10', descripcion: 'Sesión ordinaria abril', resoluciones: 5 },
-  { id: 2, fecha: '2026-04-24', descripcion: 'Sesión extraordinaria', resoluciones: 0 },
-  { id: 3, fecha: '2026-05-08', descripcion: 'Sesión ordinaria mayo', resoluciones: 0 },
-])
+// ── Carga inicial ─────────────────────────────────────────────
+const cargarDatos = async () => {
+  cargando.value   = true
+  errorCarga.value = false
+  try {
+    const res = await fetch('http://localhost:8000/api/comite/dashboard')
+    if (!res.ok) throw new Error('Error en la respuesta del servidor')
+    const data = await res.json()
 
+    kpis.value = {
+      pendientes: data.kpis?.pendientes ?? 0,
+      resueltas:  data.kpis?.resueltas  ?? 0,
+      sesiones:   data.kpis?.sesiones   ?? 0,
+    }
+    solicitudesPendientes.value = data.solicitudes_recientes ?? []
+    sesionesRecientes.value     = data.sesiones_recientes    ?? []
+  } catch (error) {
+    console.error('Error cargando dashboard del comité:', error)
+    errorCarga.value = true
+  } finally {
+    cargando.value = false
+  }
+}
+
+onMounted(() => { cargarDatos() })
+
+// ── Helpers ───────────────────────────────────────────────────
 const colorEstado = (est) => {
   const m = { 'Pendiente': '#1B396A', 'En revisión': '#F59E0B', 'Aprobada': '#16A34A', 'Rechazada': '#DC2626' }
   return m[est] || '#9CA3AF'

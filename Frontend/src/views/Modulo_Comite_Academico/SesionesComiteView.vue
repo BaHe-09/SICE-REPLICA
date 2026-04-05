@@ -165,42 +165,57 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
-const router   = useRouter()
-const cargando = ref(false)
-const mostrarModal = ref(false)
-const modoEdicion  = ref(false)
-const sesionEditando = ref(null)
-const toast = ref({ visible: false, mensaje: '', tipo: 'exito' })
+const router = useRouter()
 
+const cargando       = ref(false)
+const errorCarga     = ref(false)
+const mostrarModal   = ref(false)
+const modoEdicion    = ref(false)
+const sesionEditando = ref(null)
+
+const sesiones  = ref([])
 const formModal = ref({ fecha: '', descripcion: '' })
 const errModal  = ref({ fecha: '', descripcion: '' })
 
-const sesiones = ref([
-  { id: 1, fecha: '2026-03-05', descripcion: 'Sesión ordinaria de marzo', resoluciones: 4 },
-  { id: 2, fecha: '2026-04-10', descripcion: 'Sesión ordinaria de abril', resoluciones: 5 },
-  { id: 3, fecha: '2026-04-24', descripcion: 'Sesión extraordinaria',     resoluciones: 0 },
-  { id: 4, fecha: '2026-05-08', descripcion: 'Sesión ordinaria de mayo',  resoluciones: 0 },
-])
-
-const formatearFechaLarga = (f) => {
-  if (!f) return '—'
-  const [a, m, d] = f.split('-')
-  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
-  return `${parseInt(d)} de ${meses[parseInt(m)-1]} de ${a}`
+const notificacion = ref({ visible: false, mensaje: '', tipo: 'exito' })
+let timerNotif = null
+const mostrarNotificacion = (mensaje, tipo = 'exito') => {
+  if (timerNotif) clearTimeout(timerNotif)
+  notificacion.value = { visible: true, mensaje, tipo }
+  timerNotif = setTimeout(() => { notificacion.value.visible = false }, 3500)
 }
 
+// ── Carga de sesiones ─────────────────────────────────────────
+const cargarSesiones = async () => {
+  cargando.value   = true
+  errorCarga.value = false
+  try {
+    const res = await fetch('http://localhost:8000/api/comite/sesiones')
+    if (!res.ok) throw new Error('Error en la respuesta del servidor')
+    const data = await res.json()
+    sesiones.value = Array.isArray(data) ? data : data.data ?? []
+  } catch (error) {
+    console.error('Error cargando sesiones:', error)
+    errorCarga.value = true
+  } finally {
+    cargando.value = false
+  }
+}
+
+onMounted(() => { cargarSesiones() })
+
+// ── Modal ─────────────────────────────────────────────────────
 const abrirModalNueva = () => {
-  modoEdicion.value  = false
+  modoEdicion.value    = false
   sesionEditando.value = null
-  formModal.value    = { fecha: '', descripcion: '' }
-  errModal.value     = { fecha: '', descripcion: '' }
-  mostrarModal.value = true
+  formModal.value      = { fecha: '', descripcion: '' }
+  errModal.value       = { fecha: '', descripcion: '' }
+  mostrarModal.value   = true
 }
-
 const abrirModalEditar = (ses) => {
   modoEdicion.value    = true
   sesionEditando.value = ses
@@ -208,37 +223,55 @@ const abrirModalEditar = (ses) => {
   errModal.value       = { fecha: '', descripcion: '' }
   mostrarModal.value   = true
 }
-
 const cerrarModal = () => { mostrarModal.value = false }
 
+// ── Guardar sesión ────────────────────────────────────────────
 const guardarSesion = async () => {
   errModal.value = { fecha: '', descripcion: '' }
-  if (!formModal.value.fecha)        errModal.value.fecha        = 'La fecha es requerida'
-  if (!formModal.value.descripcion.trim()) errModal.value.descripcion = 'La descripción es requerida'
+  if (!formModal.value.fecha)               errModal.value.fecha       = 'La fecha es requerida'
+  if (!formModal.value.descripcion.trim())  errModal.value.descripcion = 'La descripción es requerida'
   if (Object.values(errModal.value).some(e => e)) return
 
   cargando.value = true
   try {
-    await new Promise(r => setTimeout(r, 700))
+    const payload = { fecha: formModal.value.fecha, descripcion: formModal.value.descripcion.trim() }
+
     if (modoEdicion.value && sesionEditando.value) {
-      sesionEditando.value.fecha       = formModal.value.fecha
-      sesionEditando.value.descripcion = formModal.value.descripcion
-      mostrarToast('Sesión actualizada correctamente')
-    } else {
-      sesiones.value.unshift({
-        id: Date.now(), ...formModal.value, resoluciones: 0,
+      const res = await fetch(`http://localhost:8000/api/comite/sesiones/${sesionEditando.value.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       })
-      mostrarToast('Sesión registrada correctamente')
+      if (!res.ok) throw new Error()
+      sesionEditando.value.fecha       = payload.fecha
+      sesionEditando.value.descripcion = payload.descripcion
+      mostrarNotificacion('Sesión actualizada correctamente')
+    } else {
+      const res = await fetch('http://localhost:8000/api/comite/sesiones', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) throw new Error()
+      const nueva = await res.json()
+      sesiones.value.unshift({ ...nueva, resoluciones: nueva.resoluciones ?? 0 })
+      mostrarNotificacion('Sesión registrada correctamente')
     }
     cerrarModal()
+  } catch (error) {
+    console.error('Error guardando sesión:', error)
+    mostrarNotificacion('No se pudo guardar la sesión.', 'error')
   } finally {
     cargando.value = false
   }
 }
 
-const mostrarToast = (mensaje, tipo = 'exito') => {
-  toast.value = { visible: true, mensaje, tipo }
-  setTimeout(() => { toast.value.visible = false }, 3500)
+// ── Helpers ───────────────────────────────────────────────────
+const formatearFechaLarga = (f) => {
+  if (!f) return '—'
+  const [a, m, d] = f.split('-')
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
+  return `${parseInt(d)} de ${meses[parseInt(m)-1]} de ${a}`
 }
 </script>
 
