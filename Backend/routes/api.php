@@ -1,13 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
 
 // controllers
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\Api\ServiciosEscolaresController;   // ✅ CORREGIDO
+use App\Http\Controllers\Api\ServiciosEscolaresController;
 use App\Http\Controllers\Api\GrupoController;
 use App\Http\Controllers\Api\AlumnoController;
-use App\Http\Controllers\Api\EvaluacionController;           // ✅ IMPORTADO
+use App\Http\Controllers\Api\EvaluacionController;
+use App\Http\Controllers\CalificacionController;
 
 // DASHBOARD
 Route::get('/dashboard', [DashboardController::class, 'index']);
@@ -23,7 +25,8 @@ Route::get('/alumnos-full', [ServiciosEscolaresController::class, 'getAlumnos'])
 Route::post('/alumnos', [ServiciosEscolaresController::class, 'store']);
 Route::get('/buscar-alumno', [ServiciosEscolaresController::class, 'buscarAlumnoInscripcion']);
 
-// CRUD de alumnos
+// === CRUD COMPLETO DE ALUMNOS ===
+Route::apiResource('alumnos', AlumnoController::class);
 Route::get('/alumnos-crud', [AlumnoController::class, 'index']);
 Route::put('/alumnos/{id}', [AlumnoController::class, 'update']);
 Route::delete('/alumnos/{id}', [AlumnoController::class, 'destroy']);
@@ -37,17 +40,10 @@ Route::put('/grupos/{id}', [GrupoController::class, 'update']);
 Route::delete('/grupos/{id}', [GrupoController::class, 'destroy']);
 
 // 🔹 EVALUACIONES
-Route::get('/evaluaciones/{id_grupo}', [ServiciosEscolaresController::class, 'getEvaluaciones']);
 Route::post('/evaluaciones/guardar', [ServiciosEscolaresController::class, 'guardarEvaluaciones']);
+Route::get('/evaluaciones/{id_grupo}', [ServiciosEscolaresController::class, 'getEvaluaciones']);
 Route::put('/evaluaciones/{id}', [ServiciosEscolaresController::class, 'actualizarEvaluacion']);
 Route::delete('/evaluaciones/{id}', [ServiciosEscolaresController::class, 'eliminarEvaluacion']);
-
-// CRUD de evaluaciones con EvaluacionController
-Route::get('/evaluaciones', [EvaluacionController::class, 'index']);
-Route::post('/evaluaciones', [EvaluacionController::class, 'store']);
-Route::get('/evaluaciones/{id}', [EvaluacionController::class, 'show']);
-Route::put('/evaluaciones/{id}', [EvaluacionController::class, 'update']);
-Route::delete('/evaluaciones/{id}', [EvaluacionController::class, 'destroy']);
 
 // 🔹 RESUMEN ESCOLAR
 Route::get('/resumen-escolar', [ServiciosEscolaresController::class, 'getResumen']);
@@ -58,6 +54,6 @@ Route::get('/filtros', function () {
         'periodos' => DB::table('periodo')->get(),
         'carreras' => DB::table('carrera')->get(),
         'materias' => DB::table('materia')->get(),
-        'grupos' => DB::table('grupo')->get(),
+        'grupos'   => DB::table('grupo')->get(),
     ]);
 });

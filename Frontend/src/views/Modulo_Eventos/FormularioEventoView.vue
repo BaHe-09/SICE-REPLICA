@@ -231,39 +231,75 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 const router = useRouter()
 const route  = useRoute()
 const modoEdicion = computed(() => !!route.params.id)
-const cargando = ref(false)
-const toast = ref({ visible: false, mensaje: '', tipo: 'exito' })
 
-const tiposEvento = ref([
-  { id: 1, nombre: 'Académico' },
-  { id: 2, nombre: 'Cultural' },
-  { id: 3, nombre: 'Deportivo' },
-  { id: 4, nombre: 'Institucional' },
-])
+const cargando    = ref(false)
+const errorCarga  = ref(false)
+const tiposEvento = ref([])
+
+const notificacion = ref({ visible: false, mensaje: '', tipo: 'exito' })
+let timerNotif = null
+const mostrarNotificacion = (mensaje, tipo = 'exito') => {
+  if (timerNotif) clearTimeout(timerNotif)
+  notificacion.value = { visible: true, mensaje, tipo }
+  timerNotif = setTimeout(() => { notificacion.value.visible = false }, 3500)
+}
 
 const fechaMinima = computed(() => new Date().toISOString().split('T')[0])
 
 const form = ref({
-  nombre: '',
-  tipo_evento_id: '',
-  fecha: '',
-  lugar: '',
-  descripcion: '',
-  tiene_cupo: false,
-  cupo_maximo: null,
+  nombre: '', tipo_evento_id: '', fecha: '', lugar: '',
+  descripcion: '', tiene_cupo: false, cupo_maximo: null,
+})
+const errores = ref({ nombre: '', tipo_evento_id: '', fecha: '', lugar: '', cupo_maximo: '' })
+
+// ── Carga inicial ─────────────────────────────────────────────
+const cargarTipos = async () => {
+  try {
+    const res = await fetch('http://localhost:8000/api/tipos-evento')
+    if (!res.ok) throw new Error()
+    tiposEvento.value = await res.json()
+  } catch {
+    mostrarNotificacion('No se pudieron cargar los tipos de evento.', 'error')
+  }
+}
+
+const cargarEvento = async () => {
+  cargando.value   = true
+  errorCarga.value = false
+  try {
+    const res = await fetch(`http://localhost:8000/api/eventos/${route.params.id}`)
+    if (!res.ok) throw new Error('Error en la respuesta del servidor')
+    const data = await res.json()
+    form.value = {
+      nombre:         data.nombre,
+      tipo_evento_id: data.tipo_evento_id,
+      fecha:          data.fecha,
+      lugar:          data.lugar,
+      descripcion:    data.descripcion || '',
+      tiene_cupo:     !!data.cupo_maximo,
+      cupo_maximo:    data.cupo_maximo || null,
+    }
+  } catch (error) {
+    console.error('Error cargando evento:', error)
+    errorCarga.value = true
+  } finally {
+    cargando.value = false
+  }
+}
+
+onMounted(() => {
+  cargarTipos()
+  if (modoEdicion.value) cargarEvento()
 })
 
-const errores = ref({
-  nombre: '', tipo_evento_id: '', fecha: '', lugar: '', cupo_maximo: '',
-})
-
+// ── Validaciones ──────────────────────────────────────────────
 const validarCampo = (campo) => {
   errores.value[campo] = ''
   if (campo === 'nombre' && !form.value.nombre.trim())
@@ -289,20 +325,38 @@ const validarTodo = () => {
   return Object.values(errores.value).every(e => !e)
 }
 
-const mostrarToast = (mensaje, tipo = 'exito') => {
-  toast.value = { visible: true, mensaje, tipo }
-  setTimeout(() => { toast.value.visible = false }, 3500)
-}
-
+// ── Guardar ───────────────────────────────────────────────────
 const guardar = async () => {
-  if (!validarTodo()) return mostrarToast('Revisa los campos con error antes de continuar', 'error')
+  if (!validarTodo()) return mostrarNotificacion('Revisa los campos con error antes de continuar', 'error')
   cargando.value = true
   try {
-    await new Promise(r => setTimeout(r, 900))
-    mostrarToast(modoEdicion.value ? 'Evento actualizado correctamente' : 'Evento registrado correctamente')
+    const payload = {
+      nombre:         form.value.nombre.trim(),
+      tipo_evento_id: form.value.tipo_evento_id,
+      fecha:          form.value.fecha,
+      lugar:          form.value.lugar.trim(),
+      descripcion:    form.value.descripcion.trim(),
+      cupo_maximo:    form.value.tiene_cupo ? form.value.cupo_maximo : null,
+    }
+    const url    = modoEdicion.value
+      ? `http://localhost:8000/api/eventos/${route.params.id}`
+      : 'http://localhost:8000/api/eventos'
+    const method = modoEdicion.value ? 'PUT' : 'POST'
+
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      throw new Error(err.message || 'Error del servidor')
+    }
+    mostrarNotificacion(modoEdicion.value ? 'Evento actualizado correctamente' : 'Evento registrado correctamente')
     setTimeout(() => router.push('/eventos'), 1200)
-  } catch {
-    mostrarToast('No se pudo guardar el evento. Intenta de nuevo.', 'error')
+  } catch (error) {
+    console.error('Error guardando evento:', error)
+    mostrarNotificacion(error.message || 'No se pudo guardar el evento. Intenta de nuevo.', 'error')
   } finally {
     cargando.value = false
   }

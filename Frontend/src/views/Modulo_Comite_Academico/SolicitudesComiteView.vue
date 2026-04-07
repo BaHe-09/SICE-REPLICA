@@ -158,45 +158,87 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 const router = useRouter()
-const cargando = ref(false)
-const busqueda = ref('')
-const filtroTipo = ref('')
-const filtroEstatus = ref('')
 
-const tiposSolicitud = ref([
-  { id: 1, nombre: 'Baja de materia' },
-  { id: 2, nombre: 'Cambio de carrera' },
-  { id: 3, nombre: 'Equivalencia' },
-  { id: 4, nombre: 'Titulación' },
-  { id: 5, nombre: 'Recurse de materia' },
-])
+const cargando       = ref(false)
+const errorCarga     = ref(false)
+const busqueda       = ref('')
+const filtroTipo     = ref('')
+const filtroEstatus  = ref('')
 
-const solicitudes = ref([
-  { id: 1,  folio: 'SOL-001', solicitante: 'García Morales, Ana Sofía',    tipo: 'Baja de materia',   fecha: '2026-01-10', estatus: 'Aprobada',    resolucion_id: 5  },
-  { id: 2,  folio: 'SOL-002', solicitante: 'Hernández López, Carlos',       tipo: 'Cambio de carrera', fecha: '2026-01-15', estatus: 'Rechazada',   resolucion_id: 6  },
-  { id: 3,  folio: 'SOL-003', solicitante: 'Martínez Sánchez, Laura',       tipo: 'Equivalencia',      fecha: '2026-02-03', estatus: 'Aprobada',    resolucion_id: 7  },
-  { id: 4,  folio: 'SOL-004', solicitante: 'Rodríguez Torres, José',        tipo: 'Titulación',        fecha: '2026-02-18', estatus: 'Aprobada',    resolucion_id: 8  },
-  { id: 5,  folio: 'SOL-005', solicitante: 'Pérez Gómez, María',            tipo: 'Baja de materia',   fecha: '2026-03-01', estatus: 'En revisión', resolucion_id: null },
-  { id: 6,  folio: 'SOL-006', solicitante: 'López Díaz, Fernando',          tipo: 'Recurse de materia',fecha: '2026-03-10', estatus: 'Pendiente',   resolucion_id: null },
-  { id: 7,  folio: 'SOL-007', solicitante: 'Sánchez Ruiz, Alejandra',       tipo: 'Equivalencia',      fecha: '2026-03-15', estatus: 'Pendiente',   resolucion_id: null },
-  { id: 8,  folio: 'SOL-008', solicitante: 'Ramírez Flores, Jorge',         tipo: 'Baja de materia',   fecha: '2026-03-20', estatus: 'En revisión', resolucion_id: null },
-])
+const tiposSolicitud = ref([])
+const solicitudes    = ref([])
 
-const solicitudesFiltradas = computed(() => {
-  return solicitudes.value.filter(s => {
-    const q = busqueda.value.toLowerCase()
-    const coincide = !q || s.folio.toLowerCase().includes(q) || s.solicitante.toLowerCase().includes(q)
-    const tipo    = !filtroTipo.value    || s.tipo === filtroTipo.value
+// ── Carga inicial ─────────────────────────────────────────────
+const cargarTipos = async () => {
+  try {
+    const res = await fetch('http://localhost:8000/api/comite/tipos-solicitud')
+    if (!res.ok) throw new Error()
+    tiposSolicitud.value = await res.json()
+  } catch {
+    // Sin tipos el selector queda vacío
+  }
+}
+
+const cargarSolicitudes = async () => {
+  cargando.value   = true
+  errorCarga.value = false
+  try {
+    const res = await fetch('http://localhost:8000/api/comite/solicitudes')
+    if (!res.ok) throw new Error('Error en la respuesta del servidor')
+    const data = await res.json()
+    solicitudes.value = Array.isArray(data) ? data : data.data ?? []
+  } catch (error) {
+    console.error('Error cargando solicitudes:', error)
+    errorCarga.value = true
+  } finally {
+    cargando.value = false
+  }
+}
+
+onMounted(() => {
+  cargarTipos()
+  cargarSolicitudes()
+})
+
+// ── Filtrado local reactivo ────────────────────────────────────
+const solicitudesFiltradas = computed(() =>
+  solicitudes.value.filter(s => {
+    const q       = busqueda.value.toLowerCase()
+    const coincide = !q || s.folio?.toLowerCase().includes(q) || s.solicitante?.toLowerCase().includes(q)
+    const tipo    = !filtroTipo.value    || s.tipo    === filtroTipo.value
     const estatus = !filtroEstatus.value || s.estatus === filtroEstatus.value
     return coincide && tipo && estatus
   })
-})
+)
 
+// ── Buscar en el backend con parámetros ────────────────────────
+const filtrar = async () => {
+  cargando.value   = true
+  errorCarga.value = false
+  try {
+    const params = new URLSearchParams()
+    if (busqueda.value)      params.append('q',       busqueda.value)
+    if (filtroTipo.value)    params.append('tipo',    filtroTipo.value)
+    if (filtroEstatus.value) params.append('estatus', filtroEstatus.value)
+    const url = 'http://localhost:8000/api/comite/solicitudes' + (params.toString() ? '?' + params : '')
+    const res = await fetch(url)
+    if (!res.ok) throw new Error('Error en la respuesta del servidor')
+    const data = await res.json()
+    solicitudes.value = Array.isArray(data) ? data : data.data ?? []
+  } catch (error) {
+    console.error('Error filtrando solicitudes:', error)
+    errorCarga.value = true
+  } finally {
+    cargando.value = false
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────────
 const tieneResolucion = (sol) => !!sol.resolucion_id || ['Aprobada','Rechazada'].includes(sol.estatus)
 
 const estiloBadgeEstado = (est) => {
@@ -204,28 +246,17 @@ const estiloBadgeEstado = (est) => {
   const textos = { 'Pendiente': '#1B396A', 'En revisión': '#F59E0B', 'Aprobada': '#16A34A',  'Rechazada': '#DC2626'  }
   return { background: fondos[est] || '#F3F4F6', color: textos[est] || '#6B7280' }
 }
-
 const formatearFecha = (f) => {
   if (!f) return '—'
   const [a, m, d] = f.split('-')
   const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
   return `${parseInt(d)} ${meses[parseInt(m)-1]} ${a}`
 }
-
 const iniciales = (nombre) => {
   if (!nombre) return '?'
   return nombre.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase()
 }
-
-const resolverSolicitud = (sol) => {
-  router.push(`/comite/resoluciones/nueva?solicitud=${sol.id}`)
-}
-
-const filtrar = async () => {
-  cargando.value = true
-  await new Promise(r => setTimeout(r, 300))
-  cargando.value = false
-}
+const resolverSolicitud = (sol) => router.push(`/comite/resoluciones/nueva?solicitud=${sol.id}`)
 </script>
 
 <style scoped>
