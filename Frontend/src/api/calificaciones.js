@@ -1,14 +1,60 @@
-// src/api/calificaciones.js
-import api from './axios';
+import axios from 'axios'
 
-// Obtener calificaciones de un grupo
-export async function getCalificacionesGrupo(params = {}) {
-  const response = await api.get('/calificaciones-grupo', { params });
-  return response.data;
+const API = 'http://localhost:8000/api'
+
+export const getCalificacionesGrupo = async (filtros = {}) => {
+  const params = {}
+  if (filtros.grupo) params.grupo_id = filtros.grupo
+  const { data } = await axios.get(`${API}/calificaciones-grupo`, { params })
+  return data
 }
 
-// Guardar calificaciones (una o varias)
-export async function guardarCalificaciones(data) {
-  const response = await api.post('/guardar-calificaciones', data);
-  return response.data;
+export const guardarCalificaciones = async (alumnos) => {
+  const lista = Array.isArray(alumnos) ? alumnos : [alumnos]
+
+  // Armar todas las peticiones válidas
+  const peticiones = []
+  for (const alumno of lista) {
+    const parciales = [
+      { id_evaluacion: alumno.id_evaluacion_parcial_1, valor: alumno.p1 },
+      { id_evaluacion: alumno.id_evaluacion_parcial_2, valor: alumno.p2 },
+      { id_evaluacion: alumno.id_evaluacion_proyecto,  valor: alumno.proy },
+    ]
+
+    for (const p of parciales) {
+      // Solo mandar si tenemos todos los datos necesarios
+      if (
+        p.id_evaluacion &&
+        alumno.id_inscripcion &&
+        p.valor !== null &&
+        p.valor !== undefined &&
+        p.valor !== ''
+      ) {
+        peticiones.push({
+          id_inscripcion: alumno.id_inscripcion,
+          id_evaluacion:  p.id_evaluacion,
+          calificacion:   p.valor,
+        })
+      }
+    }
+  }
+
+  if (peticiones.length === 0) {
+    console.warn('No hay calificaciones válidas para guardar')
+    return []
+  }
+
+  // Enviar de 5 en 5 para no saturar el browser
+  const LOTE = 5
+  const resultados = []
+
+  for (let i = 0; i < peticiones.length; i += LOTE) {
+    const lote = peticiones.slice(i, i + LOTE)
+    const res = await Promise.all(
+      lote.map(p => axios.post(`${API}/guardar-calificaciones`, p))
+    )
+    resultados.push(...res)
+  }
+
+  return resultados
 }
