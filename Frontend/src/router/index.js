@@ -24,79 +24,45 @@ const router = createRouter({
       component: () => import('@/views/DashboardView.vue')
     },
 
-    // ── Servicios Escolares ───────────────────────────────────────────────
+    // ══════════════════════════════════════════════════════════════════════
+    // MÓDULO: SERVICIOS ESCOLARES
+    // ══════════════════════════════════════════════════════════════════════
     {
       path: '/servicios-escolares',
       name: 'ServiciosEscolares',
       component: () => import('@/views/ServiciosEscolaresView.vue')
     },
 
-    // ── Alumnos ───────────────────────────────────────────────────────────
-    {
-      path: '/alumnos',
-      name: 'Alumnos',
-      component: () => import('@/views/AlumnosView.vue')
-    },
-    {
-      path: '/formulario-alumno',
-      name: 'FormularioAlumno',
-      component: () => import('@/views/FormularioAlumnoView.vue')
-    },
-    {
-      path: '/formulario-alumno/:id',
-      name: 'EditarAlumno',
-      component: () => import('@/views/FormularioAlumnoView.vue')
-    },
+    // Alumnos
+    { path: '/alumnos', name: 'Alumnos', component: () => import('@/views/AlumnosView.vue') },
+    { path: '/formulario-alumno', name: 'FormularioAlumno', component: () => import('@/views/FormularioAlumnoView.vue') },
+    { path: '/formulario-alumno/:id', name: 'EditarAlumno', component: () => import('@/views/FormularioAlumnoView.vue') },
 
-    // ── Evaluaciones ──────────────────────────────────────────────────────
-    {
-      path: '/evaluaciones',
-      name: 'EvaluacionesGeneral',
-      component: () => import('@/views/EvaluacionesView.vue')
-    },
-    {
-      path: '/evaluaciones/:id',
-      name: 'Evaluaciones',
-      component: () => import('@/views/EvaluacionesView.vue')
-    },
+    // Evaluaciones y Calificaciones
+    { path: '/evaluaciones', name: 'EvaluacionesGeneral', component: () => import('@/views/EvaluacionesView.vue') },
+    { path: '/evaluaciones/:id', name: 'Evaluaciones', component: () => import('@/views/EvaluacionesView.vue') },
+    { path: '/calificaciones', name: 'CalificacionesGeneral', component: () => import('@/views/CalificacionesView.vue') },
+    { path: '/calificaciones/:id', name: 'Calificaciones', component: () => import('@/views/CalificacionesView.vue') },
 
-    // ── Calificaciones ────────────────────────────────────────────────────
-    {
-      path: '/calificaciones',
-      name: 'CalificacionesGeneral',
-      component: () => import('@/views/CalificacionesView.vue')
-    },
-    {
-      path: '/calificaciones/:id',
-      name: 'Calificaciones',
-      component: () => import('@/views/CalificacionesView.vue')
-    },
+    // Inscripción y Grupos
+    { path: '/inscripcion', name: 'Inscripcion', component: () => import('@/views/InscripcionView.vue') },
+    { path: '/gestion-grupos', name: 'GestionGrupos', component: () => import('@/views/GestionGruposView.vue') },
+    { path: '/gestion-academica', name: 'GestionAcademica', component: () => import('@/views/GestionGruposView.vue') },
 
-    // ── Inscripción ───────────────────────────────────────────────────────
-    {
-      path: '/inscripcion',
-      name: 'Inscripcion',
-      component: () => import('@/views/InscripcionView.vue')
-    },
-
-    // ── Gestión de Grupos ─────────────────────────────────────────────────
-    {
-      path: '/gestion-grupos',
-      name: 'GestionGrupos',
-      component: () => import('@/views/GestionGruposView.vue')
-    },
-
-    // ── Gestión Académica (usa GestionGruposView, archivo existente) ───────
-    {
-      path: '/gestion-academica',
-      name: 'GestionAcademica',
-      component: () => import('@/views/GestionGruposView.vue')
-    },
+    // ══════════════════════════════════════════════════════════════════════
+    // MÓDULO: SEGURIDAD Y USUARIOS
+    // Carpeta: src/views/Seguridad y Usuarios/
+    // ══════════════════════════════════════════════════════════════════════
+    // ==================== NUEVAS RUTAS DEL MÓDULO SEGURIDAD Y USUARIOS ====================
+    { path: '/roles',          name: 'Roles',          component: () => import('@/views/Seguridad y Usuarios/RolesView.vue') },
+    { path: '/permisos',       name: 'Permisos',       component: () => import('@/views/Seguridad y Usuarios/PermisosView.vue') },
+    { path: '/usuarios',       name: 'Usuarios',       component: () => import('@/views/Seguridad y Usuarios/UsuariosView.vue') },
+    { path: '/bitacora',       name: 'Bitacora',       component: () => import('@/views/Seguridad y Usuarios/BitacoraView.vue') },
+    { path: '/nuevo-usuario',  name: 'NuevoUsuario',   component: () => import('@/views/Seguridad y Usuarios/NuevoUsuarioView.vue') },
 
     // ══════════════════════════════════════════════════════════════════════
     // MÓDULO: EVENTOS
     // Carpeta: src/views/Modulo_Eventos/
-    // Tablas:  tipo_evento, evento, participacion_evento
     // ══════════════════════════════════════════════════════════════════════
     {
       path: '/eventos',
@@ -122,17 +88,12 @@ const router = createRouter({
     // ══════════════════════════════════════════════════════════════════════
     // MÓDULO: COMITÉ ACADÉMICO
     // Carpeta: src/views/Modulo_Comite_Academico/
-    // Tablas:  tipo_solicitud, solicitud_comite, sesion_comite, resolucion_comite
     // ══════════════════════════════════════════════════════════════════════
-
-    // Dashboard del módulo
     {
       path: '/comite',
       name: 'Comite',
       component: () => import('@/views/Modulo_Comite_Academico/ComiteView.vue')
     },
-
-    // Solicitudes
     {
       path: '/comite/solicitudes',
       name: 'SolicitudesComite',
@@ -148,15 +109,11 @@ const router = createRouter({
       name: 'DetalleSolicitud',
       component: () => import('@/views/Modulo_Comite_Academico/NuevaSolicitudView.vue')
     },
-
-    // Sesiones
     {
       path: '/comite/sesiones',
       name: 'SesionesComite',
       component: () => import('@/views/Modulo_Comite_Academico/SesionesComiteView.vue')
     },
-
-    // Resoluciones
     {
       path: '/comite/resoluciones',
       name: 'ResolucionesComite',
@@ -168,7 +125,7 @@ const router = createRouter({
       component: () => import('@/views/Modulo_Comite_Academico/ResolucionesComiteView.vue')
     },
 
-    // ── Ruta 404: redirige al inicio ───────────────────────────────────────
+    // ── Ruta 404 ──────────────────────────────────────────────────────────
     {
       path: '/:pathMatch(.*)*',
       name: 'NotFound',
