@@ -448,9 +448,26 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, nextTick, onUnmounted } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
-import { getEvaluaciones, guardarEvaluaciones } from '../api/evaluaciones'
+import { getEvaluaciones, guardarEvaluaciones, eliminarEvaluacion as eliminarEvaluacionApi } from '../api/evaluaciones'
+
+const eliminarEvaluacion = async (index) => {
+  const item = criterios.value[index]
+  if (!confirm('¿Deseas eliminar esta evaluación? Esta acción no se puede deshacer.')) return
+  cargando.value = true
+  try {
+    if (item.id_evaluacion) {
+      await eliminarEvaluacionApi(item.id_evaluacion)
+    }
+    criterios.value.splice(index, 1)
+    mostrarToast('Evaluación eliminada')
+  } catch {
+    mostrarToast('No se pudo eliminar. Intenta de nuevo.', 'error')
+  } finally {
+    cargando.value = false
+  }
+}
 
 // ── Estado general ──
 const cargando = ref(false)
@@ -682,12 +699,7 @@ const guardarNuevaEvaluacion = async () => {
   }
 }
 
-const eliminarEvaluacion = (index) => {
-  if (confirm('¿Deseas eliminar esta evaluación? Esta acción no se puede deshacer.')) {
-    criterios.value.splice(index, 1)
-    mostrarToast('Evaluación eliminada')
-  }
-}
+
 
 // ── Reporte ──
 const generarReporte = async () => {

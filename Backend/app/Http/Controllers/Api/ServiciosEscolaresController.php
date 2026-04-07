@@ -189,13 +189,12 @@ class ServiciosEscolaresController extends Controller
 
     public function eliminarEvaluacion($id)
     {
+        // Primero borrar las calificaciones asociadas
+        DB::table('calificacion')->where('id_evaluacion', $id)->delete();
+    
+        // Luego borrar la evaluación
         Evaluacion::destroy($id);
+    
         return response()->json(['mensaje' => 'Evaluación eliminada'], 200);
-    }
-
-    // 🔹 DASHBOARD
-    public function getResumen()
-    {
-        return response()->json(['mensaje' => 'Resumen escolar']);
     }
 }

@@ -6,7 +6,10 @@ export const getEvaluaciones = async (id_grupo) => {
   const { data } = await axios.get(`${API}/evaluaciones/${id_grupo}`)
   return data
 }
-
+export const eliminarEvaluacion = async (id) => {
+  const { data } = await axios.delete(`${API}/evaluaciones/${id}`)
+  return data
+}
 export const guardarEvaluaciones = async (evaluacion) => {
   const lista = Array.isArray(evaluacion) ? evaluacion : [evaluacion]
 
