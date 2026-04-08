@@ -143,9 +143,23 @@
         </div>
 
         <!-- Gestión Académica -->
-        <router-link to="/gestion-academica" class="elemento-menu" active-class="activo">
+        <div class="elemento-menu elemento-padre" @click="toggleGestionAcademica">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icono-menu" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
           <span class="etiqueta-menu">Gestión Académica</span>
-        </router-link>
+          <span class="flecha-submenu" :class="{ abierto: isGestionAcademicaOpen }">›</span>
+        </div>
+        <div v-if="isGestionAcademicaOpen" class="submenu">
+          <router-link to="/gestion-academica" class="elemento-menu elemento-submenu" active-class="activo">Panel Principal</router-link>
+          <router-link to="/gestion-academica/carreras" class="elemento-menu elemento-submenu" active-class="activo">Carreras</router-link>
+          <router-link to="/gestion-academica/planes" class="elemento-menu elemento-submenu" active-class="activo">Planes de Estudio</router-link>
+          <router-link to="/gestion-academica/materias" class="elemento-menu elemento-submenu" active-class="activo">Materias</router-link>
+          <router-link to="/gestion-academica/prerrequisitos" class="elemento-menu elemento-submenu" active-class="activo">Prerrequisitos</router-link>
+          <router-link to="/gestion-academica/periodos" class="elemento-menu elemento-submenu" active-class="activo">Periodos Académicos</router-link>
+          <router-link to="/gestion-academica/edificios-aulas" class="elemento-menu elemento-submenu" active-class="activo">Edificios y Aulas</router-link>
+        </div>
 
         <!-- Eventos -->
         <div class="elemento-menu elemento-padre" @click="toggleEventos">
@@ -229,11 +243,12 @@ import { ref, computed, watch, onMounted } from 'vue'
 // ==================== ESTADOS PERSISTENTES ====================
 const busquedaGlobal = ref('')
 
-const isCollapsed       = ref(false)
-const isServiciosOpen   = ref(true)
-const isSeguridadOpen   = ref(false)
-const isEventosOpen     = ref(false)
-const isComiteOpen      = ref(false)
+const isCollapsed            = ref(false)
+const isServiciosOpen        = ref(true)
+const isSeguridadOpen        = ref(false)
+const isEventosOpen          = ref(false)
+const isComiteOpen           = ref(false)
+const isGestionAcademicaOpen = ref(false)
 
 const mostrarMenuUsuario    = ref(false)
 const mostrarNotificaciones = ref(false)
@@ -243,20 +258,22 @@ const notificaciones = ref([])
 
 // Cargar estado guardado al montar
 onMounted(() => {
-  if (localStorage.getItem('isServiciosOpen') !== null) isServiciosOpen.value = JSON.parse(localStorage.getItem('isServiciosOpen'))
-  if (localStorage.getItem('isSeguridadOpen') !== null) isSeguridadOpen.value = JSON.parse(localStorage.getItem('isSeguridadOpen'))
-  if (localStorage.getItem('isEventosOpen') !== null)   isEventosOpen.value   = JSON.parse(localStorage.getItem('isEventosOpen'))
-  if (localStorage.getItem('isComiteOpen') !== null)    isComiteOpen.value    = JSON.parse(localStorage.getItem('isComiteOpen'))
-  if (localStorage.getItem('rolActual') !== null)       rolActual.value       = localStorage.getItem('rolActual')
+  if (localStorage.getItem('isServiciosOpen') !== null)        isServiciosOpen.value        = JSON.parse(localStorage.getItem('isServiciosOpen'))
+  if (localStorage.getItem('isSeguridadOpen') !== null)        isSeguridadOpen.value        = JSON.parse(localStorage.getItem('isSeguridadOpen'))
+  if (localStorage.getItem('isEventosOpen') !== null)          isEventosOpen.value          = JSON.parse(localStorage.getItem('isEventosOpen'))
+  if (localStorage.getItem('isComiteOpen') !== null)           isComiteOpen.value           = JSON.parse(localStorage.getItem('isComiteOpen'))
+  if (localStorage.getItem('isGestionAcademicaOpen') !== null) isGestionAcademicaOpen.value = JSON.parse(localStorage.getItem('isGestionAcademicaOpen'))
+  if (localStorage.getItem('rolActual') !== null)              rolActual.value              = localStorage.getItem('rolActual')
 })
 
 // Guardar automáticamente
-watch([isServiciosOpen, isSeguridadOpen, isEventosOpen, isComiteOpen, rolActual], () => {
-  localStorage.setItem('isServiciosOpen', JSON.stringify(isServiciosOpen.value))
-  localStorage.setItem('isSeguridadOpen', JSON.stringify(isSeguridadOpen.value))
-  localStorage.setItem('isEventosOpen',   JSON.stringify(isEventosOpen.value))
-  localStorage.setItem('isComiteOpen',    JSON.stringify(isComiteOpen.value))
-  localStorage.setItem('rolActual',       rolActual.value)
+watch([isServiciosOpen, isSeguridadOpen, isEventosOpen, isComiteOpen, isGestionAcademicaOpen, rolActual], () => {
+  localStorage.setItem('isServiciosOpen',        JSON.stringify(isServiciosOpen.value))
+  localStorage.setItem('isSeguridadOpen',        JSON.stringify(isSeguridadOpen.value))
+  localStorage.setItem('isEventosOpen',          JSON.stringify(isEventosOpen.value))
+  localStorage.setItem('isComiteOpen',           JSON.stringify(isComiteOpen.value))
+  localStorage.setItem('isGestionAcademicaOpen', JSON.stringify(isGestionAcademicaOpen.value))
+  localStorage.setItem('rolActual',              rolActual.value)
 }, { deep: true })
 
 const nombreRolActual = computed(() =>
@@ -264,11 +281,12 @@ const nombreRolActual = computed(() =>
 )
 
 // ==================== TOGGLES ====================
-const toggleSidebar   = () => { isCollapsed.value = !isCollapsed.value }
-const toggleServicios = () => { isServiciosOpen.value = !isServiciosOpen.value }
-const toggleSeguridad = () => { isSeguridadOpen.value = !isSeguridadOpen.value }
-const toggleEventos   = () => { isEventosOpen.value = !isEventosOpen.value }
-const toggleComite    = () => { isComiteOpen.value = !isComiteOpen.value }
+const toggleSidebar          = () => { isCollapsed.value = !isCollapsed.value }
+const toggleServicios        = () => { isServiciosOpen.value = !isServiciosOpen.value }
+const toggleSeguridad        = () => { isSeguridadOpen.value = !isSeguridadOpen.value }
+const toggleEventos          = () => { isEventosOpen.value = !isEventosOpen.value }
+const toggleComite           = () => { isComiteOpen.value = !isComiteOpen.value }
+const toggleGestionAcademica = () => { isGestionAcademicaOpen.value = !isGestionAcademicaOpen.value }
 
 const toggleMenuUsuario = () => {
   mostrarMenuUsuario.value = !mostrarMenuUsuario.value
