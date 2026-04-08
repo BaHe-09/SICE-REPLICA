@@ -57,3 +57,16 @@ Route::get('/filtros', function () {
         'grupos'   => DB::table('grupo')->get(),
     ]);
 });
+
+// CARRERAS, DEPARTAMENTOS Y NIVELES
+use App\Http\Controllers\CarreraController;
+use App\Http\Controllers\DepartamentoController;
+use App\Http\Controllers\NivelCarreraController;
+
+Route::get('/carreras', [CarreraController::class, 'index']);
+Route::post('/carreras', [CarreraController::class, 'store']);
+Route::put('/carreras/{id}', [CarreraController::class, 'update']);
+Route::delete('/carreras/{id}', [CarreraController::class, 'destroy']);
+
+Route::get('/departamentos', [DepartamentoController::class, 'index']);
+Route::get('/niveles-carrera', [NivelCarreraController::class, 'index']);
