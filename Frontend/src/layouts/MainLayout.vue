@@ -143,7 +143,7 @@
         </div>
 
         <!-- Gestión Académica -->
-        <router-link to="/gestion-academica" class="elemento-menu" active-class="activo">
+        <div class="elemento-menu elemento-padre" @click="toggleGestionAcademica">
           <svg xmlns="http://www.w3.org/2000/svg" class="icono-menu" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M12 14l9-5-9-5-9 5 9 5zM12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
@@ -198,7 +198,7 @@
             <span>Administración</span>
           </div>
 
-          <!-- Seguridad y Usuarios (arriba) -->
+          <!-- Seguridad y Usuarios -->
           <div class="elemento-menu elemento-padre" @click="toggleSeguridad">
             <svg xmlns="http://www.w3.org/2000/svg" class="icono-menu" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -215,7 +215,7 @@
             <router-link to="/nuevo-usuario" class="elemento-menu elemento-submenu" active-class="activo">Nuevo Usuario</router-link>
           </div>
 
-          <!-- Recursos Humanos (abajo) -->
+          <!-- Recursos Humanos -->
           <div class="elemento-menu elemento-padre" @click="toggleRecursosHumanos">
             <svg xmlns="http://www.w3.org/2000/svg" class="icono-menu" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -263,6 +263,7 @@ const busquedaGlobal = ref('')
 
 const isCollapsed             = ref(false)
 const isServiciosOpen         = ref(true)
+const isGestionAcademicaOpen  = ref(false)
 const isRecursosHumanosOpen   = ref(false)
 const isSeguridadOpen         = ref(false)
 const isEventosOpen           = ref(false)
@@ -279,23 +280,25 @@ onMounted(() => {
     const val = localStorage.getItem(key)
     if (val !== null) ref.value = parse ? JSON.parse(val) : val
   }
-  load('isServiciosOpen',       isServiciosOpen)
-  load('isRecursosHumanosOpen', isRecursosHumanosOpen)
-  load('isSeguridadOpen',       isSeguridadOpen)
-  load('isEventosOpen',         isEventosOpen)
-  load('isComiteOpen',          isComiteOpen)
-  load('rolActual',             rolActual, false)
+  load('isServiciosOpen',        isServiciosOpen)
+  load('isGestionAcademicaOpen', isGestionAcademicaOpen)
+  load('isRecursosHumanosOpen',  isRecursosHumanosOpen)
+  load('isSeguridadOpen',        isSeguridadOpen)
+  load('isEventosOpen',          isEventosOpen)
+  load('isComiteOpen',           isComiteOpen)
+  load('rolActual',              rolActual, false)
 })
 
 watch(
-  [isServiciosOpen, isRecursosHumanosOpen, isSeguridadOpen, isEventosOpen, isComiteOpen, rolActual],
+  [isServiciosOpen, isGestionAcademicaOpen, isRecursosHumanosOpen, isSeguridadOpen, isEventosOpen, isComiteOpen, rolActual],
   () => {
-    localStorage.setItem('isServiciosOpen',       JSON.stringify(isServiciosOpen.value))
-    localStorage.setItem('isRecursosHumanosOpen', JSON.stringify(isRecursosHumanosOpen.value))
-    localStorage.setItem('isSeguridadOpen',       JSON.stringify(isSeguridadOpen.value))
-    localStorage.setItem('isEventosOpen',         JSON.stringify(isEventosOpen.value))
-    localStorage.setItem('isComiteOpen',          JSON.stringify(isComiteOpen.value))
-    localStorage.setItem('rolActual',             rolActual.value)
+    localStorage.setItem('isServiciosOpen',        JSON.stringify(isServiciosOpen.value))
+    localStorage.setItem('isGestionAcademicaOpen', JSON.stringify(isGestionAcademicaOpen.value))
+    localStorage.setItem('isRecursosHumanosOpen',  JSON.stringify(isRecursosHumanosOpen.value))
+    localStorage.setItem('isSeguridadOpen',        JSON.stringify(isSeguridadOpen.value))
+    localStorage.setItem('isEventosOpen',          JSON.stringify(isEventosOpen.value))
+    localStorage.setItem('isComiteOpen',           JSON.stringify(isComiteOpen.value))
+    localStorage.setItem('rolActual',              rolActual.value)
   },
   { deep: true }
 )
@@ -304,12 +307,13 @@ const nombreRolActual = computed(() =>
   rolActual.value === 'admin' ? 'Administrador' : 'Servicios Escolares'
 )
 
-const toggleSidebar          = () => { isCollapsed.value = !isCollapsed.value }
-const toggleServicios        = () => { isServiciosOpen.value = !isServiciosOpen.value }
-const toggleRecursosHumanos  = () => { isRecursosHumanosOpen.value = !isRecursosHumanosOpen.value }
-const toggleSeguridad        = () => { isSeguridadOpen.value = !isSeguridadOpen.value }
-const toggleEventos          = () => { isEventosOpen.value = !isEventosOpen.value }
-const toggleComite           = () => { isComiteOpen.value = !isComiteOpen.value }
+const toggleSidebar           = () => { isCollapsed.value = !isCollapsed.value }
+const toggleServicios         = () => { isServiciosOpen.value = !isServiciosOpen.value }
+const toggleGestionAcademica  = () => { isGestionAcademicaOpen.value = !isGestionAcademicaOpen.value }
+const toggleRecursosHumanos   = () => { isRecursosHumanosOpen.value = !isRecursosHumanosOpen.value }
+const toggleSeguridad         = () => { isSeguridadOpen.value = !isSeguridadOpen.value }
+const toggleEventos           = () => { isEventosOpen.value = !isEventosOpen.value }
+const toggleComite            = () => { isComiteOpen.value = !isComiteOpen.value }
 
 const toggleMenuUsuario = () => {
   mostrarMenuUsuario.value = !mostrarMenuUsuario.value
