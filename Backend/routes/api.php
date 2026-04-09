@@ -96,3 +96,8 @@ Route::get('/aulas', [AulaController::class, 'index']);
 Route::post('/aulas', [AulaController::class, 'store']);
 Route::put('/aulas/{id}', [AulaController::class, 'update']);
 Route::delete('/aulas/{id}', [AulaController::class, 'destroy']);
+
+// GESTIÓN ACADÉMICA - RESUMEN
+use App\Http\Controllers\GestionAcademicaController;
+
+Route::get('/gestion-academica/resumen', [GestionAcademicaController::class, 'resumen']);
