@@ -267,7 +267,7 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 
-
+// ── Estado ──────────────────────────────────────────────────────
 const carreras        = ref([])
 const departamentos   = ref([])
 const niveles         = ref([])
@@ -466,6 +466,19 @@ const confirmarEliminar = async () => {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+:root {
+  --azul:        #1B396A;
+  --azul-hover:  #1D4ED8;
+  --azul-suave:  #DBEAFE;
+  --borde:       #E5E7EB;
+  --fondo:       #F5F5F5;
+  --texto:       #1A1A1A;
+  --gris:        #6B7280;
+  --verde:       #16A34A;
+  --rojo:        #DC2626;
+  --amarillo:    #F59E0B;
+}
+
 
 .carreras-page {
   --azul:       #1B396A;

@@ -120,7 +120,7 @@
       </div>
     </div>
 
-    
+    <!-- Modal Crear/Editar -->
     <div v-if="showModal" class="modal-overlay" @click.self="cerrarModal">
       <div class="modal-content modal-grande">
         <div class="modal-header"><h3>{{ form.id_materia ? 'Editar Materia' : 'Nueva Materia' }}</h3><button @click="cerrarModal" class="btn-cerrar-modal">×</button></div>
@@ -393,6 +393,19 @@ const confirmarEliminar = async () => {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+:root {
+  --azul:        #1B396A;
+  --azul-hover:  #1D4ED8;
+  --azul-suave:  #DBEAFE;
+  --borde:       #E5E7EB;
+  --fondo:       #F5F5F5;
+  --texto:       #1A1A1A;
+  --gris:        #6B7280;
+  --verde:       #16A34A;
+  --rojo:        #DC2626;
+  --amarillo:    #F59E0B;
+}
+
 .materias-page{--azul:#1B396A;--azul-hover:#1D4ED8;--azul-suave:#DBEAFE;--borde:#E5E7EB;--fondo:#F5F5F5;--texto:#1A1A1A;--gris:#6B7280;--verde:#16A34A;--rojo:#DC2626;width:100%;max-width:1100px;background:var(--fondo);font-family:'Montserrat',sans-serif;padding-bottom:2rem}
 .breadcrumb{display:flex;align-items:center;gap:6px;color:var(--gris);font-size:0.88rem;margin-bottom:0.75rem}.breadcrumb-link{color:var(--azul);font-weight:500;cursor:pointer;transition:color 0.15s}.breadcrumb-link:hover{color:var(--azul-hover);text-decoration:underline}.breadcrumb-sep{color:#9CA3AF}.breadcrumb-actual{color:var(--gris);font-weight:600}
 .page-header{display:flex;align-items:baseline;gap:1rem;margin-bottom:1.2rem}.page-title{color:var(--texto);font-size:1.75rem;font-weight:700;letter-spacing:-0.02em;margin:0}.page-subtitle{font-size:0.9rem;color:var(--gris);font-weight:500}

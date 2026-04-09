@@ -689,6 +689,19 @@ const confirmarEliminar = async () => {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+:root {
+  --azul:        #1B396A;
+  --azul-hover:  #1D4ED8;
+  --azul-suave:  #DBEAFE;
+  --borde:       #E5E7EB;
+  --fondo:       #F5F5F5;
+  --texto:       #1A1A1A;
+  --gris:        #6B7280;
+  --verde:       #16A34A;
+  --rojo:        #DC2626;
+  --amarillo:    #F59E0B;
+}
+
 
 .ea-page {
   --azul:        #1B396A;
@@ -815,7 +828,7 @@ const confirmarEliminar = async () => {
 .btn-ver-todas { margin-left: auto; background: var(--azul); color: white; border: none; padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: background 0.15s; }
 .btn-ver-todas:hover { background: var(--azul-hover); }
 
-
+/* Divisor */
 .divisor { padding: 1.2rem 0; display: flex; align-items: center; }
 .divisor-linea { width: 100%; height: 1px; background: var(--borde); }
 
