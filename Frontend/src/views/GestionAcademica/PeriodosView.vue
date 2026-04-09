@@ -174,7 +174,7 @@ const mostrarNotificacion = (mensaje, tipo = 'exito') => {
   timerNotif = setTimeout(() => { notificacion.value.visible = false }, 3500)
 }
 
-// Verifica si ya existe un periodo activo (para mostrar aviso)
+// Verifica si ya existe un periodo activo 
 const periodoActivoExistente = computed(() => periodos.value.some(p => p.estatus && p.id_periodo !== form.id_periodo))
 
 const cargarPeriodos = async () => {

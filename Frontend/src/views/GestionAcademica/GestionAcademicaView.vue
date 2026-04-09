@@ -539,7 +539,7 @@ onMounted(() => { cargarResumen() })
   transform: translateX(3px);
 }
 
-/* ── Footer ─────────────────────────────────────────────────────── */
+/* ── Footeer ─────────────────────────────────────────────────────── */
 .pie-pagina {
   text-align: center;
   color: #9CA3AF;

@@ -178,7 +178,7 @@
       </div>
     </div>
 
-    <!-- Modal Planes asociados -->
+    <!-- Modal Planes asociadoss -->
     <div v-if="showModalPlanes" class="modal-overlay" @click.self="showModalPlanes = false">
       <div class="modal-content modal-grande">
         <div class="modal-header"><h3>Planes de {{ materiaPlanes?.nombre }}</h3><button @click="showModalPlanes = false" class="btn-cerrar-modal">×</button></div>

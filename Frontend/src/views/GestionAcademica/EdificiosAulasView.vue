@@ -863,7 +863,7 @@ const confirmarEliminar = async () => {
 .btn-guardar:disabled { background: #E5E7EB; color: #9CA3AF; cursor: not-allowed; }
 .spinner-btn { display: inline-block; width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: girar 0.7s linear infinite; flex-shrink: 0; }
 
-/* Confirmar */
+/* Confirmarr */
 .confirmar-body { display: flex; flex-direction: column; align-items: center; gap: 1rem; text-align: center; padding: 2rem 1.6rem; }
 .confirmar-icono { width: 52px; height: 52px; stroke: #F59E0B; }
 .confirmar-body p { color: var(--texto); font-size: 0.95rem; margin: 0; line-height: 1.5; }

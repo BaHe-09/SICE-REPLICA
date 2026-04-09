@@ -15,7 +15,7 @@
         <span class="page-subtitle">{{ carrerasFiltradas.length }} registro(s) encontrado(s)</span>
       </div>
 
-      <!-- Barra de carga -->
+      <!-- Barra  carga -->
       <div class="barra-carga" :class="{ visible: cargando }">
         <div class="barra-progreso"></div>
       </div>

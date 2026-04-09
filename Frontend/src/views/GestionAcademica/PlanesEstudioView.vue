@@ -116,7 +116,7 @@
       </div>
     </div>
 
-    <!-- Modal Crear/Editar -->
+    <!-- Modal Crear/Editarr -->
     <div v-if="showModal" class="modal-overlay" @click.self="cerrarModal">
       <div class="modal-content">
         <div class="modal-header"><h3>{{ form.id_plan ? 'Editar Plan' : 'Nuevo Plan de Estudio' }}</h3><button @click="cerrarModal" class="btn-cerrar-modal">×</button></div>
