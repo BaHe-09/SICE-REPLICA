@@ -166,7 +166,7 @@
       </div>
     </div>
 
-    <!-- Modal Confirmar Eliminar -->
+    <!-- Modal  Eliminar -->
     <div v-if="showModalEliminar" class="modal-overlay" @click.self="showModalEliminar = false">
       <div class="modal-content modal-confirmar">
         <div class="modal-header"><h3>Confirmar eliminación</h3><button @click="showModalEliminar = false" class="btn-cerrar-modal">×</button></div>

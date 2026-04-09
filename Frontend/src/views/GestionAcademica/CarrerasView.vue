@@ -267,7 +267,7 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 
-// ── Estado ──────────────────────────────────────────────────────
+
 const carreras        = ref([])
 const departamentos   = ref([])
 const niveles         = ref([])

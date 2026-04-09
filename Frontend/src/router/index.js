@@ -63,10 +63,49 @@ const router = createRouter({
     { path: '/gestion-academica/edificios-aulas',name: 'EdificiosAulas',       component: () => import('@/views/GestionAcademica/EdificiosAulasView.vue') },
 
     // ══════════════════════════════════════════════════════════════════════
+    // MÓDULO: RECURSOS HUMANOS
+    // Carpeta: src/views/Recursos Humanos/
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      path: '/recursos-humanos',
+      name: 'RecursosHumanos',
+      component: () => import('@/views/Recursos Humanos/RecursosHumanosView.vue')
+    },
+    {
+      path: '/recursos-humanos/empleados',
+      name: 'Empleados',
+      component: () => import('@/views/Recursos Humanos/EmpleadosView.vue')
+    },
+    {
+      path: '/recursos-humanos/empleados/nuevo',
+      name: 'NuevoEmpleado',
+      component: () => import('@/views/Recursos Humanos/FormularioEmpleadoView.vue')
+    },
+    {
+      path: '/recursos-humanos/empleados/:id/editar',
+      name: 'EditarEmpleado',
+      component: () => import('@/views/Recursos Humanos/FormularioEmpleadoView.vue')
+    },
+    {
+      path: '/recursos-humanos/docentes',
+      name: 'Docentes',
+      component: () => import('@/views/Recursos Humanos/DocentesView.vue')
+    },
+    {
+      path: '/recursos-humanos/adscripciones',
+      name: 'Adscripciones',
+      component: () => import('@/views/Recursos Humanos/AdscripcionView.vue')
+    },
+    {
+      path: '/recursos-humanos/puestos',
+      name: 'Puestos',
+      component: () => import('@/views/Recursos Humanos/PuestosView.vue')
+    },
+
+    // ══════════════════════════════════════════════════════════════════════
     // MÓDULO: SEGURIDAD Y USUARIOS
     // Carpeta: src/views/Seguridad y Usuarios/
     // ══════════════════════════════════════════════════════════════════════
-    // ==================== NUEVAS RUTAS DEL MÓDULO SEGURIDAD Y USUARIOS ====================
     { path: '/roles',          name: 'Roles',          component: () => import('@/views/Seguridad y Usuarios/RolesView.vue') },
     { path: '/permisos',       name: 'Permisos',       component: () => import('@/views/Seguridad y Usuarios/PermisosView.vue') },
     { path: '/usuarios',       name: 'Usuarios',       component: () => import('@/views/Seguridad y Usuarios/UsuariosView.vue') },

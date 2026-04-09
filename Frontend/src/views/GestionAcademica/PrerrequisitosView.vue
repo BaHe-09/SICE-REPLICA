@@ -148,7 +148,7 @@ const prerrequisitorsFiltrados = computed(() =>
   )
 )
 
-// Filtra materias disponibles para prerrequisito (excluye la materia ya seleccionada)
+// Filtra materias disponibles para prerrequisito 
 const materiasFiltradas = computed(() =>
   materias.value.filter(m => m.id_materia != form.id_materia)
 )

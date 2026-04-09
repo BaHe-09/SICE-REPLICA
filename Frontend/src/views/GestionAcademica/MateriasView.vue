@@ -120,7 +120,7 @@
       </div>
     </div>
 
-    <!-- Modal Crear/Editar -->
+    
     <div v-if="showModal" class="modal-overlay" @click.self="cerrarModal">
       <div class="modal-content modal-grande">
         <div class="modal-header"><h3>{{ form.id_materia ? 'Editar Materia' : 'Nueva Materia' }}</h3><button @click="cerrarModal" class="btn-cerrar-modal">×</button></div>
