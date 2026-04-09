@@ -325,8 +325,9 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
+
+const API_BASE = 'http://127.0.0.1:8000/api/inscripcion'
 
 // ── Estado general ────────────────────────────────────────────────
 const paso = ref(1)
@@ -339,65 +340,69 @@ const inputControlRef = ref(null)
 
 const notification = ref({ message: '', type: '' })
 
-const simularCarga = (mensaje, fn, ms = 700) => {
-  cargando.value = true
-  mensajeCarga.value = mensaje
-  setTimeout(() => {
-    fn()
-    cargando.value = false
-    mensajeCarga.value = ''
-  }, ms)
-}
-
 const showNotification = (message, type) => {
   notification.value = { message, type }
-  setTimeout(() => { notification.value = { message: '', type: '' } }, 3500)
+  setTimeout(() => {
+    notification.value = { message: '', type: '' }
+  }, 3500)
 }
 
 // ── Paso 1: Búsqueda de alumno ────────────────────────────────────
 const busquedaControl = ref('')
+const busquedaNombre = ref('')
+const resultadosBusqueda = ref([])
+const alumnoSeleccionado = ref(null)
+
 let debounceTimer = null
-// Búsqueda automática con debounce al escribir en número de control
+
 watch(busquedaControl, (val) => {
   clearTimeout(debounceTimer)
   if (val.trim().length >= 3) {
     debounceTimer = setTimeout(() => buscarAlumno(), 500)
   }
 })
-const busquedaNombre = ref('')
-const resultadosBusqueda = ref([])
-const alumnoSeleccionado = ref(null)
 
 const normalizarAlumno = (a) => ({
-  noControl: a.numero_control || a.noControl || '',
-  nombre:    a.nombre || a.persona?.nombre_completo || a.persona?.nombre || '',
-  carrera:   a.carrera?.nombre_carrera || a.carrera || '',
-  semestre:  a.semestre_actual || a.semestre || 1,
+  noControl: a.noControl || a.numero_control || '',
+  nombre: a.nombre || '',
+  carrera: a.carrera || '',
+  semestre: a.semestre || a.semestre_actual || 1,
   id_alumno: a.id_alumno || a.id
 })
 
 const buscarAlumno = async () => {
-  const ctrl   = busquedaControl.value.trim()
+  const ctrl = busquedaControl.value.trim()
   const nombre = busquedaNombre.value.trim()
+
   if (!ctrl && !nombre) return
 
   cargando.value = true
   mensajeCarga.value = 'Buscando alumno...'
+
   try {
-    const params = new URLSearchParams()
-    if (ctrl)   params.append('numero_control', ctrl)
-    if (nombre) params.append('nombre', nombre)
-    const response = await fetch(`http://localhost:8000/api/alumnos-full?${params}`)
-    if (!response.ok) throw new Error('Error del servidor')
+    const termino = ctrl || nombre
+    const response = await fetch(`${API_BASE}/buscar-alumno?q=${encodeURIComponent(termino)}`, {
+      headers: {
+        'Accept': 'application/json'
+      }
+    })
+
     const data = await response.json()
-    resultadosBusqueda.value = data.map(normalizarAlumno)
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Error del servidor')
+    }
+
+    const alumno = normalizarAlumno(data)
+    resultadosBusqueda.value = [alumno]
+
     if (resultadosBusqueda.value.length === 0) {
       showNotification('No se encontró ningún alumno con esos datos.', 'error')
     }
-    console.log('✅ Búsqueda de alumnos:', resultadosBusqueda.value.length, 'resultado(s)')
   } catch (error) {
     console.error('❌ Error buscando alumno:', error)
-    showNotification('No se pudo conectar con el servidor. Verifica que esté activo.', 'error')
+    resultadosBusqueda.value = []
+    showNotification(error.message || 'No se pudo conectar con el servidor.', 'error')
   } finally {
     cargando.value = false
     mensajeCarga.value = ''
@@ -407,6 +412,7 @@ const buscarAlumno = async () => {
 const elegirAlumno = (alumno) => {
   alumnoSeleccionado.value = alumno
   resultadosBusqueda.value = []
+  paso.value = 2
 }
 
 const limpiarAlumno = () => {
@@ -423,51 +429,66 @@ const grupoSeleccionado = ref(null)
 const grupos = ref([])
 
 const normalizarGrupoInscripcion = (g) => ({
-  id:        g.id_grupo || g.id,
-  materia:   g.materia?.nombre_materia || g.nombre_materia || g.materia || '',
-  docente:   g.docente?.nombre_completo || g.nombre_docente || g.docente || '',
-  aula:      g.aula || '',
-  capacidad: g.capacidad || 30,
-  inscritos: g.inscritos ?? g.total_inscritos ?? 0,
+  id: g.id,
+  materia: g.materia || '',
+  docente: g.docente || '',
+  aula: g.aula || '',
+  capacidad: g.capacidad || 0,
+  inscritos: g.inscritos ?? 0,
   horario: {
-    dia:        g.dia || g.horario?.dia || '',
-    horaInicio: g.hora_inicio || g.horario?.horaInicio || '',
-    horaFin:    g.hora_fin    || g.horario?.horaFin    || ''
+    dia: g.dia || '',
+    horaInicio: g.hora_inicio || '',
+    horaFin: g.hora_fin || ''
   }
 })
 
 const cargarGruposDisponibles = async () => {
   cargando.value = true
   mensajeCarga.value = 'Cargando grupos disponibles...'
+
   try {
-    const response = await fetch('http://localhost:8000/api/grupos')
-    if (!response.ok) throw new Error('Error del servidor')
+    const response = await fetch(`${API_BASE}/grupos`, {
+      headers: {
+        'Accept': 'application/json'
+      }
+    })
+
     const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Error del servidor')
+    }
+
     grupos.value = data.map(normalizarGrupoInscripcion)
-    console.log('✅ Grupos cargados para inscripción:', grupos.value.length)
   } catch (error) {
     console.error('❌ Error cargando grupos:', error)
-    showNotification('No se pudieron cargar los grupos disponibles.', 'error')
+    grupos.value = []
+    showNotification(error.message || 'No se pudieron cargar los grupos disponibles.', 'error')
   } finally {
     cargando.value = false
     mensajeCarga.value = ''
   }
 }
 
+const gruposBaseFiltrados = computed(() => {
+  const q = busquedaGrupo.value.toLowerCase().trim()
+
+  if (!q) return grupos.value
+
+  return grupos.value.filter(g =>
+    g.materia.toLowerCase().includes(q) ||
+    g.docente.toLowerCase().includes(q) ||
+    g.aula.toLowerCase().includes(q)
+  )
+})
+
 const gruposFiltrados = computed(() => {
-  const q = busquedaGrupo.value.toLowerCase()
-  const todos = !q
-    ? grupos.value
-    : grupos.value.filter(g =>
-        g.materia.toLowerCase().includes(q) ||
-        g.docente.toLowerCase().includes(q)
-      )
   const inicio = (currentPage.value - 1) * porPagina
-  return todos.slice(inicio, inicio + porPagina)
+  return gruposBaseFiltrados.value.slice(inicio, inicio + porPagina)
 })
 
 const totalPages = computed(() =>
-  Math.ceil(grupos.value.length / porPagina) || 1
+  Math.ceil(gruposBaseFiltrados.value.length / porPagina) || 1
 )
 
 const filtrarGrupos = () => {
@@ -475,8 +496,19 @@ const filtrarGrupos = () => {
   filaActiva.value = -1
 }
 
-const prevPage = () => { if (currentPage.value > 1) { currentPage.value--; filaActiva.value = -1 } }
-const nextPage = () => { if (currentPage.value < totalPages.value) { currentPage.value++; filaActiva.value = -1 } }
+const prevPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--
+    filaActiva.value = -1
+  }
+}
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++
+    filaActiva.value = -1
+  }
+}
 
 const inscribirAlumno = (grupo) => {
   grupoSeleccionado.value = grupo
@@ -485,28 +517,46 @@ const inscribirAlumno = (grupo) => {
 
 // ── Paso 3: Confirmación ──────────────────────────────────────────
 const confirmarInscripcion = async () => {
+  if (!alumnoSeleccionado.value || !grupoSeleccionado.value) {
+    showNotification('Faltan datos para confirmar la inscripción.', 'error')
+    return
+  }
+
   cargando.value = true
   mensajeCarga.value = 'Registrando inscripción...'
+
   try {
     const payload = {
       id_alumno: alumnoSeleccionado.value.id_alumno,
-      id_grupo:  grupoSeleccionado.value.id,
-      periodo:   periodo.value
+      id_grupo: grupoSeleccionado.value.id
     }
-    const response = await fetch('http://localhost:8000/api/inscripciones', {
+
+    const response = await fetch(`${API_BASE}/registrar`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
       body: JSON.stringify(payload)
     })
-    if (!response.ok) throw new Error('Error del servidor')
-    console.log('✅ Inscripción registrada correctamente')
-    showNotification(`Inscripción confirmada: ${alumnoSeleccionado.value.nombre} en ${grupoSeleccionado.value.materia}`, 'success')
-    // Recargar grupos para actualizar el contador de inscritos
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Error del servidor')
+    }
+
+    showNotification(
+      data.message || `Inscripción confirmada: ${alumnoSeleccionado.value.nombre} en ${grupoSeleccionado.value.materia}`,
+      'success'
+    )
+
     await cargarGruposDisponibles()
-    // Resetear flujo
+
     paso.value = 1
     alumnoSeleccionado.value = null
     grupoSeleccionado.value = null
+    resultadosBusqueda.value = []
     busquedaControl.value = ''
     busquedaNombre.value = ''
     busquedaGrupo.value = ''
@@ -514,7 +564,7 @@ const confirmarInscripcion = async () => {
     filaActiva.value = -1
   } catch (error) {
     console.error('❌ Error registrando inscripción:', error)
-    showNotification('No se pudo registrar la inscripción. Intenta de nuevo.', 'error')
+    showNotification(error.message || 'No se pudo registrar la inscripción.', 'error')
   } finally {
     cargando.value = false
     mensajeCarga.value = ''
@@ -555,6 +605,7 @@ const manejarTeclado = (e) => {
 
   if (!enCampo && paso.value === 2) {
     const total = gruposFiltrados.value.length
+
     if (e.key === 'ArrowDown') {
       e.preventDefault()
       filaActiva.value = Math.min(filaActiva.value + 1, total - 1)
@@ -562,12 +613,16 @@ const manejarTeclado = (e) => {
       e.preventDefault()
       filaActiva.value = Math.max(filaActiva.value - 1, 0)
     } else if (e.key === 'ArrowRight') {
-      e.preventDefault(); nextPage()
+      e.preventDefault()
+      nextPage()
     } else if (e.key === 'ArrowLeft') {
-      e.preventDefault(); prevPage()
+      e.preventDefault()
+      prevPage()
     } else if (e.key === 'Enter' && filaActiva.value >= 0) {
       const grupo = gruposFiltrados.value[filaActiva.value]
-      if (grupo && grupo.inscritos < grupo.capacidad) inscribirAlumno(grupo)
+      if (grupo && grupo.inscritos < grupo.capacidad) {
+        inscribirAlumno(grupo)
+      }
     }
   }
 }
@@ -578,10 +633,10 @@ onMounted(() => {
   nextTick(() => paginaRef.value?.focus())
 })
 
-// Recargar grupos al entrar al paso 2 por si cambiaron
 watch(paso, (val) => {
   if (val === 2) cargarGruposDisponibles()
 })
+
 onUnmounted(() => {
   window.removeEventListener('keydown', manejarTeclado)
 })

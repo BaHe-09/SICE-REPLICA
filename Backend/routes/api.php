@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\GrupoController;
 use App\Http\Controllers\Api\AlumnoController;
 use App\Http\Controllers\Api\EvaluacionController;
 use App\Http\Controllers\CalificacionController;
+use App\Http\Controllers\Api\InscripcionController;
 
 // DASHBOARD
 Route::get('/dashboard', [DashboardController::class, 'index']);
