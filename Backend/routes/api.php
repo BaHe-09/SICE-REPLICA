@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\GrupoController;
 use App\Http\Controllers\Api\AlumnoController;
 use App\Http\Controllers\Api\EvaluacionController;
 use App\Http\Controllers\CalificacionController;
+use App\Http\Controllers\Api\InscripcionController;
 
 // DASHBOARD
 Route::get('/dashboard', [DashboardController::class, 'index']);
@@ -48,6 +49,15 @@ Route::delete('/evaluaciones/{id}', [ServiciosEscolaresController::class, 'elimi
 // 🔹 RESUMEN ESCOLAR
 Route::get('/resumen-escolar', [ServiciosEscolaresController::class, 'getResumen']);
 
+
+// INSCRIPCIÓN
+Route::prefix('inscripcion')->group(function () {
+    Route::get('/buscar-alumno', [InscripcionController::class, 'buscarAlumno']);
+    Route::get('/grupos', [InscripcionController::class, 'gruposDisponibles']);
+    Route::post('/registrar', [InscripcionController::class, 'inscribirAlumno']);
+});
+
+
 // 🔹 FILTROS DINÁMICOS
 Route::get('/filtros', function () {
     return response()->json([
@@ -57,3 +67,55 @@ Route::get('/filtros', function () {
         'grupos'   => DB::table('grupo')->get(),
     ]);
 });
+
+// CARRERAS, DEPARTAMENTOS Y NIVELES
+use App\Http\Controllers\CarreraController;
+use App\Http\Controllers\DepartamentoController;
+use App\Http\Controllers\NivelCarreraController;
+
+Route::get('/carreras', [CarreraController::class, 'index']);
+Route::post('/carreras', [CarreraController::class, 'store']);
+Route::put('/carreras/{id}', [CarreraController::class, 'update']);
+Route::delete('/carreras/{id}', [CarreraController::class, 'destroy']);
+
+Route::get('/departamentos', [DepartamentoController::class, 'index']);
+Route::get('/niveles-carrera', [NivelCarreraController::class, 'index']);
+
+// EDIFICIOS Y AULAS
+use App\Http\Controllers\EdificioController;
+use App\Http\Controllers\AulaController;
+
+// EDIFICIOS
+Route::get('/edificios', [EdificioController::class, 'index']);
+Route::post('/edificios', [EdificioController::class, 'store']);
+Route::put('/edificios/{id}', [EdificioController::class, 'update']);
+Route::delete('/edificios/{id}', [EdificioController::class, 'destroy']);
+
+// AULAS
+Route::get('/aulas', [AulaController::class, 'index']);
+Route::post('/aulas', [AulaController::class, 'store']);
+Route::put('/aulas/{id}', [AulaController::class, 'update']);
+Route::delete('/aulas/{id}', [AulaController::class, 'destroy']);
+
+// GESTIÓN ACADÉMICA - RESUMEN
+use App\Http\Controllers\GestionAcademicaController;
+
+Route::get('/gestion-academica/resumen', [GestionAcademicaController::class, 'resumen']);
+
+// MATERIAS Y PLANES DE ESTUDIO
+use App\Http\Controllers\MateriaController;
+use App\Http\Controllers\PlanMateriaController;
+use App\Http\Controllers\PlanEstudioController;
+
+// Materias
+Route::get('/materias', [MateriaController::class, 'index']);
+Route::post('/materias', [MateriaController::class, 'store']);
+Route::put('/materias/{id}', [MateriaController::class, 'update']);
+Route::delete('/materias/{id}', [MateriaController::class, 'destroy']);
+Route::get('/materias/{id}/planes', [MateriaController::class, 'planes']);
+
+// Plan - Materia
+Route::post('/plan-materia', [PlanMateriaController::class, 'store']);
+
+// Planes de estudio
+Route::get('/planes-estudio', [PlanEstudioController::class, 'index']);

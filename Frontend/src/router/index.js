@@ -47,13 +47,65 @@ const router = createRouter({
     // Inscripción y Grupos
     { path: '/inscripcion', name: 'Inscripcion', component: () => import('@/views/InscripcionView.vue') },
     { path: '/gestion-grupos', name: 'GestionGrupos', component: () => import('@/views/GestionGruposView.vue') },
-    { path: '/gestion-academica', name: 'GestionAcademica', component: () => import('@/views/GestionGruposView.vue') },
+    
+
+
+    // ══════════════════════════════════════════════════════════════════════
+    // MÓDULO: GESTIÓN ACADÉMICA
+    // Carpeta: src/views/GestionAcademica/
+    // ══════════════════════════════════════════════════════════════════════
+    { path: '/gestion-academica',               name: 'GestionAcademica',      component: () => import('@/views/GestionAcademica/GestionAcademicaView.vue') },
+    { path: '/gestion-academica/carreras',      name: 'Carreras',              component: () => import('@/views/GestionAcademica/CarrerasView.vue') },
+    { path: '/gestion-academica/planes',        name: 'PlanesEstudio',         component: () => import('@/views/GestionAcademica/PlanesEstudioView.vue') },
+    { path: '/gestion-academica/materias',      name: 'Materias',              component: () => import('@/views/GestionAcademica/MateriasView.vue') },
+    { path: '/gestion-academica/prerrequisitos',name: 'Prerrequisitos',        component: () => import('@/views/GestionAcademica/PrerrequisitosView.vue') },
+    { path: '/gestion-academica/periodos',      name: 'Periodos',              component: () => import('@/views/GestionAcademica/PeriodosView.vue') },
+    { path: '/gestion-academica/edificios-aulas',name: 'EdificiosAulas',       component: () => import('@/views/GestionAcademica/EdificiosAulasView.vue') },
+
+    // ══════════════════════════════════════════════════════════════════════
+    // MÓDULO: RECURSOS HUMANOS
+    // Carpeta: src/views/Recursos Humanos/
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      path: '/recursos-humanos',
+      name: 'RecursosHumanos',
+      component: () => import('@/views/Recursos Humanos/RecursosHumanosView.vue')
+    },
+    {
+      path: '/recursos-humanos/empleados',
+      name: 'Empleados',
+      component: () => import('@/views/Recursos Humanos/EmpleadosView.vue')
+    },
+    {
+      path: '/recursos-humanos/empleados/nuevo',
+      name: 'NuevoEmpleado',
+      component: () => import('@/views/Recursos Humanos/FormularioEmpleadoView.vue')
+    },
+    {
+      path: '/recursos-humanos/empleados/:id/editar',
+      name: 'EditarEmpleado',
+      component: () => import('@/views/Recursos Humanos/FormularioEmpleadoView.vue')
+    },
+    {
+      path: '/recursos-humanos/docentes',
+      name: 'Docentes',
+      component: () => import('@/views/Recursos Humanos/DocentesView.vue')
+    },
+    {
+      path: '/recursos-humanos/adscripciones',
+      name: 'Adscripciones',
+      component: () => import('@/views/Recursos Humanos/AdscripcionView.vue')
+    },
+    {
+      path: '/recursos-humanos/puestos',
+      name: 'Puestos',
+      component: () => import('@/views/Recursos Humanos/PuestosView.vue')
+    },
 
     // ══════════════════════════════════════════════════════════════════════
     // MÓDULO: SEGURIDAD Y USUARIOS
     // Carpeta: src/views/Seguridad y Usuarios/
     // ══════════════════════════════════════════════════════════════════════
-    // ==================== NUEVAS RUTAS DEL MÓDULO SEGURIDAD Y USUARIOS ====================
     { path: '/roles',          name: 'Roles',          component: () => import('@/views/Seguridad y Usuarios/RolesView.vue') },
     { path: '/permisos',       name: 'Permisos',       component: () => import('@/views/Seguridad y Usuarios/PermisosView.vue') },
     { path: '/usuarios',       name: 'Usuarios',       component: () => import('@/views/Seguridad y Usuarios/UsuariosView.vue') },

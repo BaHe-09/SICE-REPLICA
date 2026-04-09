@@ -15,7 +15,7 @@
         <span class="page-subtitle">{{ carrerasFiltradas.length }} registro(s) encontrado(s)</span>
       </div>
 
-      <!-- Barra de carga -->
+      <!-- Barra  carga -->
       <div class="barra-carga" :class="{ visible: cargando }">
         <div class="barra-progreso"></div>
       </div>
@@ -466,6 +466,19 @@ const confirmarEliminar = async () => {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+:root {
+  --azul:        #1B396A;
+  --azul-hover:  #1D4ED8;
+  --azul-suave:  #DBEAFE;
+  --borde:       #E5E7EB;
+  --fondo:       #F5F5F5;
+  --texto:       #1A1A1A;
+  --gris:        #6B7280;
+  --verde:       #16A34A;
+  --rojo:        #DC2626;
+  --amarillo:    #F59E0B;
+}
+
 
 .carreras-page {
   --azul:       #1B396A;
@@ -537,8 +550,8 @@ const confirmarEliminar = async () => {
 .celda-acciones { display: flex; gap: 7px; align-items: center; }
 .btn-accion { display: flex; align-items: center; gap: 5px; padding: 6px 13px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; font-weight: 600; font-family: 'Montserrat', sans-serif; transition: background 0.15s; white-space: nowrap; }
 .btn-accion svg { width: 14px; height: 14px; }
-.btn-accion.ver    { background: #FFFFFF; color: var(--texto); border: 1px solid var(--borde); }
-.btn-accion.ver:hover { background: var(--fondo); }
+.btn-accion.ver    { background: #F3F4F6; color: #1A1A1A; border: 1px solid #D1D5DB; }
+.btn-accion.ver:hover { background: #E5E7EB; border-color: #9CA3AF; }
 .btn-accion.editar { background: var(--azul); color: white; border: 1px solid var(--azul); }
 .btn-accion.editar:hover { background: var(--azul-hover); }
 
@@ -582,9 +595,9 @@ const confirmarEliminar = async () => {
 .btn-eliminar { padding: 10px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; background: var(--rojo); color: white; border: none; transition: background 0.15s; }
 .btn-eliminar:hover { background: #B91C1C; }
 .btn-eliminar:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-guardar { display: flex; align-items: center; gap: 8px; padding: 10px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; background: var(--azul); color: white; border: none; transition: background 0.15s; }
-.btn-guardar:hover:not(:disabled) { background: var(--azul-hover); }
-.btn-guardar:disabled { opacity: 0.65; cursor: not-allowed; }
+.btn-guardar { display: flex; align-items: center; gap: 8px; padding: 10px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; background: #1B396A; color: #FFFFFF; border: none; transition: background 0.15s; }
+.btn-guardar:hover:not(:disabled) { background: #1D4ED8; }
+.btn-guardar:disabled { background: #E5E7EB; color: #9CA3AF; cursor: not-allowed; }
 .spinner-btn { display: inline-block; width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: girar 0.7s linear infinite; flex-shrink: 0; }
 .detalle-fila { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--borde); font-size: 0.95rem; }
 .detalle-fila:last-child { border-bottom: none; }
