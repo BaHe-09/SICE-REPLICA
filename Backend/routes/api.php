@@ -70,3 +70,19 @@ Route::delete('/carreras/{id}', [CarreraController::class, 'destroy']);
 
 Route::get('/departamentos', [DepartamentoController::class, 'index']);
 Route::get('/niveles-carrera', [NivelCarreraController::class, 'index']);
+
+// EDIFICIOS Y AULAS
+use App\Http\Controllers\EdificioController;
+use App\Http\Controllers\AulaController;
+
+// EDIFICIOS
+Route::get('/edificios', [EdificioController::class, 'index']);
+Route::post('/edificios', [EdificioController::class, 'store']);
+Route::put('/edificios/{id}', [EdificioController::class, 'update']);
+Route::delete('/edificios/{id}', [EdificioController::class, 'destroy']);
+
+// AULAS
+Route::get('/aulas', [AulaController::class, 'index']);
+Route::post('/aulas', [AulaController::class, 'store']);
+Route::put('/aulas/{id}', [AulaController::class, 'update']);
+Route::delete('/aulas/{id}', [AulaController::class, 'destroy']);
