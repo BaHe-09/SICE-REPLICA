@@ -573,11 +573,16 @@ const mostrarToast = (mensaje, tipo = 'exito') => {
 }
 
 // ── Ciclo de vida ──
+import { useRoute } from 'vue-router'
+const route = useRoute()
+
 onMounted(async () => {
   cargando.value = true
   try {
-    criterios.value = await getEvaluaciones(1)
-  } catch {
+    const grupoId = route.params.id || 1
+    criterios.value = await getEvaluaciones(grupoId)
+  } catch (error) {
+    console.log('Error:', error) // ← agrega esto
     criterios.value = [
       { nombre: 'Parcial 1', porcentaje: 30 },
       { nombre: 'Parcial 2', porcentaje: 30 },
@@ -586,10 +591,9 @@ onMounted(async () => {
   } finally {
     cargando.value = false
   }
-
-  // Atajo Ctrl+S global
   window.addEventListener('keydown', atajoGlobal)
 })
+
 
 onUnmounted(() => {
   window.removeEventListener('keydown', atajoGlobal)

@@ -11,32 +11,24 @@ export const getCalificacionesGrupo = async (filtros = {}) => {
 
 export const guardarCalificaciones = async (alumnos) => {
   const lista = Array.isArray(alumnos) ? alumnos : [alumnos]
-
-  // Armar todas las peticiones válidas
   const peticiones = []
+
   for (const alumno of lista) {
     const parciales = [
       { id_evaluacion: alumno.id_evaluacion_parcial_1, valor: alumno.p1 },
       { id_evaluacion: alumno.id_evaluacion_parcial_2, valor: alumno.p2 },
       { id_evaluacion: alumno.id_evaluacion_proyecto,  valor: alumno.proy },
     ]
-
-    for (const p of parciales) {
-      // Solo mandar si tenemos todos los datos necesarios
-      if (
-        p.id_evaluacion &&
-        alumno.id_inscripcion &&
-        p.valor !== null &&
-        p.valor !== undefined &&
-        p.valor !== ''
-      ) {
-        peticiones.push({
-          id_inscripcion: alumno.id_inscripcion,
-          id_evaluacion:  p.id_evaluacion,
-          calificacion:   p.valor,
-        })
-      }
+  for (const p of parciales) {
+    console.log('Parcial:', p, 'id_inscripcion:', alumno.id_inscripcion)
+    if (p.id_evaluacion && alumno.id_inscripcion && p.valor !== null && p.valor !== '') {
+      peticiones.push({
+        id_inscripcion: alumno.id_inscripcion,
+        id_evaluacion:  p.id_evaluacion,
+        calificacion:   Number(p.valor),
+      })
     }
+  }
   }
 
   if (peticiones.length === 0) {
@@ -44,7 +36,6 @@ export const guardarCalificaciones = async (alumnos) => {
     return []
   }
 
-  // Enviar de 5 en 5 para no saturar el browser
   const LOTE = 5
   const resultados = []
 

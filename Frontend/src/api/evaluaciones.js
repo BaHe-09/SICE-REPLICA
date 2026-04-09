@@ -10,25 +10,18 @@ export const eliminarEvaluacion = async (id) => {
   const { data } = await axios.delete(`${API}/evaluaciones/${id}`)
   return data
 }
-export const guardarEvaluaciones = async (evaluacion) => {
+export const guardarEvaluaciones = async (evaluacion, id_grupo = 1) => {
   const lista = Array.isArray(evaluacion) ? evaluacion : [evaluacion]
-
   const promesas = lista.map(e => {
     if (e.id_evaluacion) {
-      // Si ya existe, actualizar
       return axios.put(`${API}/evaluaciones/${e.id_evaluacion}`, {
-        nombre:     e.nombre,
-        porcentaje: e.porcentaje,
+        nombre: e.nombre, porcentaje: e.porcentaje,
       })
     } else {
-      // Si es nueva, crear
       return axios.post(`${API}/evaluaciones/guardar`, {
-        id_grupo:   1, // ← aquí deberías pasar el grupo real
-        nombre:     e.nombre,
-        porcentaje: e.porcentaje,
+        id_grupo, nombre: e.nombre, porcentaje: e.porcentaje,
       })
     }
   })
-
   return Promise.all(promesas)
 }

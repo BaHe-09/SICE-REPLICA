@@ -476,7 +476,7 @@ const promedioGeneral = computed(() => {
 })
 
 const totalReprobados = computed(() =>
-  alumnos.value.filter(a => Number(calcularFinal(a)) < 6 && !esNC(a)).length
+  alumnos.value.filter(a => Number(calcularFinal(a)) < 60 && !esNC(a)).length
 )
 
 const totalNC = computed(() =>
@@ -500,24 +500,23 @@ const iniciales = (nombre) => {
 const claseNota = (val) => {
   const n = Number(val)
   if (!val || val === '') return ''
-  if (n >= 9) return 'nota-excelente'
-  if (n >= 7) return 'nota-bien'
-  if (n >= 6) return 'nota-regular'
+  if (n >= 90) return 'nota-excelente'
+  if (n >= 70) return 'nota-bien'
+  if (n >= 60) return 'nota-regular'
   return 'nota-baja'
 }
 
 const clasePromedio = (val) => {
   const n = Number(val)
-  if (n >= 9) return 'promedio-excelente'
-  if (n >= 7) return 'promedio-bien'
-  if (n >= 6) return 'promedio-regular'
+  if (n >= 90) return 'promedio-excelente'
+  if (n >= 70) return 'promedio-bien'
+  if (n >= 60) return 'promedio-regular'
   return 'promedio-bajo'
 }
-
 const colorNota = (n) => {
-  if (n >= 9) return '#16A34A'
-  if (n >= 7) return '#1B396A'
-  if (n >= 6) return '#F59E0B'
+  if (n >= 90) return '#16A34A'
+  if (n >= 70) return '#1B396A'
+  if (n >= 60) return '#F59E0B'
   return '#DC2626'
 }
 
@@ -526,38 +525,32 @@ const mostrarToast = (mensaje, tipo = 'exito') => {
   setTimeout(() => { toast.value.visible = false }, 3500)
 }
 
-// ── Ciclo de vida ──
-onMounted(async () => {
-  cargando.value = true
-  try {
-    alumnos.value = await getCalificacionesGrupo()
-  } catch {
-    // Datos de muestra si falla el API
-    alumnos.value = [
-      { control: '21110001', nombre: 'García Morales, Ana Sofía', p1: 8.5, p2: 7.0, proy: 9.0 },
-      { control: '21110002', nombre: 'Hernández López, Carlos', p1: 5.5, p2: 6.0, proy: 5.0 },
-      { control: '21110003', nombre: 'Martínez Sánchez, Laura', p1: 9.0, p2: 8.5, proy: 9.5 },
-      { control: '21110004', nombre: 'Rodríguez Torres, José', p1: 0, p2: 0, proy: 0 },
-      { control: '21110005', nombre: 'Pérez Gómez, María', p1: 7.0, p2: 7.5, proy: 8.0 },
-    ]
-  } finally {
-    cargando.value = false
-  }
-
-  window.addEventListener('keydown', atajoGlobal)
-})
-
-onUnmounted(() => {
-  window.removeEventListener('keydown', atajoGlobal)
-})
-
 const atajoGlobal = (e) => {
   if (e.ctrlKey && e.key === 's') {
     e.preventDefault()
     guardarTodo()
   }
 }
+import { useRoute } from 'vue-router'
+const route = useRoute()
+// ── Ciclo de vida ──
 
+
+onMounted(async () => {
+  cargando.value = true
+  try {
+    const grupoId = route.params.id
+    alumnos.value = await getCalificacionesGrupo({ grupo: grupoId })
+  } catch {
+    alumnos.value = [
+      { control: '21110001', nombre: 'García Morales, Ana Sofía', p1: 8.5, p2: 7.0, proy: 9.0 },
+      { control: '21110002', nombre: 'Hernández López, Carlos', p1: 5.5, p2: 6.0, proy: 5.0 },
+    ]
+  } finally {
+    cargando.value = false
+  }
+  window.addEventListener('keydown', atajoGlobal)
+})
 // ── Búsqueda en tiempo real ──
 let debounceTimer = null
 const buscarEnTiempoReal = () => {
