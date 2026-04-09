@@ -48,6 +48,15 @@ Route::delete('/evaluaciones/{id}', [ServiciosEscolaresController::class, 'elimi
 // 🔹 RESUMEN ESCOLAR
 Route::get('/resumen-escolar', [ServiciosEscolaresController::class, 'getResumen']);
 
+
+// INSCRIPCIÓN
+Route::prefix('inscripcion')->group(function () {
+    Route::get('/buscar-alumno', [InscripcionController::class, 'buscarAlumno']);
+    Route::get('/grupos', [InscripcionController::class, 'gruposDisponibles']);
+    Route::post('/registrar', [InscripcionController::class, 'inscribirAlumno']);
+});
+
+
 // 🔹 FILTROS DINÁMICOS
 Route::get('/filtros', function () {
     return response()->json([
