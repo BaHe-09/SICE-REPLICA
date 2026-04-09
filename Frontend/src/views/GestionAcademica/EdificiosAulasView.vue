@@ -798,8 +798,8 @@ const confirmarEliminar = async () => {
 .acciones-fila { display: flex; gap: 6px; justify-content: center; align-items: center; }
 .btn-accion { display: flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 6px; font-size: 0.83rem; cursor: pointer; font-weight: 600; font-family: 'Montserrat', sans-serif; transition: background 0.15s; white-space: nowrap; }
 .btn-accion svg { width: 13px; height: 13px; }
-.btn-accion.editar { background: var(--azul); color: white; border: 1px solid var(--azul); }
-.btn-accion.editar:hover { background: var(--azul-hover); }
+.btn-accion.editar { background: #1B396A; color: #FFFFFF; border: 1px solid #1B396A; }
+.btn-accion.editar:hover { background: #1D4ED8; border-color: #1D4ED8; }
 .btn-accion.eliminar-btn { background: #FEF2F2; color: var(--rojo); border: 1px solid #FECACA; }
 .btn-accion.eliminar-btn:hover { background: #FEE2E2; }
 
@@ -845,9 +845,9 @@ const confirmarEliminar = async () => {
 .btn-eliminar { display: flex; align-items: center; gap: 8px; padding: 10px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; background: var(--rojo); color: white; border: none; transition: background 0.15s; }
 .btn-eliminar:hover { background: #B91C1C; }
 .btn-eliminar:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-guardar { display: flex; align-items: center; gap: 8px; padding: 10px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; background: var(--azul); color: white; border: none; transition: background 0.15s; }
-.btn-guardar:hover:not(:disabled) { background: var(--azul-hover); }
-.btn-guardar:disabled { opacity: 0.65; cursor: not-allowed; }
+.btn-guardar { display: flex; align-items: center; gap: 8px; padding: 10px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; background: #1B396A; color: #FFFFFF; border: none; transition: background 0.15s; }
+.btn-guardar:hover:not(:disabled) { background: #1D4ED8; }
+.btn-guardar:disabled { background: #E5E7EB; color: #9CA3AF; cursor: not-allowed; }
 .spinner-btn { display: inline-block; width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: girar 0.7s linear infinite; flex-shrink: 0; }
 
 /* Confirmar */
