@@ -101,3 +101,21 @@ Route::delete('/aulas/{id}', [AulaController::class, 'destroy']);
 use App\Http\Controllers\GestionAcademicaController;
 
 Route::get('/gestion-academica/resumen', [GestionAcademicaController::class, 'resumen']);
+
+// MATERIAS Y PLANES DE ESTUDIO
+use App\Http\Controllers\MateriaController;
+use App\Http\Controllers\PlanMateriaController;
+use App\Http\Controllers\PlanEstudioController;
+
+// Materias
+Route::get('/materias', [MateriaController::class, 'index']);
+Route::post('/materias', [MateriaController::class, 'store']);
+Route::put('/materias/{id}', [MateriaController::class, 'update']);
+Route::delete('/materias/{id}', [MateriaController::class, 'destroy']);
+Route::get('/materias/{id}/planes', [MateriaController::class, 'planes']);
+
+// Plan - Materia
+Route::post('/plan-materia', [PlanMateriaController::class, 'store']);
+
+// Planes de estudio
+Route::get('/planes-estudio', [PlanEstudioController::class, 'index']);
