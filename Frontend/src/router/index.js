@@ -47,7 +47,20 @@ const router = createRouter({
     // Inscripción y Grupos
     { path: '/inscripcion', name: 'Inscripcion', component: () => import('@/views/InscripcionView.vue') },
     { path: '/gestion-grupos', name: 'GestionGrupos', component: () => import('@/views/GestionGruposView.vue') },
-    { path: '/gestion-academica', name: 'GestionAcademica', component: () => import('@/views/GestionGruposView.vue') },
+    
+
+
+    // ══════════════════════════════════════════════════════════════════════
+    // MÓDULO: GESTIÓN ACADÉMICA
+    // Carpeta: src/views/GestionAcademica/
+    // ══════════════════════════════════════════════════════════════════════
+    { path: '/gestion-academica',               name: 'GestionAcademica',      component: () => import('@/views/GestionAcademica/GestionAcademicaView.vue') },
+    { path: '/gestion-academica/carreras',      name: 'Carreras',              component: () => import('@/views/GestionAcademica/CarrerasView.vue') },
+    { path: '/gestion-academica/planes',        name: 'PlanesEstudio',         component: () => import('@/views/GestionAcademica/PlanesEstudioView.vue') },
+    { path: '/gestion-academica/materias',      name: 'Materias',              component: () => import('@/views/GestionAcademica/MateriasView.vue') },
+    { path: '/gestion-academica/prerrequisitos',name: 'Prerrequisitos',        component: () => import('@/views/GestionAcademica/PrerrequisitosView.vue') },
+    { path: '/gestion-academica/periodos',      name: 'Periodos',              component: () => import('@/views/GestionAcademica/PeriodosView.vue') },
+    { path: '/gestion-academica/edificios-aulas',name: 'EdificiosAulas',       component: () => import('@/views/GestionAcademica/EdificiosAulasView.vue') },
 
     // ══════════════════════════════════════════════════════════════════════
     // MÓDULO: RECURSOS HUMANOS

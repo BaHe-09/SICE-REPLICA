@@ -149,7 +149,17 @@
                   d="M12 14l9-5-9-5-9 5 9 5zM12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
           </svg>
           <span class="etiqueta-menu">Gestión Académica</span>
-        </router-link>
+          <span class="flecha-submenu" :class="{ abierto: isGestionAcademicaOpen }">›</span>
+        </div>
+        <div v-if="isGestionAcademicaOpen" class="submenu">
+          <router-link to="/gestion-academica" class="elemento-menu elemento-submenu" active-class="activo">Panel Principal</router-link>
+          <router-link to="/gestion-academica/carreras" class="elemento-menu elemento-submenu" active-class="activo">Carreras</router-link>
+          <router-link to="/gestion-academica/planes" class="elemento-menu elemento-submenu" active-class="activo">Planes de Estudio</router-link>
+          <router-link to="/gestion-academica/materias" class="elemento-menu elemento-submenu" active-class="activo">Materias</router-link>
+          <router-link to="/gestion-academica/prerrequisitos" class="elemento-menu elemento-submenu" active-class="activo">Prerrequisitos</router-link>
+          <router-link to="/gestion-academica/periodos" class="elemento-menu elemento-submenu" active-class="activo">Periodos Académicos</router-link>
+          <router-link to="/gestion-academica/edificios-aulas" class="elemento-menu elemento-submenu" active-class="activo">Edificios y Aulas</router-link>
+        </div>
 
         <!-- Eventos -->
         <div class="elemento-menu elemento-padre" @click="toggleEventos">
