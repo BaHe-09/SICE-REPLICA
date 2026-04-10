@@ -119,3 +119,11 @@ Route::post('/plan-materia', [PlanMateriaController::class, 'store']);
 
 // Planes de estudio
 Route::get('/planes-estudio', [PlanEstudioController::class, 'index']);
+
+// PERÍODOS
+use App\Http\Controllers\PeriodoController;
+
+Route::get('/periodos', [PeriodoController::class, 'index']);
+Route::post('/periodos', [PeriodoController::class, 'store']);
+Route::put('/periodos/{id}', [PeriodoController::class, 'update']);
+Route::delete('/periodos/{id}', [PeriodoController::class, 'destroy']);
