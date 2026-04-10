@@ -137,3 +137,10 @@ Route::delete('/planes-estudio/{id}', [PlanEstudioController::class, 'destroy'])
 
 // CARRERAS
 Route::get('/carreras', [CarreraController::class, 'index']);
+
+// PRERREQUISITOS
+use App\Http\Controllers\PrerrequisitoController;
+
+Route::get('/prerrequisitos', [PrerrequisitoController::class, 'index']);
+Route::post('/prerrequisitos', [PrerrequisitoController::class, 'store']);
+Route::delete('/prerrequisitos/{id_materia}/{id_materia_prerrequisito}', [PrerrequisitoController::class, 'destroy']);
