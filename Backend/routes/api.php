@@ -127,3 +127,13 @@ Route::get('/periodos', [PeriodoController::class, 'index']);
 Route::post('/periodos', [PeriodoController::class, 'store']);
 Route::put('/periodos/{id}', [PeriodoController::class, 'update']);
 Route::delete('/periodos/{id}', [PeriodoController::class, 'destroy']);
+
+// PLANES DE ESTUDIO Y CARRERAS
+// PLANES DE ESTUDIO
+Route::get('/planes-estudio', [PlanEstudioController::class, 'index']);
+Route::post('/planes-estudio', [PlanEstudioController::class, 'store']);
+Route::put('/planes-estudio/{id}', [PlanEstudioController::class, 'update']);
+Route::delete('/planes-estudio/{id}', [PlanEstudioController::class, 'destroy']);
+
+// CARRERAS
+Route::get('/carreras', [CarreraController::class, 'index']);
