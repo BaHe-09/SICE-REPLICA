@@ -281,12 +281,12 @@
                 v-for="(permiso, indexPermiso) in modulo.permisos"
                 :key="indexPermiso"
                 class="permiso-item"
-                :class="{ 'permiso-activo': permisosSeleccionados[permiso.clave] }"
+                :class="{ 'permiso-activo': permisosSeleccionados[permiso.id] }"
               >
                 <input
                   type="checkbox"
                   class="permiso-checkbox"
-                  v-model="permisosSeleccionados[permiso.clave]"
+                  v-model="permisosSeleccionados[permiso.id]"
                 >
                 <div class="permiso-info">
                   <span class="permiso-nombre">{{ permiso.nombre }}</span>
@@ -313,101 +313,75 @@
 </template>
 
 
+
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 // ── Estado principal ────────────────────────────────────────────────
-const roles           = ref([])
-const cargando        = ref(false)
+const roles = ref([])
+const cargando = ref(false)
 const cargandoBusqueda = ref(false)
-const guardando       = ref(false)
+const guardando = ref(false)
 const guardandoPermisos = ref(false)
-const filaActiva      = ref(-1)
-const tablaRef        = ref(null)
+const filaActiva = ref(-1)
+const tablaRef = ref(null)
 
 // ── Filtros y paginación ────────────────────────────────────────────
-const busquedaRol    = ref('')
-const filtroEstatus  = ref('')
+const busquedaRol = ref('')
+const filtroEstatus = ref('')
 const filasPorPagina = ref(10)
-const currentPage    = ref(1)
+const currentPage = ref(1)
 
-// ── Notificación UI ────────────────────────────────────────────────
+// ── Notificación ────────────────────────────────────────────────────
 const notificacion = ref({ visible: false, mensaje: '', tipo: 'exito' })
-let timerNotif = null
 
 const mostrarNotificacion = (mensaje, tipo = 'exito') => {
-  if (timerNotif) clearTimeout(timerNotif)
   notificacion.value = { visible: true, mensaje, tipo }
-  timerNotif = setTimeout(() => { notificacion.value.visible = false }, 3500)
+  setTimeout(() => { notificacion.value.visible = false }, 3500)
 }
 
-// ── Módulos y permisos disponibles ─────────────────────────────────
-// Estructura lista para conectarse al backend.
-// Cada permiso tiene una clave única que se enviará al servidor.
-const modulosPermisos = ref([
-  {
-    nombre: 'Alumnos',
-    icono: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
-    permisos: [
-      { clave: 'alumnos.ver',      nombre: 'Ver alumnos',      descripcion: 'Consultar lista y detalle de alumnos' },
-      { clave: 'alumnos.crear',    nombre: 'Registrar alumno', descripcion: 'Agregar nuevos alumnos al sistema' },
-      { clave: 'alumnos.editar',   nombre: 'Editar alumno',    descripcion: 'Modificar datos de alumnos existentes' },
-      { clave: 'alumnos.eliminar', nombre: 'Eliminar alumno',  descripcion: 'Dar de baja alumnos del sistema' },
-    ]
-  },
-  {
-    nombre: 'Evaluaciones',
-    icono: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4',
-    permisos: [
-      { clave: 'evaluaciones.ver',    nombre: 'Ver evaluaciones',    descripcion: 'Consultar evaluaciones registradas' },
-      { clave: 'evaluaciones.crear',  nombre: 'Crear evaluación',    descripcion: 'Registrar nuevas evaluaciones' },
-      { clave: 'evaluaciones.editar', nombre: 'Editar evaluación',   descripcion: 'Modificar evaluaciones existentes' },
-    ]
-  },
-  {
-    nombre: 'Calificaciones',
-    icono: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
-    permisos: [
-      { clave: 'calificaciones.ver',    nombre: 'Ver calificaciones',    descripcion: 'Consultar calificaciones de alumnos' },
-      { clave: 'calificaciones.cargar', nombre: 'Cargar calificaciones', descripcion: 'Registrar calificaciones en el sistema' },
-      { clave: 'calificaciones.editar', nombre: 'Editar calificaciones', descripcion: 'Modificar calificaciones existentes' },
-    ]
-  },
-  {
-    nombre: 'Inscripción y Grupos',
-    icono: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z',
-    permisos: [
-      { clave: 'inscripcion.ver',    nombre: 'Ver inscripciones', descripcion: 'Consultar inscripciones activas' },
-      { clave: 'inscripcion.crear',  nombre: 'Nueva inscripción', descripcion: 'Inscribir alumnos a grupos' },
-      { clave: 'grupos.ver',         nombre: 'Ver grupos',        descripcion: 'Consultar grupos existentes' },
-      { clave: 'grupos.gestionar',   nombre: 'Gestionar grupos',  descripcion: 'Crear y modificar grupos' },
-    ]
-  },
-  {
-    nombre: 'Seguridad y Usuarios',
-    icono: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
-    permisos: [
-      { clave: 'roles.ver',      nombre: 'Ver roles',      descripcion: 'Consultar roles del sistema' },
-      { clave: 'roles.gestionar',nombre: 'Gestionar roles',descripcion: 'Crear, editar y eliminar roles' },
-      { clave: 'usuarios.ver',   nombre: 'Ver usuarios',   descripcion: 'Consultar usuarios registrados' },
-      { clave: 'usuarios.gestionar', nombre: 'Gestionar usuarios', descripcion: 'Crear y administrar cuentas de usuario' },
-    ]
-  },
-])
+// ── Módulos y permisos (estáticos por ahora) ───────────────────────
+const modulosPermisos = ref([])
+const cargarPermisos = async () => {
+  try {
+    const response = await fetch('http://localhost:8000/api/permisos')
+    const data = await response.json()
 
-// ── Estado de permisos seleccionados en el modal ────────────────────
+    // Agrupar por módulo
+    const agrupados = {}
+
+    data.forEach(p => {
+      if (!agrupados[p.modulo]) {
+        agrupados[p.modulo] = {
+          nombre: p.modulo,
+          permisos: []
+        }
+      }
+
+      agrupados[p.modulo].permisos.push({
+        id: p.id_permiso,
+        nombre: p.nombre,
+        descripcion: p.descripcion
+      })
+    })
+
+    modulosPermisos.value = Object.values(agrupados)
+
+  } catch (error) {
+    console.error('Error cargando permisos:', error)
+  }
+}
 const permisosSeleccionados = ref({})
 
-// ── Carga de roles desde backend ────────────────────────────────────
+// ── Cargar roles ────────────────────────────────────────────────────
 const cargarRoles = async () => {
   cargando.value = true
   try {
     const response = await fetch('http://localhost:8000/api/roles')
     if (!response.ok) throw new Error('Error del servidor')
-    const data = await response.json()
-    roles.value = data
-    console.log('✅ Roles cargados:', data.length, 'registros')
+    roles.value = await response.json()
+    console.log('✅ Roles cargados:', roles.value.length, 'registros')
   } catch (error) {
     console.error('❌ Error cargando roles:', error)
     mostrarNotificacion('No se pudo cargar la lista de roles. Verifica que el servidor esté activo.', 'error')
@@ -416,26 +390,18 @@ const cargarRoles = async () => {
   }
 }
 
-onMounted(() => { cargarRoles() })
-
-// Indicador de búsqueda activa al escribir
-let timerBusqueda = null
-watch(busquedaRol, () => {
-  cargandoBusqueda.value = true
-  if (timerBusqueda) clearTimeout(timerBusqueda)
-  timerBusqueda = setTimeout(() => {
-    cargandoBusqueda.value = false
-    currentPage.value = 1
-  }, 350)
+onMounted(() => {
+  cargarRoles()
+  cargarPermisos()
 })
 
 // ── Modales ─────────────────────────────────────────────────────────
-const showModalVer     = ref(false)
-const showModal        = ref(false)
+const showModalVer = ref(false)
+const showModal = ref(false)
 const showModalPermisos = ref(false)
 
-const rolVer      = ref({})
-const rolEditar   = ref({})
+const rolVer = ref({})
+const rolEditar = ref({})
 const rolPermisos = ref({})
 const erroresModal = ref({})
 
@@ -443,185 +409,173 @@ const abrirModalVer = (rol) => {
   rolVer.value = { ...rol }
   showModalVer.value = true
 }
+
 const cerrarModalVer = () => { showModalVer.value = false }
 
 const abrirModalNuevo = () => {
-  rolEditar.value   = { nombre: '', descripcion: '', estatus: 'Activo' }
+  rolEditar.value = { nombre: '', descripcion: '', estatus: 'Activo' }
   erroresModal.value = {}
-  showModal.value   = true
+  showModal.value = true
 }
 
 const abrirModalEditar = (rol) => {
-  rolEditar.value   = { ...rol }
+  rolEditar.value = { ...rol }
   erroresModal.value = {}
-  showModal.value   = true
+  showModal.value = true
 }
+
 const cerrarModal = () => { showModal.value = false }
 
-const abrirModalPermisos = (rol) => {
+const abrirModalPermisos = async (rol) => {
   rolPermisos.value = { ...rol }
 
-  // Inicializar todos los permisos en false
-  // Cuando el backend devuelva los permisos del rol, se marcarán aquí
-  const estado = {}
-  modulosPermisos.value.forEach(modulo => {
-    modulo.permisos.forEach(permiso => {
-      // Si el rol tiene permisos desde el backend, se puede usar:
-      // estado[permiso.clave] = (rol.permisos || []).includes(permiso.clave)
-      estado[permiso.clave] = false
+  try {
+    const res = await fetch(`http://localhost:8000/api/roles/${rol.id_rol}/permisos`)
+    const data = await res.json()
+
+    const estado = {}
+
+    modulosPermisos.value.forEach(modulo => {
+      modulo.permisos.forEach(permiso => {
+        estado[permiso.id] = data.permisos.includes(permiso.id)
+      })
     })
-  })
-  permisosSeleccionados.value = estado
-  showModalPermisos.value = true
+
+    permisosSeleccionados.value = estado
+    showModalPermisos.value = true
+
+  } catch (error) {
+    console.error(error)
+    mostrarNotificacion('Error al cargar permisos', 'error')
+  }
 }
+
 const cerrarModalPermisos = () => { showModalPermisos.value = false }
 
-// ── Validación del modal crear/editar ───────────────────────────────
+// ── Validación y Guardar Rol ────────────────────────────────────────
 const validarModal = () => {
   erroresModal.value = {}
-  if (!rolEditar.value.nombre?.trim())
+  if (!rolEditar.value.nombre?.trim()) {
     erroresModal.value.nombre = 'El nombre del rol es obligatorio'
+  }
   return Object.keys(erroresModal.value).length === 0
 }
 
-// ── Guardar rol ─────────────────────────────────────────────────────
 const guardarRol = async () => {
   if (!validarModal()) return
 
   const esEdicion = !!rolEditar.value.id_rol
-  const url    = esEdicion
-    ? `http://localhost:8000/api/roles/${rolEditar.value.id_rol}`
+  const url = esEdicion 
+    ? `http://localhost:8000/api/roles/${rolEditar.value.id_rol}` 
     : 'http://localhost:8000/api/roles'
   const metodo = esEdicion ? 'PUT' : 'POST'
 
   const payload = {
-    nombre:      rolEditar.value.nombre.trim(),
+    nombre: rolEditar.value.nombre.trim(),
     descripcion: rolEditar.value.descripcion?.trim() || null,
-    estatus:     rolEditar.value.estatus
+    estatus: rolEditar.value.estatus
   }
 
   guardando.value = true
   try {
-    console.log('🔵 Enviando rol:', payload)
     const response = await fetch(url, {
-      method:  metodo,
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body:    JSON.stringify(payload)
+      method: metodo,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     })
-    const data = await response.json()
-    console.log('🟢 Respuesta backend:', data)
 
     if (response.ok) {
       await cargarRoles()
       cerrarModal()
-      mostrarNotificacion(
-        esEdicion ? 'Rol actualizado correctamente.' : 'Rol creado correctamente.',
-        'exito'
-      )
+      mostrarNotificacion(esEdicion ? 'Rol actualizado correctamente.' : 'Rol creado correctamente.', 'exito')
     } else {
-      throw new Error(JSON.stringify(data))
+      const data = await response.json()
+      mostrarNotificacion(data.error || 'Error al guardar el rol', 'error')
     }
   } catch (error) {
-    console.error('❌ ERROR:', error)
+    console.error(error)
     mostrarNotificacion('Ocurrió un error al guardar el rol.', 'error')
   } finally {
     guardando.value = false
   }
 }
 
-// ── Eliminar rol ─────────────────────────────────────────────────────
 const eliminarRol = async () => {
-  const id = rolEditar.value.id_rol
-  if (!id) { mostrarNotificacion('No se encontró el identificador del rol.', 'error'); return }
-  if (!confirm('¿Confirma que desea eliminar este rol? Esta acción no se puede deshacer.')) return
+  if (!rolEditar.value.id_rol) return
+  if (!confirm('¿Estás seguro de eliminar este rol?')) return
 
   guardando.value = true
   try {
-    const response = await fetch(`http://localhost:8000/api/roles/${id}`, {
-      method:  'DELETE',
-      headers: { 'Accept': 'application/json' }
-    })
-    const data = await response.json()
-    console.log('🗑️ Respuesta delete:', data)
-
+    const response = await fetch(`http://localhost:8000/api/roles/${rolEditar.value.id_rol}`, { method: 'DELETE' })
     if (response.ok) {
       await cargarRoles()
       cerrarModal()
       mostrarNotificacion('Rol eliminado correctamente.', 'exito')
     } else {
-      throw new Error(JSON.stringify(data))
+      mostrarNotificacion('No se pudo eliminar el rol.', 'error')
     }
   } catch (error) {
-    console.error(error)
-    mostrarNotificacion('Ocurrió un error al eliminar el rol.', 'error')
+    mostrarNotificacion('Error al eliminar el rol.', 'error')
   } finally {
     guardando.value = false
   }
 }
 
-// ── Guardar permisos ─────────────────────────────────────────────────
 const guardarPermisos = async () => {
   const id = rolPermisos.value.id_rol
-  if (!id) { mostrarNotificacion('No se encontró el identificador del rol.', 'error'); return }
+  if (!id) return
 
-  // Construir arreglo de claves de permisos activos para enviar al backend
   const permisosActivos = Object.entries(permisosSeleccionados.value)
     .filter(([, activo]) => activo)
-    .map(([clave]) => clave)
+    .map(([id]) => parseInt(id))
 
   guardandoPermisos.value = true
   try {
-    console.log('🔵 Guardando permisos:', permisosActivos)
     const response = await fetch(`http://localhost:8000/api/roles/${id}/permisos`, {
-      method:  'PUT',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body:    JSON.stringify({ permisos: permisosActivos })
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ permisos: permisosActivos })
     })
-    const data = await response.json()
-    console.log('🟢 Respuesta permisos:', data)
 
     if (response.ok) {
       cerrarModalPermisos()
       mostrarNotificacion('Permisos actualizados correctamente.', 'exito')
     } else {
-      throw new Error(JSON.stringify(data))
+      mostrarNotificacion('Error al guardar los permisos.', 'error')
     }
   } catch (error) {
-    console.error('❌ ERROR permisos:', error)
-    mostrarNotificacion('Ocurrió un error al guardar los permisos.', 'error')
+    mostrarNotificacion('Error al guardar los permisos.', 'error')
   } finally {
     guardandoPermisos.value = false
   }
 }
 
-// ── Helpers ─────────────────────────────────────────────────────────
+// ── Helpers seguros ─────────────────────────────────────────────────
+const claseEstatus = (estatus) => {
+  if (!estatus) return 'inactivo'
+  return String(estatus).toLowerCase()
+}
+
 const normalize = (text) => {
   if (!text) return ''
-  return text.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  return String(text).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
 }
 
-const claseEstatus = (estatus) => {
-  if (!estatus) return ''
-  return estatus.toLowerCase()
-}
-
-// ── Filtros y paginación ─────────────────────────────────────────────
+// ── Computed: Filtros y Paginación ──────────────────────────────────
 const rolesFiltrados = computed(() => {
   return roles.value.filter(rol => {
-    const coincideBusqueda = !busquedaRol.value ||
+    const coincideBusqueda = !busquedaRol.value || 
       normalize(rol.nombre).includes(normalize(busquedaRol.value)) ||
       normalize(rol.descripcion).includes(normalize(busquedaRol.value))
 
-    const coincideEstatus = !filtroEstatus.value ||
+    const coincideEstatus = !filtroEstatus.value || 
       normalize(rol.estatus) === normalize(filtroEstatus.value)
 
     return coincideBusqueda && coincideEstatus
   })
 })
 
-const totalPages = computed(() =>
-  Math.ceil(rolesFiltrados.value.length / filasPorPagina.value) || 1
-)
+const totalPages = computed(() => Math.ceil(rolesFiltrados.value.length / filasPorPagina.value) || 1)
 
 const paginatedRoles = computed(() => {
   const start = (currentPage.value - 1) * filasPorPagina.value
@@ -629,25 +583,25 @@ const paginatedRoles = computed(() => {
 })
 
 const visiblePages = computed(() => {
-  const total   = totalPages.value
+  const total = totalPages.value
   const current = currentPage.value
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
   const pages = new Set([1, total, current, current - 1, current + 1].filter(p => p >= 1 && p <= total))
   return [...pages].sort((a, b) => a - b)
 })
 
-const goToPage  = (page) => { currentPage.value = page; filaActiva.value = -1 }
-const prevPage  = () => { if (currentPage.value > 1) currentPage.value-- }
-const nextPage  = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
+const goToPage = (page) => { currentPage.value = page; filaActiva.value = -1 }
+const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
+const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
 
 const resetFiltros = () => {
-  busquedaRol.value   = ''
+  busquedaRol.value = ''
   filtroEstatus.value = ''
-  currentPage.value   = 1
-  filaActiva.value    = -1
+  currentPage.value = 1
+  filaActiva.value = -1
 }
 
-// ── Navegación por teclado en la tabla ──────────────────────────────
+// ── Navegación por teclado ──────────────────────────────────────────
 const navegarTeclado = (e) => {
   const total = paginatedRoles.value.length
   if (total === 0) return
@@ -661,13 +615,21 @@ const navegarTeclado = (e) => {
   } else if (e.key === 'Enter' && filaActiva.value >= 0) {
     e.preventDefault()
     abrirModalVer(paginatedRoles.value[filaActiva.value])
-  } else if (e.key === 'PageDown') {
-    e.preventDefault(); nextPage()
-  } else if (e.key === 'PageUp') {
-    e.preventDefault(); prevPage()
   }
 }
+
+// Watch para búsqueda
+watch(busquedaRol, () => {
+  cargandoBusqueda.value = true
+  setTimeout(() => {
+    cargandoBusqueda.value = false
+    currentPage.value = 1
+  }, 300)
+})
+
 </script>
+
+
 
 
 <style scoped>
