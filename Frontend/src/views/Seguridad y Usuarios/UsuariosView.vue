@@ -413,346 +413,278 @@
 </template>
 
 
+
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 
-const router = useRouter()
+const usuarios = ref([])
+const rolesDisponibles = ref([])   // ← Roles desde BD
 
-// ── Estado principal ────────────────────────────────────────────────
-const usuarios          = ref([])
-const cargando          = ref(false)
-const cargandoBusqueda  = ref(false)
-const guardando         = ref(false)
-const guardandoPass     = ref(false)
-const filaActiva        = ref(-1)
-const tablaRef          = ref(null)
-const verContrasena     = ref(false)
-const verNuevaPass      = ref(false)
-const verConfirmarPass  = ref(false)
+const cargando = ref(false)
+const cargandoBusqueda = ref(false)
+const guardando = ref(false)
+const guardandoPass = ref(false)
 
-// ── Filtros y paginación ────────────────────────────────────────────
-const busqueda       = ref('')
-const filtroEstatus  = ref('')
+const busqueda = ref('')
+const filtroEstatus = ref('')
 const filasPorPagina = ref(10)
-const currentPage    = ref(1)
+const currentPage = ref(1)
+const filaActiva = ref(-1)
+const tablaRef = ref(null)
 
-// ── Notificación UI ─────────────────────────────────────────────────
-const notificacion = ref({ visible: false, mensaje: '', tipo: 'exito' })
-let timerNotif = null
-
-const mostrarNotificacion = (mensaje, tipo = 'exito') => {
-  if (timerNotif) clearTimeout(timerNotif)
-  notificacion.value = { visible: true, mensaje, tipo }
-  timerNotif = setTimeout(() => { notificacion.value.visible = false }, 3500)
-}
-
-// ── Roles disponibles para asignar ─────────────────────────────────
-// Cuando el backend esté listo, cargar desde GET /api/roles
-const rolesDisponibles = ref([
-  { nombre: 'Administrador',       descripcion: 'Acceso total al sistema' },
-  { nombre: 'Servicios Escolares', descripcion: 'Gestión de alumnos y calificaciones' },
-  { nombre: 'Docente',             descripcion: 'Captura de calificaciones y evaluaciones' },
-  { nombre: 'Coordinador',         descripcion: 'Gestión académica y grupos' },
-])
-
-// ── Estado de roles seleccionados en el modal de edición ────────────
-const rolesSeleccionados = ref({})
-
-// ── Modales ─────────────────────────────────────────────────────────
-const showModalVer        = ref(false)
-const showModal           = ref(false)
+// Modales
+const showModalVer = ref(false)
+const showModal = ref(false)
 const showModalContrasena = ref(false)
 
-const usuarioVer    = ref({})
+const usuarioVer = ref({})
 const usuarioEditar = ref({})
-const erroresModal  = ref({})
+const erroresModal = ref({})
+const datosContrasena = ref({ nueva: '', confirmar: '' })
+const erroresContrasena = ref({})
 
-const datosContrasena    = ref({ nueva: '', confirmar: '' })
-const erroresContrasena  = ref({})
+const verContrasena = ref(false)
+const verNuevaPass = ref(false)
+const verConfirmarPass = ref(false)
 
-// ── Carga de usuarios desde backend ─────────────────────────────────
-// Endpoint esperado: GET http://localhost:8000/api/usuarios
-// Estructura esperada por registro:
-// { id_usuario, nombre_usuario, nombre_completo, roles: [], estatus }
+const rolesSeleccionados = ref({})
+
+// Notificación
+const notificacion = ref({ visible: false, mensaje: '', tipo: 'exito' })
+
+const mostrarNotificacion = (mensaje, tipo = 'exito') => {
+  notificacion.value = { visible: true, mensaje, tipo }
+  setTimeout(() => { notificacion.value.visible = false }, 3500)
+}
+
+// ==================== CARGAR DATOS ====================
 const cargarUsuarios = async () => {
   cargando.value = true
   try {
-    const response = await fetch('http://localhost:8000/api/usuarios')
-    if (!response.ok) throw new Error('Error del servidor')
-    const data = await response.json()
-    usuarios.value = data
-    console.log('✅ Usuarios cargados:', data.length, 'registros')
-  } catch (error) {
-    console.error('❌ Error cargando usuarios:', error)
-    mostrarNotificacion('No se pudo cargar la lista de usuarios. Verifica que el servidor esté activo.', 'error')
+    const res = await fetch('http://localhost:8000/api/usuarios')
+    if (!res.ok) throw new Error('Error del servidor')
+    usuarios.value = await res.json()
+  } catch (e) {
+    console.error(e)
+    mostrarNotificacion('No se pudo cargar usuarios', 'error')
   } finally {
     cargando.value = false
   }
 }
 
-onMounted(() => { cargarUsuarios() })
+const cargarRoles = async () => {
+  try {
+    const res = await fetch('http://localhost:8000/api/roles-simple')
+    if (res.ok) {
+      rolesDisponibles.value = await res.json()
+    } else {
+      console.error('Error al cargar roles')
+    }
+  } catch (e) {
+    console.error('Error cargando roles:', e)
+  }
+}
 
-// Indicador de búsqueda activa al escribir
-let timerBusqueda = null
-watch(busqueda, () => {
-  cargandoBusqueda.value = true
-  if (timerBusqueda) clearTimeout(timerBusqueda)
-  timerBusqueda = setTimeout(() => {
-    cargandoBusqueda.value = false
-    currentPage.value = 1
-  }, 350)
+onMounted(() => {
+  cargarUsuarios()
+  cargarRoles()          
 })
 
-// ── Abrir modales ───────────────────────────────────────────────────
-const abrirModalVer = (usuario) => {
-  usuarioVer.value = { ...usuario }
-  showModalVer.value = true
-}
-const cerrarModalVer = () => { showModalVer.value = false }
-
+// ==================== MODALES ====================
 const abrirModalNuevo = () => {
-  usuarioEditar.value   = { nombre_usuario: '', contrasena: '', estatus: 'Activo' }
-  erroresModal.value    = {}
-  rolesSeleccionados.value = {}
-  verContrasena.value   = false
-  showModal.value       = true
+  usuarioEditar.value = { 
+    nombre_usuario: '', 
+    contrasena: '', 
+    estatus: 'Activo' 
+  }
+  rolesSeleccionados.value = {}   
+  erroresModal.value = {}
+  showModal.value = true
 }
 
 const abrirModalEditar = (usuario) => {
   usuarioEditar.value = {
-    id_usuario:     usuario.id_usuario || usuario.id,
-    nombre_usuario: usuario.nombre_usuario || '',
-    nombre_completo: usuario.nombre_completo || '',
-    estatus:        usuario.estatus || 'Activo',
+    id_usuario: usuario.id_usuario,
+    nombre_usuario: usuario.nombre_usuario,
+    estatus: usuario.estatus || 'Activo'
   }
   erroresModal.value = {}
 
-  // Inicializar checkboxes de roles con los que ya tiene el usuario
-  const estado = {}
-  rolesDisponibles.value.forEach(r => {
-    // Cuando el backend conecte, comparar con usuario.roles[]
-    estado[r.nombre] = (usuario.roles || []).includes(r.nombre)
+  
+  rolesSeleccionados.value = {}
+  rolesDisponibles.value.forEach(rol => {
+    rolesSeleccionados.value[rol.nombre] = (usuario.roles || []).includes(rol.nombre)
   })
-  rolesSeleccionados.value = estado
+
   showModal.value = true
 }
-const cerrarModal = () => { showModal.value = false }
+
+const abrirModalVer = (usuario) => {
+  usuarioVer.value = { ...usuario }
+  showModalVer.value = true
+}
+
+const cerrarModal = () => showModal.value = false
+const cerrarModalVer = () => showModalVer.value = false
+const cerrarModalContrasena = () => showModalContrasena.value = false
 
 const abrirModalContrasena = () => {
-  datosContrasena.value   = { nueva: '', confirmar: '' }
+  datosContrasena.value = { nueva: '', confirmar: '' }
   erroresContrasena.value = {}
-  verNuevaPass.value      = false
-  verConfirmarPass.value  = false
+  verNuevaPass.value = false
+  verConfirmarPass.value = false
   showModalContrasena.value = true
 }
-const cerrarModalContrasena = () => { showModalContrasena.value = false }
 
-// ── Validaciones en tiempo real ─────────────────────────────────────
-const validarCampoModal = (campo) => {
-  if (campo === 'nombre_usuario') {
-    if (!usuarioEditar.value.nombre_usuario?.trim())
-      erroresModal.value.nombre_usuario = 'El nombre de usuario es obligatorio'
-    else if (usuarioEditar.value.nombre_usuario.trim().length < 4)
-      erroresModal.value.nombre_usuario = 'Debe tener al menos 4 caracteres'
-    else
-      delete erroresModal.value.nombre_usuario
-  }
-  if (campo === 'contrasena') {
-    if (!usuarioEditar.value.contrasena?.trim())
-      erroresModal.value.contrasena = 'La contraseña es obligatoria'
-    else if (usuarioEditar.value.contrasena.length < 8)
-      erroresModal.value.contrasena = 'Debe tener al menos 8 caracteres'
-    else
-      delete erroresModal.value.contrasena
-  }
-}
-
-const validarContrasena = (campo) => {
-  if (campo === 'nueva') {
-    if (!datosContrasena.value.nueva?.trim())
-      erroresContrasena.value.nueva = 'Ingresa la nueva contraseña'
-    else if (datosContrasena.value.nueva.length < 8)
-      erroresContrasena.value.nueva = 'Debe tener al menos 8 caracteres'
-    else
-      delete erroresContrasena.value.nueva
-  }
-  if (campo === 'confirmar') {
-    if (!datosContrasena.value.confirmar?.trim())
-      erroresContrasena.value.confirmar = 'Confirma la nueva contraseña'
-    else if (datosContrasena.value.confirmar !== datosContrasena.value.nueva)
-      erroresContrasena.value.confirmar = 'Las contraseñas no coinciden'
-    else
-      delete erroresContrasena.value.confirmar
-  }
-}
-
-const validarModal = () => {
-  validarCampoModal('nombre_usuario')
-  if (!usuarioEditar.value.id_usuario) validarCampoModal('contrasena')
-  return Object.keys(erroresModal.value).length === 0
-}
-
-const validarFormContrasena = () => {
-  validarContrasena('nueva')
-  validarContrasena('confirmar')
-  return Object.keys(erroresContrasena.value).length === 0
-}
-
-// ── Guardar usuario ─────────────────────────────────────────────────
-// Endpoint creación: POST http://localhost:8000/api/usuarios
-// Endpoint edición:  PUT  http://localhost:8000/api/usuarios/{id}
+// ==================== GUARDAR USUARIO ====================
 const guardarUsuario = async () => {
-  if (!validarModal()) return
+  if (!usuarioEditar.value.nombre_usuario?.trim()) {
+    mostrarNotificacion('El nombre de usuario es obligatorio', 'error')
+    return
+  }
 
   const esEdicion = !!usuarioEditar.value.id_usuario
-  const url    = esEdicion
+  const url = esEdicion 
     ? `http://localhost:8000/api/usuarios/${usuarioEditar.value.id_usuario}`
     : 'http://localhost:8000/api/usuarios'
-  const metodo = esEdicion ? 'PUT' : 'POST'
 
-  // Construir arreglo de nombres de roles activos
-  const rolesActivos = Object.entries(rolesSeleccionados.value)
-    .filter(([, activo]) => activo)
-    .map(([nombre]) => nombre)
+  const rolesActivos = Object.keys(rolesSeleccionados.value)
+    .filter(key => rolesSeleccionados.value[key])
 
   const payload = {
     nombre_usuario: usuarioEditar.value.nombre_usuario.trim(),
-    estatus:        usuarioEditar.value.estatus,
-    roles:          rolesActivos,
-    // Solo se incluye contraseña en creación
-    ...((!esEdicion) && { contrasena: usuarioEditar.value.contrasena })
+    estatus: usuarioEditar.value.estatus,
+    roles: rolesActivos
+  }
+
+  if (!esEdicion && usuarioEditar.value.contrasena) {
+    payload.contrasena = usuarioEditar.value.contrasena
   }
 
   guardando.value = true
+
   try {
-    console.log('🔵 Enviando usuario:', payload)
     const response = await fetch(url, {
-      method:  metodo,
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body:    JSON.stringify(payload)
+      method: esEdicion ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     })
-    const data = await response.json()
-    console.log('🟢 Respuesta backend:', data)
 
     if (response.ok) {
       await cargarUsuarios()
       cerrarModal()
-      mostrarNotificacion(
-        esEdicion ? 'Usuario actualizado correctamente.' : 'Usuario creado correctamente.',
-        'exito'
-      )
+      mostrarNotificacion(esEdicion ? 'Usuario actualizado correctamente' : 'Usuario creado correctamente', 'exito')
     } else {
-      throw new Error(JSON.stringify(data))
+      const data = await response.json().catch(() => ({}))
+      mostrarNotificacion(data.error || 'Error al guardar', 'error')
     }
   } catch (error) {
-    console.error('❌ ERROR:', error)
-    mostrarNotificacion('Ocurrió un error al guardar el usuario.', 'error')
+    console.error(error)
+    mostrarNotificacion('Error de conexión con el servidor', 'error')
   } finally {
     guardando.value = false
   }
 }
 
-// ── Guardar nueva contraseña ────────────────────────────────────────
-// Endpoint: PUT http://localhost:8000/api/usuarios/{id}/contrasena
+// ==================== CAMBIAR CONTRASEÑA ====================
 const guardarContrasena = async () => {
-  if (!validarFormContrasena()) return
+  if (!datosContrasena.value.nueva || datosContrasena.value.nueva.length < 8) {
+    mostrarNotificacion('La contraseña debe tener al menos 8 caracteres', 'error')
+    return
+  }
+  if (datosContrasena.value.nueva !== datosContrasena.value.confirmar) {
+    mostrarNotificacion('Las contraseñas no coinciden', 'error')
+    return
+  }
 
   const id = usuarioEditar.value.id_usuario
-  if (!id) { mostrarNotificacion('No se encontró el identificador del usuario.', 'error'); return }
+  if (!id) return
 
   guardandoPass.value = true
+
   try {
-    console.log('🔵 Cambiando contraseña usuario:', id)
     const response = await fetch(`http://localhost:8000/api/usuarios/${id}/contrasena`, {
-      method:  'PUT',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body:    JSON.stringify({ contrasena: datosContrasena.value.nueva })
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contrasena: datosContrasena.value.nueva })
     })
-    const data = await response.json()
-    console.log('🟢 Respuesta contraseña:', data)
 
     if (response.ok) {
       cerrarModalContrasena()
-      mostrarNotificacion('Contraseña actualizada correctamente.', 'exito')
+      mostrarNotificacion('Contraseña actualizada correctamente', 'exito')
     } else {
-      throw new Error(JSON.stringify(data))
+      mostrarNotificacion('Error al cambiar la contraseña', 'error')
     }
   } catch (error) {
-    console.error('❌ ERROR contraseña:', error)
-    mostrarNotificacion('Ocurrió un error al cambiar la contraseña.', 'error')
+    console.error(error)
+    mostrarNotificacion('Error de conexión', 'error')
   } finally {
     guardandoPass.value = false
   }
 }
 
-// ── Helpers ─────────────────────────────────────────────────────────
-const normalize = (text) => {
-  if (!text) return ''
-  return text.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-}
+// ==================== HELPERS ====================
+const claseEstatus = (estatus) => String(estatus || '').toLowerCase()
+const inicialUsuario = (nombre) => nombre ? nombre.charAt(0).toUpperCase() : '?'
 
-const claseEstatus = (estatus) => {
-  if (!estatus) return ''
-  return estatus.toLowerCase()
-}
-
-const inicialUsuario = (nombre) => {
-  if (!nombre) return '?'
-  return nombre.charAt(0).toUpperCase()
-}
-
-// ── Filtros y paginación ─────────────────────────────────────────────
+// ==================== FILTROS Y PAGINACIÓN ====================
 const usuariosFiltrados = computed(() => {
   return usuarios.value.filter(u => {
-    const coincideBusqueda = !busqueda.value ||
-      normalize(u.nombre_usuario).includes(normalize(busqueda.value)) ||
-      normalize(u.nombre_completo || '').includes(normalize(busqueda.value))
+    const coincideBusqueda = !busqueda.value || 
+      (u.nombre_usuario || '').toLowerCase().includes(busqueda.value.toLowerCase()) ||
+      (u.nombre_completo || '').toLowerCase().includes(busqueda.value.toLowerCase())
 
-    const coincideEstatus = !filtroEstatus.value ||
-      normalize(u.estatus) === normalize(filtroEstatus.value)
+    const coincideEstatus = !filtroEstatus.value || u.estatus === filtroEstatus.value
 
     return coincideBusqueda && coincideEstatus
   })
 })
 
-const totalPages = computed(() =>
-  Math.ceil(usuariosFiltrados.value.length / filasPorPagina.value) || 1
-)
+const totalPages = computed(() => Math.ceil(usuariosFiltrados.value.length / filasPorPagina.value) || 1)
+
 const paginatedUsuarios = computed(() => {
   const start = (currentPage.value - 1) * filasPorPagina.value
   return usuariosFiltrados.value.slice(start, start + filasPorPagina.value)
 })
+
 const visiblePages = computed(() => {
-  const total = totalPages.value, current = currentPage.value
+  const total = totalPages.value
+  const current = currentPage.value
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
-  const pages = new Set([1, total, current, current - 1, current + 1].filter(p => p >= 1 && p <= total))
-  return [...pages].sort((a, b) => a - b)
+  return [1, current - 1, current, current + 1, total].filter(p => p >= 1 && p <= total)
 })
 
-const goToPage  = (page) => { currentPage.value = page; filaActiva.value = -1 }
-const prevPage  = () => { if (currentPage.value > 1) currentPage.value-- }
-const nextPage  = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
+const goToPage = (page) => currentPage.value = page
+const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
+const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
 
 const resetFiltros = () => {
-  busqueda.value      = ''
+  busqueda.value = ''
   filtroEstatus.value = ''
-  currentPage.value   = 1
-  filaActiva.value    = -1
+  currentPage.value = 1
 }
 
-// ── Navegación por teclado ───────────────────────────────────────────
+// Navegación por teclado
 const navegarTeclado = (e) => {
   const total = paginatedUsuarios.value.length
   if (total === 0) return
-  if (e.key === 'ArrowDown') { e.preventDefault(); filaActiva.value = Math.min(filaActiva.value + 1, total - 1) }
-  else if (e.key === 'ArrowUp') { e.preventDefault(); filaActiva.value = Math.max(filaActiva.value - 1, 0) }
-  else if (e.key === 'Enter' && filaActiva.value >= 0) { e.preventDefault(); abrirModalVer(paginatedUsuarios.value[filaActiva.value]) }
-  else if (e.key === 'PageDown') { e.preventDefault(); nextPage() }
-  else if (e.key === 'PageUp') { e.preventDefault(); prevPage() }
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault()
+    filaActiva.value = Math.min(filaActiva.value + 1, total - 1)
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault()
+    filaActiva.value = Math.max(filaActiva.value - 1, 0)
+  } else if (e.key === 'Enter' && filaActiva.value >= 0) {
+    e.preventDefault()
+    abrirModalVer(paginatedUsuarios.value[filaActiva.value])
+  }
 }
+
 </script>
+
+
 
 
 <style scoped>
