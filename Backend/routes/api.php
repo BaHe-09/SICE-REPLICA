@@ -144,3 +144,28 @@ use App\Http\Controllers\PrerrequisitoController;
 Route::get('/prerrequisitos', [PrerrequisitoController::class, 'index']);
 Route::post('/prerrequisitos', [PrerrequisitoController::class, 'store']);
 Route::delete('/prerrequisitos/{id_materia}/{id_materia_prerrequisito}', [PrerrequisitoController::class, 'destroy']);
+
+
+// ====================== MÓDULO DE SEGURIDAD ======================
+
+use App\Http\Controllers\Seguridad\UsuarioController;
+use App\Http\Controllers\Seguridad\RolController;
+use App\Http\Controllers\Seguridad\PermisoController;
+use App\Http\Controllers\Seguridad\BitacoraController;
+
+// Usuarios
+Route::apiResource('usuarios', UsuarioController::class);
+Route::put('usuarios/{id}/contrasena', [UsuarioController::class, 'cambiarContrasena']);
+Route::get('/personas/buscar', [UsuarioController::class, 'buscarPersonas']);
+
+// Roles
+Route::apiResource('roles', RolController::class);
+Route::put('roles/{id}/permisos', [RolController::class, 'actualizarPermisos']);
+Route::get('roles/{id}/permisos', [RolController::class, 'permisos']);
+Route::get('/roles-simple', [RolController::class, 'simpleList']);
+
+// Permisos
+Route::get('/permisos', [PermisoController::class, 'index']);
+
+// Bitácora
+Route::get('/bitacora', [BitacoraController::class, 'index']);
