@@ -313,84 +313,84 @@
 </template>
 
 
+
 <script setup>
-import { ref, reactive, computed, watch } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 const router = useRouter()
 
-// ── Formulario principal ────────────────────────────────────────────
+// ==================== FORMULARIO ====================
 const form = reactive({
   nombre_usuario: '',
-  contrasena:     '',
-  confirmar:      '',
-  estatus:        'Activo'
+  contrasena: '',
+  confirmar: '',
+  estatus: 'Activo'
 })
 
-const errors   = reactive({})
-const tocados  = reactive({})
+const errors = reactive({})
+const tocados = reactive({})
 const notification = reactive({ message: '', type: '' })
-const isLoading    = ref(false)
+const isLoading = ref(false)
 
-// ── Contraseñas: visibilidad ─────────────────────────────────────────
+// Visibilidad contraseñas
 const verContrasena = ref(false)
-const verConfirmar  = ref(false)
+const verConfirmar = ref(false)
 
-// ── Persona asociada ─────────────────────────────────────────────────
-const busquedaPersona    = ref('')
-const buscandoPersona    = ref(false)
+// Sugerencia nombre de usuario 
+const sugerenciaNombreUsuario = ref('')
+
+// ==================== PERSONA ====================
+const busquedaPersona = ref('')
+const buscandoPersona = ref(false)
 const personaSeleccionada = ref(null)
-const sugerenciasPersona  = ref([])
+const sugerenciasPersona = ref([])
 
-// Sugerencia automática de nombre de usuario basada en la persona seleccionada
-const sugerenciaNombreUsuario = computed(() => {
-  if (!personaSeleccionada.value || form.nombre_usuario) return ''
-  const nombre = personaSeleccionada.value.nombre_completo || ''
-  const partes = nombre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').split(' ')
-  if (partes.length >= 2) {
-    const anio = String(new Date().getFullYear()).slice(-2)
-    return partes[0].charAt(0) + partes[1] + anio
+// ==================== ROLES ====================
+const rolesDisponibles = ref([])
+const rolesSeleccionados = ref({})
+
+// ==================== CARGAR ROLES ====================
+const cargarRoles = async () => {
+  try {
+    const response = await fetch('http://localhost:8000/api/roles-simple')
+    if (!response.ok) throw new Error('Error al cargar roles')
+    
+    const data = await response.json()
+    rolesDisponibles.value = data
+
+    // Inicializar checkboxes
+    const obj = {}
+    data.forEach(rol => {
+      obj[rol.nombre] = false
+    })
+    rolesSeleccionados.value = obj
+
+  } catch (error) {
+    console.error('Error cargando roles:', error)
   }
-  return ''
-})
-
-const usarSugerencia = () => {
-  form.nombre_usuario = sugerenciaNombreUsuario.value
-  validarCampo('nombre_usuario')
 }
 
-// ── Búsqueda de persona con debounce ────────────────────────────────
-let timerBusqueda = null
-const onBusquedaPersona = () => {
-  personaSeleccionada.value = null
-  sugerenciasPersona.value  = []
-  if (timerBusqueda) clearTimeout(timerBusqueda)
-  if (!busquedaPersona.value.trim()) return
-  timerBusqueda = setTimeout(() => buscarPersona(), 500)
-}
-
-// Búsqueda real de persona
-// Cuando el backend conecte: GET http://localhost:8000/api/personas?q={busquedaPersona}
+// ==================== BÚSQUEDA DE PERSONA ====================
 const buscarPersona = async () => {
-  if (!busquedaPersona.value.trim()) return
+  const q = busquedaPersona.value.trim()
+  if (q.length < 2) {
+    sugerenciasPersona.value = []
+    return
+  }
+
   buscandoPersona.value = true
   try {
-    // — CONECTAR BACKEND: reemplazar simulación por fetch real —
-    // const res = await fetch(`http://localhost:8000/api/personas?q=${busquedaPersona.value}`)
-    // const data = await res.json()
-    // sugerenciasPersona.value = data
-
-    // Simulación temporal de resultados hasta que el backend esté listo
-    await new Promise(r => setTimeout(r, 400))
-    sugerenciasPersona.value = [
-      { id_persona: 1, nombre_completo: 'Juan García López',    curp: 'GALJ900101HMCRZN05' },
-      { id_persona: 2, nombre_completo: 'María Torres Mendoza', curp: 'TOMM950312MDFRRR07' },
-    ].filter(p =>
-      p.nombre_completo.toLowerCase().includes(busquedaPersona.value.toLowerCase())
-    )
-  } catch (err) {
-    console.error('❌ Error buscando persona:', err)
+    const response = await fetch(`http://localhost:8000/api/personas/buscar?q=${encodeURIComponent(q)}`)
+    if (response.ok) {
+      sugerenciasPersona.value = await response.json()
+    } else {
+      sugerenciasPersona.value = []
+    }
+  } catch (error) {
+    console.error('Error buscando persona:', error)
+    sugerenciasPersona.value = []
   } finally {
     buscandoPersona.value = false
   }
@@ -398,195 +398,142 @@ const buscarPersona = async () => {
 
 const seleccionarPersona = (persona) => {
   personaSeleccionada.value = persona
-  busquedaPersona.value     = persona.nombre_completo
-  sugerenciasPersona.value  = []
-  delete errors.persona
-  tocados.persona = true
+  sugerenciasPersona.value = []
+  busquedaPersona.value = ''
 }
 
 const quitarPersona = () => {
   personaSeleccionada.value = null
-  busquedaPersona.value     = ''
-  sugerenciasPersona.value  = []
-  form.nombre_usuario       = ''
+  sugerenciasPersona.value = []
 }
 
-const cerrarSugerencias = () => { sugerenciasPersona.value = [] }
-
-// ── Roles disponibles ────────────────────────────────────────────────
-// Cuando el backend conecte: cargar desde GET /api/roles en onMounted
-const rolesDisponibles = ref([
-  {
-    nombre:      'Administrador',
-    descripcion: 'Acceso total al sistema. Puede gestionar usuarios, roles y configuración.',
-    permisos:    ['Gestionar usuarios', 'Gestionar roles', 'Ver bitácora', 'Configuración']
-  },
-  {
-    nombre:      'Servicios Escolares',
-    descripcion: 'Gestión de alumnos, inscripciones, calificaciones y grupos.',
-    permisos:    ['Ver alumnos', 'Registrar alumno', 'Cargar calificaciones', 'Inscripciones']
-  },
-  {
-    nombre:      'Docente',
-    descripcion: 'Captura de evaluaciones y calificaciones de sus materias asignadas.',
-    permisos:    ['Ver alumnos', 'Capturar evaluaciones', 'Ver calificaciones']
-  },
-  {
-    nombre:      'Coordinador',
-    descripcion: 'Gestión académica, grupos y seguimiento de planes de estudio.',
-    permisos:    ['Gestión académica', 'Gestionar grupos', 'Ver reportes']
-  },
-])
-
-const rolesSeleccionados = ref({})
-
-const totalRolesSeleccionados = computed(() =>
-  Object.values(rolesSeleccionados.value).filter(Boolean).length
-)
-
-// ── Fuerza de contraseña ─────────────────────────────────────────────
-const nivelFuerza = computed(() => {
-  const p = form.contrasena
-  if (!p) return 0
-  let nivel = 0
-  if (p.length >= 8)               nivel++
-  if (p.length >= 12)              nivel++
-  if (/[A-Z]/.test(p))             nivel++
-  if (/[0-9]/.test(p))             nivel++
-  if (/[^A-Za-z0-9]/.test(p))      nivel++
-  return nivel
-})
-
-const anchoFuerza = computed(() => [0, 25, 45, 65, 85, 100][nivelFuerza.value] || 0)
-
-const textoFuerza = computed(() => {
-  return ['', 'Muy débil', 'Débil', 'Regular', 'Fuerte', 'Muy fuerte'][nivelFuerza.value] || ''
-})
-
-const clasesFuerzaContrasena = computed(() => {
-  return ['', 'fuerza-roja', 'fuerza-naranja', 'fuerza-amarilla', 'fuerza-azul', 'fuerza-verde'][nivelFuerza.value] || ''
-})
-
-// ── Validaciones en tiempo real ─────────────────────────────────────
+// ==================== VALIDACIONES ====================
 const validarCampo = (campo) => {
   tocados[campo] = true
-  switch (campo) {
-    case 'persona':
-      if (!personaSeleccionada.value)
-        errors.persona = 'Debes seleccionar una persona del listado'
-      else
-        delete errors.persona
-      break
 
-    case 'nombre_usuario':
-      if (!form.nombre_usuario.trim())
-        errors.nombre_usuario = 'El nombre de usuario es obligatorio'
-      else if (form.nombre_usuario.trim().length < 4)
-        errors.nombre_usuario = 'Debe tener al menos 4 caracteres'
-      else if (/\s/.test(form.nombre_usuario))
-        errors.nombre_usuario = 'No puede contener espacios'
-      else if (/[^A-Za-z0-9._-]/.test(form.nombre_usuario))
-        errors.nombre_usuario = 'Solo letras, números, puntos, guiones y guión bajo'
-      else
-        delete errors.nombre_usuario
-      break
+  if (campo === 'persona') {
+    if (!personaSeleccionada.value) {
+      errors.persona = 'Debes seleccionar una persona'
+    } else {
+      delete errors.persona
+    }
+  }
 
-    case 'contrasena':
-      if (!form.contrasena)
-        errors.contrasena = 'La contraseña es obligatoria'
-      else if (form.contrasena.length < 8)
-        errors.contrasena = 'Debe tener al menos 8 caracteres'
-      else
-        delete errors.contrasena
-      // Revalidar confirmar si ya fue tocado
-      if (tocados.confirmar) validarCampo('confirmar')
-      break
+  if (campo === 'nombre_usuario') {
+    if (!form.nombre_usuario.trim()) {
+      errors.nombre_usuario = 'Obligatorio'
+    } else if (form.nombre_usuario.length < 4) {
+      errors.nombre_usuario = 'Mínimo 4 caracteres'
+    } else {
+      delete errors.nombre_usuario
+    }
+  }
 
-    case 'confirmar':
-      if (!form.confirmar)
-        errors.confirmar = 'Confirma la contraseña'
-      else if (form.confirmar !== form.contrasena)
-        errors.confirmar = 'Las contraseñas no coinciden'
-      else
-        delete errors.confirmar
-      break
+  if (campo === 'contrasena') {
+    if (!form.contrasena) {
+      errors.contrasena = 'Obligatoria'
+    } else if (form.contrasena.length < 8) {
+      errors.contrasena = 'Mínimo 8 caracteres'
+    } else {
+      delete errors.contrasena
+    }
+  }
+
+  if (campo === 'confirmar') {
+    if (form.confirmar !== form.contrasena) {
+      errors.confirmar = 'No coinciden'
+    } else {
+      delete errors.confirmar
+    }
   }
 }
 
-const campoValido = (campo) => tocados[campo] && !errors[campo]
+const campoValido = (campo) => {
+  return tocados[campo] && !errors[campo]
+}
 
-// ── Validación completa al enviar ────────────────────────────────────
 const validarFormulario = () => {
   validarCampo('persona')
   validarCampo('nombre_usuario')
   validarCampo('contrasena')
   validarCampo('confirmar')
-  return Object.keys(errors).length === 0
+
+  return Object.keys(errors).length === 0 && totalRolesSeleccionados.value > 0
 }
 
-// ── Guardar usuario ──────────────────────────────────────────────────
-// Endpoint: POST http://localhost:8000/api/usuarios
-// Estructura del payload lista para conectar al backend
+// ==================== GUARDAR ====================
 const guardarUsuario = async () => {
   if (!validarFormulario()) {
-    showNotification('Corrige los errores marcados antes de continuar.', 'error')
-    return
-  }
-
-  if (totalRolesSeleccionados.value === 0) {
-    showNotification('Asigna al menos un rol al usuario antes de guardar.', 'error')
+    showNotification('Corrige los errores antes de guardar', 'error')
     return
   }
 
   isLoading.value = true
 
-  // Construir arreglo de nombres de roles activos
-  const rolesActivos = Object.entries(rolesSeleccionados.value)
-    .filter(([, activo]) => activo)
-    .map(([nombre]) => nombre)
+  const rolesActivos = Object.keys(rolesSeleccionados.value)
+    .filter(key => rolesSeleccionados.value[key])
 
   const payload = {
-    id_persona:     personaSeleccionada.value?.id_persona || null,
+    id_persona: personaSeleccionada.value?.id_persona,
     nombre_usuario: form.nombre_usuario.trim(),
-    contrasena:     form.contrasena,
-    estatus:        form.estatus,
-    roles:          rolesActivos
+    contrasena: form.contrasena,
+    estatus: form.estatus,
+    roles: rolesActivos
   }
 
   try {
-    console.log('🔵 Creando usuario:', payload)
-
     const response = await fetch('http://localhost:8000/api/usuarios', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body:    JSON.stringify(payload)
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     })
 
     const data = await response.json()
-    console.log('🟢 Respuesta backend:', data)
 
     if (response.ok) {
-      showNotification('Usuario creado correctamente.', 'success')
-      setTimeout(() => router.push('/usuarios'), 1500)
+      showNotification('Usuario creado correctamente', 'success')
+      setTimeout(() => router.push('/usuarios'), 1800)
     } else {
-      throw new Error(JSON.stringify(data))
+      showNotification(data.error || 'No se pudo crear el usuario', 'error')
     }
+
   } catch (error) {
-    console.error('❌ ERROR:', error)
-    showNotification('Ocurrió un error al crear el usuario. Verifica la conexión con el servidor.', 'error')
+    console.error(error)
+    showNotification('Error de conexión con el servidor', 'error')
   } finally {
     isLoading.value = false
   }
 }
 
+// ==================== HELPERS ====================
+const totalRolesSeleccionados = computed(() =>
+  Object.values(rolesSeleccionados.value).filter(Boolean).length
+)
+
 const cancelar = () => router.push('/usuarios')
 
 const showNotification = (message, type) => {
   notification.message = message
-  notification.type    = type
-  setTimeout(() => { notification.message = '' }, 4000)
+  notification.type = type
+  setTimeout(() => { notification.message = '' }, 4500)
 }
+
+// Watch para búsqueda en tiempo real de persona
+watch(busquedaPersona, () => {
+  if (busquedaPersona.value.length >= 3) {
+    buscarPersona()
+  } else {
+    sugerenciasPersona.value = []
+  }
+})
+
+onMounted(() => {
+  cargarRoles()
+})
 </script>
+
+
+
 
 
 <style scoped>
