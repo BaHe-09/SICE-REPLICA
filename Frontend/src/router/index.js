@@ -177,6 +177,31 @@ const router = createRouter({
       component: () => import('@/views/Modulo_Comite_Academico/ResolucionesComiteView.vue')
     },
 
+    // ══════════════════════════════════════════════════════════════════════
+    // MÓDULO: HISTORIAL ACADÉMICO
+    // Carpeta: src/views/Modulo_HistorialAcademico/
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      path: '/historial-academico',
+      name: 'HistorialAcademico',
+      component: () => import('@/views/Modulo_HistorialAcademico/AvanceCurricularView.vue')
+    },
+
+    // ══════════════════════════════════════════════════════════════════════
+    // MÓDULO: KARDEX
+    // Carpeta: src/views/Modulo_Kardex/
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      path: '/kardex',
+      name: 'Kardex',
+      component: () => import('@/views/Modulo_Kardex/KardexView.vue')
+    },
+    {
+      path: '/kardex/:id',
+      name: 'KardexDetalle',
+      component: () => import('@/views/Modulo_Kardex/KardexDetalleView.vue')
+    },
+
     // ── Ruta 404 ──────────────────────────────────────────────────────────
     {
       path: '/:pathMatch(.*)*',
