@@ -2,19 +2,16 @@
   <MainLayout v-slot="{ busquedaGlobal }">
     <div class="servicios-page">
 
-      <!-- Breadcrumb -->
       <nav class="breadcrumb">
         <router-link to="/inicio" class="breadcrumb-link">Inicio</router-link>
         <span class="sep">›</span>
         <span class="breadcrumb-actual">Servicios Escolares</span>
       </nav>
 
-      <!-- Encabezado -->
       <div class="page-header">
         <h1 class="page-title">Servicios Escolares</h1>
       </div>
 
-      <!-- Toast de notificación — fijo abajo a la derecha -->
       <transition name="toast-slide">
         <div v-if="notificacion.visible" class="toast" :class="notificacion.tipo">
           <svg v-if="notificacion.tipo === 'exito'" xmlns="http://www.w3.org/2000/svg"
@@ -31,10 +28,8 @@
         </div>
       </transition>
 
-      <!-- Tarjetas de estadísticas -->
       <div class="stats-grid">
 
-        <!-- Alumnos Activos -->
         <div class="stat-card stat-azul">
           <div class="stat-icono-wrapper">
             <svg xmlns="http://www.w3.org/2000/svg" class="stat-icono" fill="none"
@@ -51,7 +46,6 @@
           </div>
         </div>
 
-        <!-- Inscripciones del Periodo -->
         <div class="stat-card">
           <div class="stat-icono-wrapper stat-icono-verde">
             <svg xmlns="http://www.w3.org/2000/svg" class="stat-icono-verde-svg" fill="none"
@@ -68,7 +62,6 @@
           </div>
         </div>
 
-        <!-- Grupos Abiertos -->
         <div class="stat-card">
           <div class="stat-icono-wrapper stat-icono-naranja">
             <svg xmlns="http://www.w3.org/2000/svg" class="stat-icono-naranja-svg" fill="none"
@@ -85,7 +78,6 @@
           </div>
         </div>
 
-        <!-- Evaluaciones Pendientes -->
         <div class="stat-card">
           <div class="stat-icono-wrapper stat-icono-azul-suave">
             <svg xmlns="http://www.w3.org/2000/svg" class="stat-icono-azul-suave-svg" fill="none"
@@ -104,7 +96,6 @@
 
       </div>
 
-      <!-- Mensaje de error si el backend falla -->
       <div v-if="errorCarga" class="alerta-error">
         <svg xmlns="http://www.w3.org/2000/svg" class="alerta-icono" fill="none"
              viewBox="0 0 24 24" stroke="currentColor">
@@ -115,7 +106,6 @@
         <button class="btn-reintentar" @click="cargarDatos">Reintentar</button>
       </div>
 
-      <!-- Accesos Rápidos -->
       <div class="accesos-seccion">
         <h2 class="seccion-titulo">Accesos Rápidos</h2>
         <div class="accesos-grid">
@@ -134,8 +124,7 @@
             </div>
             <svg xmlns="http://www.w3.org/2000/svg" class="acceso-flecha" fill="none"
                  viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 5l7 7-7 7" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
           </div>
 
@@ -153,8 +142,7 @@
             </div>
             <svg xmlns="http://www.w3.org/2000/svg" class="acceso-flecha" fill="none"
                  viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 5l7 7-7 7" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
           </div>
 
@@ -172,12 +160,10 @@
             </div>
             <svg xmlns="http://www.w3.org/2000/svg" class="acceso-flecha" fill="none"
                  viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 5l7 7-7 7" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
           </div>
 
-          <!-- Kardex deshabilitado — módulo pendiente -->
           <div class="acceso-card acceso-deshabilitado">
             <div class="acceso-icono acceso-gris">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -196,7 +182,6 @@
         </div>
       </div>
 
-      <!-- Footer institucional — consistente con el resto del sistema -->
       <footer class="pie-pagina">
         © 2026 Tecnológico Nacional de México · Todos los derechos reservados
       </footer>
@@ -273,14 +258,13 @@ const nuevaInscripcion = () => router.push('/inscripcion')
   --rojo:        #DC2626;
   --amarillo:    #F59E0B;
 
+  /* Corrección: width 100% sin max-width, igual que AlumnosView de Santiago */
   width: 100%;
-  max-width: 1100px;
   background: var(--fondo);
   font-family: 'Montserrat', sans-serif;
   padding-bottom: 2rem;
 }
 
-/* ── Breadcrumb ─────────────────────────────────────────────────── */
 .breadcrumb {
   display: flex;
   align-items: center;
@@ -289,57 +273,32 @@ const nuevaInscripcion = () => router.push('/inscripcion')
   font-size: 0.88rem;
   margin-bottom: 0.75rem;
 }
-.breadcrumb .sep { color: #E5E7EB; }
-.breadcrumb-link {
-  color: var(--gris);
-  text-decoration: none;
-  transition: color 0.15s;
-}
+.breadcrumb .sep    { color: #E5E7EB; }
+.breadcrumb-link    { color: var(--gris); text-decoration: none; transition: color 0.15s; }
 .breadcrumb-link:hover { color: var(--azul); }
-.breadcrumb-actual {
-  color: var(--azul);
-  font-weight: 600;
-}
+.breadcrumb-actual  { color: var(--azul); font-weight: 600; }
 
-/* ── Encabezado ─────────────────────────────────────────────────── */
 .page-header { margin-bottom: 1.4rem; }
-.page-title {
-  color: var(--texto);
-  font-size: 1.75rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin: 0;
-}
+.page-title  { color: var(--texto); font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
 
-/* ── Toast — fijo abajo a la derecha (consistente con todo el sistema) ── */
 .toast {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0.9rem 1.4rem;
-  border-radius: 10px;
-  color: white;
-  font-weight: 700;
-  font-size: 0.9rem;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-  z-index: 3000;
-  font-family: 'Montserrat', sans-serif;
-  max-width: 380px;
+  position: fixed; bottom: 2rem; right: 2rem;
+  display: flex; align-items: center; gap: 10px;
+  padding: 0.9rem 1.4rem; border-radius: 10px;
+  color: white; font-weight: 700; font-size: 0.9rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 3000;
+  font-family: 'Montserrat', sans-serif; max-width: 380px;
 }
 .toast.exito { background: var(--azul); }
 .toast.error { background: var(--rojo); }
 .toast-icono { width: 20px; height: 20px; flex-shrink: 0; }
-
 .toast-slide-enter-active, .toast-slide-leave-active { transition: all 0.3s ease; }
 .toast-slide-enter-from, .toast-slide-leave-to { opacity: 0; transform: translateX(100%); }
 
-/* ── Tarjetas de estadísticas ───────────────────────────────────── */
+/* Grid de 4 columnas iguales — minmax(0,1fr) evita que se desborden */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
@@ -354,183 +313,94 @@ const nuevaInscripcion = () => router.push('/inscripcion')
   box-shadow: 0 4px 12px rgba(0,0,0,0.05);
   border: 1px solid var(--borde);
   transition: transform 0.2s, box-shadow 0.2s;
+  min-width: 0;
 }
-.stat-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.09);
-}
+.stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.09); }
 
-/* Tarjeta azul principal */
-.stat-azul {
-  background: var(--azul);
-  border-color: var(--azul);
-}
-.stat-azul .stat-etiqueta  { color: rgba(255,255,255,0.8); }
-.stat-azul .stat-numero    { color: #FFFFFF; }
-.stat-azul .stat-link      { color: rgba(255,255,255,0.85); }
-.stat-azul .stat-icono-wrapper {
-  background: rgba(255,255,255,0.2);
-}
+.stat-azul { background: var(--azul); border-color: var(--azul); }
+.stat-azul .stat-etiqueta    { color: rgba(255,255,255,0.8); }
+.stat-azul .stat-numero      { color: #FFFFFF; }
+.stat-azul .stat-link        { color: rgba(255,255,255,0.85); }
+.stat-azul .stat-icono-wrapper { background: rgba(255,255,255,0.2); }
 .stat-azul .stat-icono-wrapper svg { stroke: #FFFFFF; }
 
 .stat-icono-wrapper {
-  width: 46px;
-  height: 46px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  background: var(--azul-suave);
+  width: 46px; height: 46px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; background: var(--azul-suave);
 }
 .stat-icono-wrapper svg { width: 22px; height: 22px; stroke: var(--azul); }
 
-/* Colores de ícono dentro de paleta oficial */
-.stat-icono-verde        { background: #DCFCE7; }
-.stat-icono-verde-svg    { width: 22px; height: 22px; stroke: var(--verde); }
-.stat-icono-naranja      { background: #FEF3C7; }
-.stat-icono-naranja-svg  { width: 22px; height: 22px; stroke: var(--amarillo); }
-/* Evaluaciones: azul suave en lugar de morado (dentro de paleta oficial) */
+.stat-icono-verde          { background: #DCFCE7; }
+.stat-icono-verde-svg      { width: 22px; height: 22px; stroke: var(--verde); }
+.stat-icono-naranja        { background: #FEF3C7; }
+.stat-icono-naranja-svg    { width: 22px; height: 22px; stroke: var(--amarillo); }
 .stat-icono-azul-suave     { background: var(--azul-suave); }
 .stat-icono-azul-suave-svg { width: 22px; height: 22px; stroke: var(--azul); }
 
-.stat-info { display: flex; flex-direction: column; gap: 2px; }
-
+.stat-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .stat-etiqueta {
-  font-size: 0.83rem;
-  color: var(--gris);
-  font-weight: 500;
-  margin: 0;
+  font-size: 0.83rem; color: var(--gris); font-weight: 500; margin: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.stat-numero {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--texto);
-  margin: 2px 0;
-  line-height: 1;
-}
+.stat-numero { font-size: 2rem; font-weight: 700; color: var(--texto); margin: 2px 0; line-height: 1; }
 .stat-link {
-  font-size: 0.82rem;
-  color: var(--azul);
-  font-weight: 600;
-  cursor: pointer;
-  transition: color 0.15s;
+  font-size: 0.82rem; color: var(--azul); font-weight: 600;
+  cursor: pointer; transition: color 0.15s; white-space: nowrap;
 }
 .stat-link:hover { color: var(--azul-hover); }
 
-/* Skeleton mientras carga */
 .stat-skeleton {
-  width: 80px;
-  height: 32px;
+  width: 80px; height: 32px;
   background: linear-gradient(90deg, #E5E7EB 25%, #F3F4F6 50%, #E5E7EB 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
-  border-radius: 6px;
-  margin: 2px 0;
+  background-size: 200% 100%; animation: shimmer 1.4s infinite;
+  border-radius: 6px; margin: 2px 0;
 }
 .stat-azul .stat-skeleton {
   background: linear-gradient(90deg,
-    rgba(255,255,255,0.2) 25%,
-    rgba(255,255,255,0.35) 50%,
-    rgba(255,255,255,0.2) 75%
-  );
+    rgba(255,255,255,0.2) 25%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.2) 75%);
   background-size: 200% 100%;
 }
-@keyframes shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-/* ── Alerta de error ────────────────────────────────────────────── */
 .alerta-error {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #FEF2F2;
-  border: 1px solid #FECACA;
-  border-radius: 10px;
-  padding: 12px 16px;
-  margin-bottom: 1.4rem;
-  font-size: 0.9rem;
-  color: var(--rojo);
-  font-weight: 500;
+  display: flex; align-items: center; gap: 10px;
+  background: #FEF2F2; border: 1px solid #FECACA;
+  border-radius: 10px; padding: 12px 16px; margin-bottom: 1.4rem;
+  font-size: 0.9rem; color: var(--rojo); font-weight: 500;
   font-family: 'Montserrat', sans-serif;
 }
-.alerta-icono {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-  stroke: var(--rojo);
-}
+.alerta-icono { width: 20px; height: 20px; flex-shrink: 0; stroke: var(--rojo); }
 .btn-reintentar {
-  margin-left: auto;
-  background: var(--rojo);
-  color: white;
-  border: none;
-  padding: 6px 16px;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.85rem;
-  cursor: pointer;
-  font-family: 'Montserrat', sans-serif;
-  transition: background 0.15s;
-  white-space: nowrap;
+  margin-left: auto; background: var(--rojo); color: white; border: none;
+  padding: 6px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem;
+  cursor: pointer; font-family: 'Montserrat', sans-serif; transition: background 0.15s; white-space: nowrap;
 }
 .btn-reintentar:hover { background: #B91C1C; }
 
-/* ── Accesos Rápidos ────────────────────────────────────────────── */
 .accesos-seccion { margin-bottom: 2rem; }
+.seccion-titulo  { font-size: 1.05rem; font-weight: 700; color: var(--texto); margin: 0 0 1rem; }
 
-.seccion-titulo {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--texto);
-  margin: 0 0 1rem;
-}
-
+/* Mismo patrón que stats — 4 columnas sin desbordamiento */
 .accesos-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1rem;
 }
 
 .acceso-card {
-  background: #FFFFFF;
-  border-radius: 12px;
-  padding: 1.2rem 1.4rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  border: 1px solid var(--borde);
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  background: #FFFFFF; border-radius: 12px; padding: 1.2rem 1.4rem;
+  display: flex; align-items: center; gap: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid var(--borde);
+  cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  min-width: 0;
 }
-.acceso-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-  border-color: var(--azul);
-}
+.acceso-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); border-color: var(--azul); }
 
-.acceso-deshabilitado {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-.acceso-deshabilitado:hover {
-  transform: none;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  border-color: var(--borde);
-}
+.acceso-deshabilitado { cursor: not-allowed; opacity: 0.6; }
+.acceso-deshabilitado:hover { transform: none; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-color: var(--borde); }
 
-.acceso-icono {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
+.acceso-icono { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .acceso-icono svg { width: 22px; height: 22px; }
 
 .acceso-verde    { background: #DCFCE7; }
@@ -542,50 +412,34 @@ const nuevaInscripcion = () => router.push('/inscripcion')
 .acceso-gris     { background: #F3F4F6; }
 .acceso-gris svg     { stroke: var(--gris); }
 
-.acceso-contenido { flex: 1; }
+.acceso-contenido { flex: 1; min-width: 0; }
 .acceso-contenido h4 {
-  font-size: 0.93rem;
-  font-weight: 700;
-  color: var(--texto);
-  margin: 0 0 3px;
+  font-size: 0.93rem; font-weight: 700; color: var(--texto); margin: 0 0 3px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.acceso-contenido p {
-  font-size: 0.82rem;
-  color: var(--gris);
-  margin: 0;
-}
+.acceso-contenido p { font-size: 0.82rem; color: var(--gris); margin: 0; }
 
-.acceso-flecha {
-  width: 18px;
-  height: 18px;
-  stroke: #9CA3AF;
-  flex-shrink: 0;
-  transition: stroke 0.15s;
-}
-.acceso-card:not(.acceso-deshabilitado):hover .acceso-flecha {
-  stroke: var(--azul);
-}
+.acceso-flecha { width: 18px; height: 18px; stroke: #9CA3AF; flex-shrink: 0; transition: stroke 0.15s; }
+.acceso-card:not(.acceso-deshabilitado):hover .acceso-flecha { stroke: var(--azul); }
 
 .badge-proximamente {
-  background: #F3F4F6;
-  color: var(--gris);
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 20px;
-  white-space: nowrap;
-  border: 1px solid var(--borde);
-  font-family: 'Montserrat', sans-serif;
+  background: #F3F4F6; color: var(--gris); font-size: 0.72rem; font-weight: 700;
+  padding: 3px 10px; border-radius: 20px; white-space: nowrap;
+  border: 1px solid var(--borde); font-family: 'Montserrat', sans-serif; flex-shrink: 0;
 }
 
-/* ── Footer — consistente con CalificacionesView y EvaluacionesView ── */
 .pie-pagina {
-  text-align: center;
-  color: #9CA3AF;
-  font-size: 0.82rem;
-  padding-top: 2rem;
-  border-top: 1px solid var(--borde);
-  margin-top: 1rem;
-  font-family: 'Montserrat', sans-serif;
+  text-align: center; color: #9CA3AF; font-size: 0.82rem;
+  padding-top: 2rem; border-top: 1px solid var(--borde);
+  margin-top: 1rem; font-family: 'Montserrat', sans-serif;
+}
+
+@media (max-width: 1024px) {
+  .stats-grid   { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .accesos-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .stats-grid   { grid-template-columns: 1fr; }
+  .accesos-grid { grid-template-columns: 1fr; }
 }
 </style>
