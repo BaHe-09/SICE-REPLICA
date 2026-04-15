@@ -119,7 +119,33 @@ class ServiciosEscolaresController extends Controller
     // 🔹 ALUMNOS
     public function getAlumnos()
     {
-        $alumnos = DB::table('alumno')->get();
+        $alumnos = DB::table('alumno as a')
+            ->join('persona as p', 'a.id_persona', '=', 'p.id_persona')
+            ->join('carrera as c', 'a.id_carrera', '=', 'c.id_carrera')
+            ->select(
+                'a.id_alumno',
+                'a.numero_control',
+                'a.id_carrera',
+                'a.semestre_actual',
+                'a.estatus',
+                DB::raw("CONCAT(p.nombre, ' ', p.apellido_paterno, ' ', p.apellido_materno) as nombre"),
+                'c.nombre as carrera'
+            )
+            ->get()
+            ->map(function ($alumno) {
+                return [
+                    'id_alumno' => $alumno->id_alumno,
+                    'numero_control' => $alumno->numero_control,
+                    'id_carrera' => $alumno->id_carrera,
+                    'semestre_actual' => $alumno->semestre_actual,
+                    'estatus' => $alumno->estatus == 1 ? 'Activo' : 'Inactivo',
+                    'nombre' => $alumno->nombre,
+                    'carrera' => [
+                        'nombre_carrera' => $alumno->carrera // 👈 importante para Vue
+                    ]
+                ];
+            });
+
         return response()->json($alumnos);
     }
 
