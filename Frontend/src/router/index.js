@@ -33,6 +33,15 @@ const router = createRouter({
       component: () => import('@/views/ServiciosEscolaresView.vue')
     },
 
+    // ══════════════════════════════════════════════════════════════════════
+    // MÓDULO: INSCRIPCIONES DETALLADAS (Nelly — Semana 3)
+    // Carpeta: src/views/Inscripciones/
+    // ══════════════════════════════════════════════════════════════════════
+    { path: '/inscripciones',                    name: 'InscripcionesPanel',   component: () => import('@/views/Inscripciones/InscripcionesView.vue') },
+    { path: '/inscripciones/gestionar/:id',      name: 'GestionInscripcion',   component: () => import('@/views/Inscripciones/GestionInscripcionView.vue') },
+    { path: '/inscripciones/historial',          name: 'HistorialInscripciones', component: () => import('@/views/Inscripciones/HistorialInscripcionesView.vue') },
+
+
     // Alumnos
     { path: '/alumnos', name: 'Alumnos', component: () => import('@/views/AlumnosView.vue') },
     { path: '/formulario-alumno', name: 'FormularioAlumno', component: () => import('@/views/FormularioAlumnoView.vue') },
