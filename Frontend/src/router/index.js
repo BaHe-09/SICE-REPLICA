@@ -35,11 +35,23 @@ const router = createRouter({
 
     // ══════════════════════════════════════════════════════════════════════
     // MÓDULO: INSCRIPCIONES DETALLADAS (Nelly — Semana 3)
-    // Carpeta: src/views/Inscripciones/
+    // Carpeta: src/views/Inscripciones_detalladas/
     // ══════════════════════════════════════════════════════════════════════
-    { path: '/inscripciones',                    name: 'InscripcionesPanel',   component: () => import('@/views/Inscripciones/InscripcionesView.vue') },
-    { path: '/inscripciones/gestionar/:id',      name: 'GestionInscripcion',   component: () => import('@/views/Inscripciones/GestionInscripcionView.vue') },
-    { path: '/inscripciones/historial',          name: 'HistorialInscripciones', component: () => import('@/views/Inscripciones/HistorialInscripcionesView.vue') },
+    { 
+        path: '/inscripciones', 
+        name: 'InscripcionesPanel', 
+        component: () => import('@/views/Inscripciones_detalladas/InscripcionesView.vue') 
+    },
+    { 
+        path: '/inscripciones/gestionar/:id', 
+        name: 'GestionInscripcion', 
+        component: () => import('@/views/Inscripciones_detalladas/GestionInscripcionView.vue') 
+    },
+    { 
+        path: '/inscripciones/historial', 
+        name: 'HistorialInscripciones', 
+        component: () => import('@/views/Inscripciones_detalladas/HistorialInscripcionesView.vue') 
+    },
 
 
     // Alumnos
