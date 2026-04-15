@@ -146,7 +146,7 @@
         <div class="elemento-menu elemento-padre" @click="toggleGestionAcademica">
           <svg xmlns="http://www.w3.org/2000/svg" class="icono-menu" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 14l9-5-9-5-9 5 9 5zM12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                  d="M12 14l9-5-9-5-9 5 9 5zM12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
           </svg>
           <span class="etiqueta-menu">Gestión Académica</span>
           <span class="flecha-submenu" :class="{ abierto: isGestionAcademicaOpen }">›</span>
@@ -233,13 +233,19 @@
           </div>
 
           <!-- Personas -->
-          <router-link to="/personas" class="elemento-menu" active-class="activo">
+          <div class="elemento-menu elemento-padre" @click="togglePersonas">
             <svg xmlns="http://www.w3.org/2000/svg" class="icono-menu" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             <span class="etiqueta-menu">Personas</span>
-          </router-link>
+            <span class="flecha-submenu" :class="{ abierto: isPersonasOpen }">›</span>
+          </div>
+          <div v-if="isPersonasOpen" class="submenu">
+            <router-link to="/personas" class="elemento-menu elemento-submenu" active-class="activo">Catálogo</router-link>
+            <router-link to="/personas/nueva" class="elemento-menu elemento-submenu" active-class="activo">Nueva Persona</router-link>
+          </div>
+
         </template>
 
       </nav>
@@ -263,6 +269,7 @@ const busquedaGlobal = ref('')
 
 const isCollapsed             = ref(false)
 const isServiciosOpen         = ref(true)
+const isPersonasOpen          = ref(false)
 const isGestionAcademicaOpen  = ref(false)
 const isRecursosHumanosOpen   = ref(false)
 const isSeguridadOpen         = ref(false)
@@ -281,6 +288,7 @@ onMounted(() => {
     if (val !== null) ref.value = parse ? JSON.parse(val) : val
   }
   load('isServiciosOpen',        isServiciosOpen)
+  load('isPersonasOpen',         isPersonasOpen)
   load('isGestionAcademicaOpen', isGestionAcademicaOpen)
   load('isRecursosHumanosOpen',  isRecursosHumanosOpen)
   load('isSeguridadOpen',        isSeguridadOpen)
@@ -290,9 +298,10 @@ onMounted(() => {
 })
 
 watch(
-  [isServiciosOpen, isGestionAcademicaOpen, isRecursosHumanosOpen, isSeguridadOpen, isEventosOpen, isComiteOpen, rolActual],
+  [isServiciosOpen, isPersonasOpen, isGestionAcademicaOpen, isRecursosHumanosOpen, isSeguridadOpen, isEventosOpen, isComiteOpen, rolActual],
   () => {
     localStorage.setItem('isServiciosOpen',        JSON.stringify(isServiciosOpen.value))
+    localStorage.setItem('isPersonasOpen',         JSON.stringify(isPersonasOpen.value))
     localStorage.setItem('isGestionAcademicaOpen', JSON.stringify(isGestionAcademicaOpen.value))
     localStorage.setItem('isRecursosHumanosOpen',  JSON.stringify(isRecursosHumanosOpen.value))
     localStorage.setItem('isSeguridadOpen',        JSON.stringify(isSeguridadOpen.value))
@@ -309,6 +318,7 @@ const nombreRolActual = computed(() =>
 
 const toggleSidebar           = () => { isCollapsed.value = !isCollapsed.value }
 const toggleServicios         = () => { isServiciosOpen.value = !isServiciosOpen.value }
+const togglePersonas          = () => { isPersonasOpen.value = !isPersonasOpen.value }
 const toggleGestionAcademica  = () => { isGestionAcademicaOpen.value = !isGestionAcademicaOpen.value }
 const toggleRecursosHumanos   = () => { isRecursosHumanosOpen.value = !isRecursosHumanosOpen.value }
 const toggleSeguridad         = () => { isSeguridadOpen.value = !isSeguridadOpen.value }

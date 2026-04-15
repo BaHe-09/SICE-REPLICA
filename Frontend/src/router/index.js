@@ -68,7 +68,32 @@ const router = createRouter({
     // Inscripción y Grupos
     { path: '/inscripcion', name: 'Inscripcion', component: () => import('@/views/InscripcionView.vue') },
     { path: '/gestion-grupos', name: 'GestionGrupos', component: () => import('@/views/GestionGruposView.vue') },
-    
+
+
+    // ══════════════════════════════════════════════════════════════════════
+    // MÓDULO: PERSONAS
+    // Carpeta: src/views/Personas/
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      path: '/personas',
+      name: 'Personas',
+      component: () => import('@/views/Personas/PersonasView.vue')
+    },
+    {
+      path: '/personas/nueva',
+      name: 'NuevaPersona',
+      component: () => import('@/views/Personas/FormularioPersonaView.vue')
+    },
+    {
+      path: '/personas/editar/:id',
+      name: 'EditarPersona',
+      component: () => import('@/views/Personas/FormularioPersonaView.vue')
+    },
+    {
+      path: '/personas/:id',
+      name: 'DetallePersona',
+      component: () => import('@/views/Personas/DetallePersonaView.vue')
+    },
 
 
     // ══════════════════════════════════════════════════════════════════════
