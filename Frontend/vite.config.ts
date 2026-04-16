@@ -15,4 +15,10 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+
+  // 👇 AGREGA ESTO
+  preview: {
+    host: true,
+    allowedHosts: 'all'
+  }
 })
