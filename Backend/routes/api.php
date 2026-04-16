@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\AlumnoController;
 use App\Http\Controllers\Api\EvaluacionController;
 use App\Http\Controllers\CalificacionController;
 use App\Http\Controllers\Api\InscripcionController;
+use App\Http\Controllers\Api\EventoController;
 
 // DASHBOARD
 Route::get('/dashboard', [DashboardController::class, 'index']);
@@ -169,3 +170,9 @@ Route::get('/permisos', [PermisoController::class, 'index']);
 
 // Bitácora
 Route::get('/bitacora', [BitacoraController::class, 'index']);
+
+
+// ======================Modulo Eventos ======================
+//lista de eventos para EventosView.vue
+Route::get('/eventos', [EventoController::class, 'index']);
+Route::get('/tipos-evento', [EventoController::class, 'tiposEvento']);
