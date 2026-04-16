@@ -338,7 +338,7 @@ const claseEstatus = (estatus) => {
 const cargarAlumnosDesdeBD = async () => {
   cargando.value = true
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/alumnos-full`)
+    const response = await fetch('https://sice-replica-production.up.railway.app/api/alumnos-full')
     if (!response.ok) throw new Error('Error del servidor')
     const data = await response.json()
     alumnos.value = data
