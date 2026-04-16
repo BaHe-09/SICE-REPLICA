@@ -1,9 +1,9 @@
 <?php
 
 return [
-    'paths' => [],
+    'paths' => ['api/*', 'sanctum/csrf-cookie'], // 👈 IMPORTANTE
     'allowed_methods' => ['*'],
-    'allowed_origins' => ['*'],
+    'allowed_origins' => ['*'], // puedes restringir luego
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'],
     'exposed_headers' => [],
