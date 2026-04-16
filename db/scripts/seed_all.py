@@ -19,20 +19,6 @@ def main():
     cursor = conn.cursor()
 
     try:
-        print("\n--- MODULO 1: SEGURIDAD ---")
-        seed_seguridad(cursor, conn)
-
-        print("\n--- MODULO 2: PERSONAS ---")
-        seed_personas(cursor, conn, 3000)
-
-        print("\n--- MODULO 3: USUARIOS ---")
-        seed_usuarios(cursor, conn, 500)
-
-        print("\n--- MODULO 4: RECURSOS HUMANOS ---")
-        seed_rh(cursor, conn, 200)
-
-        print("\n--- MODULO 5: GESTION ACADEMICA ---")
-        seed_academico(cursor, conn)
 
         print("\n--- MODULO 6: CONTROL ESCOLAR ---")
         seed_control_escolar(cursor, conn, 1500)
@@ -42,7 +28,6 @@ def main():
 
         print("\n--- MODULO 8: COMITE ---")
         seed_comite(cursor, conn)
-
         print("\nBase de datos poblada correctamente")
 
     except Exception as e:

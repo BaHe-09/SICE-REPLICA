@@ -220,7 +220,7 @@ const mostrarNotificacion = (mensaje, tipo = 'exito') => {
 const cargarPlanes = async () => {
   cargando.value = true
   try {
-    const res = await fetch('http://localhost:8000/api/planes-estudio')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/planes-estudio')
     if (!res.ok) throw new Error()
     planes.value = await res.json()
   } catch { mostrarNotificacion('No se pudieron cargar los planes.', 'error') }
@@ -229,7 +229,7 @@ const cargarPlanes = async () => {
 
 const cargarCarreras = async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/carreras')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/carreras')
     if (res.ok) carreras.value = await res.json()
   } catch {}
 }
@@ -275,7 +275,7 @@ const guardar = async () => {
   if (!validar()) return
   guardando.value = true
   const esEdicion = !!form.id_plan
-  const url = esEdicion ? `http://localhost:8000/api/planes-estudio/${form.id_plan}` : 'http://localhost:8000/api/planes-estudio'
+  const url = esEdicion ? `${import.meta.env.VITE_API_URL}/api/planes-estudio/${form.id_plan}` : '${import.meta.env.VITE_API_URL}/api/planes-estudio'
   const payload = { id_carrera: form.id_carrera, nombre_plan: form.nombre_plan.trim(), anio_vigencia: form.anio_vigencia, total_creditos: form.total_creditos, estatus: form.estatus }
   try {
     const res = await fetch(url, { method: esEdicion ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(payload) })
@@ -290,7 +290,7 @@ const confirmarEliminar = async () => {
   if (!planAEliminar.value) return
   guardando.value = true
   try {
-    const res = await fetch(`http://localhost:8000/api/planes-estudio/${planAEliminar.value.id_plan}`, { method: 'DELETE', headers: { 'Accept': 'application/json' } })
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/planes-estudio/${planAEliminar.value.id_plan}`, { method: 'DELETE', headers: { 'Accept': 'application/json' } })
     if (!res.ok) throw new Error()
     await cargarPlanes(); showModalEliminar.value = false; planAEliminar.value = null
     mostrarNotificacion('Plan eliminado correctamente.')

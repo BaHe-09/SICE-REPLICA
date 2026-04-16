@@ -354,7 +354,7 @@ const rolesSeleccionados = ref({})
 // ==================== CARGAR ROLES ====================
 const cargarRoles = async () => {
   try {
-    const response = await fetch('http://localhost:8000/api/roles-simple')
+    const response = await fetch('${import.meta.env.VITE_API_URL}/api/roles-simple')
     if (!response.ok) throw new Error('Error al cargar roles')
     
     const data = await response.json()
@@ -382,7 +382,7 @@ const buscarPersona = async () => {
 
   buscandoPersona.value = true
   try {
-    const response = await fetch(`http://localhost:8000/api/personas/buscar?q=${encodeURIComponent(q)}`)
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/personas/buscar?q=${encodeURIComponent(q)}`)
     if (response.ok) {
       sugerenciasPersona.value = await response.json()
     } else {
@@ -482,7 +482,7 @@ const guardarUsuario = async () => {
   }
 
   try {
-    const response = await fetch('http://localhost:8000/api/usuarios', {
+    const response = await fetch('${import.meta.env.VITE_API_URL}/api/usuarios', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

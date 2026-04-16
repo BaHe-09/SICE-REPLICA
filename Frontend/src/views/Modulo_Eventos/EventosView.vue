@@ -259,7 +259,7 @@ const mostrarNotificacion = (mensaje, tipo = 'exito') => {
 // ── Carga de tipos de evento ─────────────────────────────────
 const cargarTipos = async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/tipos-evento')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/tipos-evento')
     if (!res.ok) throw new Error()
     tiposEvento.value = await res.json()
   } catch {
@@ -272,7 +272,7 @@ const cargarEventos = async () => {
   cargando.value   = true
   errorCarga.value = false
   try {
-    const res = await fetch('http://localhost:8000/api/eventos')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/eventos')
     if (!res.ok) throw new Error('Error en la respuesta del servidor')
     const data = await res.json()
     eventos.value = Array.isArray(data) ? data : data.data ?? []
@@ -313,7 +313,7 @@ const filtrar = async () => {
     const params = new URLSearchParams()
     if (busquedaNombre.value) params.append('nombre', busquedaNombre.value)
     if (filtroTipo.value)     params.append('tipo',   filtroTipo.value)
-    const url = 'http://localhost:8000/api/eventos' + (params.toString() ? '?' + params : '')
+    const url = '${import.meta.env.VITE_API_URL}/api/eventos' + (params.toString() ? '?' + params : '')
     const res = await fetch(url)
     if (!res.ok) throw new Error()
     const data = await res.json()

@@ -328,14 +328,17 @@ const getIdCarrera = (nombreCarrera) => {
 
 const claseEstatus = (estatus) => {
   if (!estatus) return ''
-  return estatus.toLowerCase().replace(/\s/g, '-')
+
+  return String(estatus)
+    .toLowerCase()
+    .replace(/\s/g, '-')
 }
 
 
 const cargarAlumnosDesdeBD = async () => {
   cargando.value = true
   try {
-    const response = await fetch('http://localhost:8000/api/alumnos-full')
+    const response = await fetch('${import.meta.env.VITE_API_URL}/api/alumnos-full')
     if (!response.ok) throw new Error('Error del servidor')
     const data = await response.json()
     alumnos.value = data
@@ -417,7 +420,7 @@ const guardarCambios = async () => {
   guardando.value = true
   try {
     console.log('🔵 Enviando update:', payload)
-    const response = await fetch(`http://localhost:8000/api/alumnos/${id}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/alumnos/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify(payload)
@@ -451,7 +454,7 @@ const eliminarAlumno = async () => {
 
   guardando.value = true
   try {
-    const response = await fetch(`http://localhost:8000/api/alumnos/${id}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/alumnos/${id}`, {
       method: 'DELETE',
       headers: { 'Accept': 'application/json' }
     })

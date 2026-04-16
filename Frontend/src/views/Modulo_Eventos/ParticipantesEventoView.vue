@@ -274,7 +274,7 @@ const mostrarNotificacion = (mensaje, tipo = 'exito') => {
 // ── Carga inicial ─────────────────────────────────────────────
 const cargarEvento = async () => {
   try {
-    const res = await fetch(`http://localhost:8000/api/eventos/${route.params.id}`)
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/eventos/${route.params.id}`)
     if (!res.ok) throw new Error()
     evento.value = await res.json()
   } catch (error) {
@@ -287,7 +287,7 @@ const cargarParticipantes = async () => {
   cargando.value   = true
   errorCarga.value = false
   try {
-    const res = await fetch(`http://localhost:8000/api/eventos/${route.params.id}/participantes`)
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/eventos/${route.params.id}/participantes`)
     if (!res.ok) throw new Error('Error en la respuesta del servidor')
     const data = await res.json()
     participantes.value = Array.isArray(data) ? data : data.data ?? []
@@ -318,7 +318,7 @@ const buscarAlumnoModal = () => {
   debounce = setTimeout(async () => {
     buscandoAlumno.value = true
     try {
-      const res = await fetch(`http://localhost:8000/api/alumnos/buscar?no_control=${encodeURIComponent(busquedaModal.value)}`)
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/alumnos/buscar?no_control=${encodeURIComponent(busquedaModal.value)}`)
       if (!res.ok) throw new Error()
       const data = await res.json()
       alumnoEncontrado.value = data ?? null
@@ -335,7 +335,7 @@ const registrarParticipante = async () => {
   if (!alumnoEncontrado.value) return
   cargando.value = true
   try {
-    const res = await fetch(`http://localhost:8000/api/eventos/${route.params.id}/participantes`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/eventos/${route.params.id}/participantes`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ no_control: alumnoEncontrado.value.control }),
@@ -362,7 +362,7 @@ const registrarParticipante = async () => {
 const emitirConstancia = async (p) => {
   cargando.value = true
   try {
-    const res = await fetch(`http://localhost:8000/api/eventos/${route.params.id}/participantes/${p.control}/constancia`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/eventos/${route.params.id}/participantes/${p.control}/constancia`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
     })
@@ -382,7 +382,7 @@ const eliminarParticipante = async (p) => {
   if (!confirm(`¿Eliminar a ${p.nombre} de este evento?`)) return
   cargando.value = true
   try {
-    const res = await fetch(`http://localhost:8000/api/eventos/${route.params.id}/participantes/${p.control}`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/eventos/${route.params.id}/participantes/${p.control}`, {
       method: 'DELETE',
     })
     if (!res.ok) throw new Error()

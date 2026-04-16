@@ -180,7 +180,7 @@ const periodoActivoExistente = computed(() => periodos.value.some(p => p.estatus
 const cargarPeriodos = async () => {
   cargando.value = true
   try {
-    const res = await fetch('http://localhost:8000/api/periodos')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/periodos')
     if (!res.ok) throw new Error()
     periodos.value = await res.json()
   } catch { mostrarNotificacion('No se pudieron cargar los periodos.', 'error') }
@@ -225,7 +225,7 @@ const guardar = async () => {
   if (!validar()) return
   guardando.value = true
   const esEdicion = !!form.id_periodo
-  const url = esEdicion ? `http://localhost:8000/api/periodos/${form.id_periodo}` : 'http://localhost:8000/api/periodos'
+  const url = esEdicion ? `${import.meta.env.VITE_API_URL}/api/periodos/${form.id_periodo}` : '${import.meta.env.VITE_API_URL}/api/periodos'
   const payload = { nombre_periodo: form.nombre_periodo.trim(), fecha_inicio: form.fecha_inicio, fecha_fin: form.fecha_fin, estatus: form.estatus }
   try {
     const res = await fetch(url, { method: esEdicion ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(payload) })
@@ -240,7 +240,7 @@ const confirmarEliminar = async () => {
   if (!periodoAEliminar.value) return
   guardando.value = true
   try {
-    const res = await fetch(`http://localhost:8000/api/periodos/${periodoAEliminar.value.id_periodo}`, { method: 'DELETE', headers: { 'Accept': 'application/json' } })
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/periodos/${periodoAEliminar.value.id_periodo}`, { method: 'DELETE', headers: { 'Accept': 'application/json' } })
     if (!res.ok) throw new Error()
     await cargarPeriodos(); showModalEliminar.value = false; periodoAEliminar.value = null
     mostrarNotificacion('Periodo eliminado correctamente.')

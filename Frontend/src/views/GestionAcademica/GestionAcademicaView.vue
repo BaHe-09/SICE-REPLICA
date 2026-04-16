@@ -235,7 +235,7 @@ const cargarResumen = async () => {
   cargando.value   = true
   errorCarga.value = false
   try {
-    const res = await fetch('http://localhost:8000/api/gestion-academica/resumen')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/gestion-academica/resumen')
     if (!res.ok) throw new Error('Error del servidor')
     const data = await res.json()
     resumen.value.carreras = data.carreras ?? 0

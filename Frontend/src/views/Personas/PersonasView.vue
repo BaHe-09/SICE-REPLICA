@@ -285,7 +285,7 @@ const claseTipo = (tipo) => {
 const cargarPersonas = async () => {
   cargando.value = true
   try {
-    const response = await fetch('http://localhost:8000/api/personas')
+    const response = await fetch('${import.meta.env.VITE_API_URL}/api/personas')
     if (!response.ok) throw new Error('Error del servidor')
     const data = await response.json()
     personas.value = data

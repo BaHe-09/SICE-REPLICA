@@ -306,7 +306,7 @@ const buscarPersonas = () => {
   debouncePersona = setTimeout(async () => {
     try {
       const params = new URLSearchParams({ q: busquedaPersona.value.trim() })
-      const res = await fetch(`http://localhost:8000/api/personas?${params}`)
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/personas?${params}`)
       if (!res.ok) throw new Error()
       const data = await res.json()
       resultadosPersona.value = data.map(p => ({
@@ -339,7 +339,7 @@ const cambiarPersona = () => {
 // ── Cargar puestos y datos en edición ──
 const cargarPuestos = async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/puestos')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/puestos')
     if (!res.ok) throw new Error()
     puestos.value = await res.json()
     console.log('✅ Puestos cargados:', puestos.value.length)
@@ -350,7 +350,7 @@ const cargarPuestos = async () => {
 
 const cargarEmpleado = async (id) => {
   try {
-    const res = await fetch(`http://localhost:8000/api/empleados/${id}`)
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/empleados/${id}`)
     if (!res.ok) throw new Error()
     const data = await res.json()
     form.noEmpleado        = data.numero_empleado || ''
@@ -441,8 +441,8 @@ const guardarEmpleado = async () => {
 
   try {
     const url    = modoEdicion.value
-      ? `http://localhost:8000/api/empleados/${route.params.id}`
-      : 'http://localhost:8000/api/empleados'
+      ? `${import.meta.env.VITE_API_URL}/api/empleados/${route.params.id}`
+      : '${import.meta.env.VITE_API_URL}/api/empleados'
     const method = modoEdicion.value ? 'PUT' : 'POST'
 
     console.log(`🔵 ${method} payload:`, payload)

@@ -209,7 +209,7 @@ const normalizarPuesto = (p) => ({
 const cargarPuestos = async () => {
   cargando.value = true
   try {
-    const res = await fetch('http://localhost:8000/api/puestos')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/puestos')
     if (!res.ok) throw new Error()
     puestos.value = (await res.json()).map(normalizarPuesto)
     console.log('✅ Puestos cargados:', puestos.value.length)
@@ -271,7 +271,7 @@ const guardarPuesto = async () => {
   guardando.value = true
   const esEdicion = !!puestoEditar.value.id_puesto
   const payload   = { nombre_puesto: puestoEditar.value.nombre_puesto.trim(), descripcion: puestoEditar.value.descripcion || '' }
-  const url       = esEdicion ? `http://localhost:8000/api/puestos/${puestoEditar.value.id_puesto}` : 'http://localhost:8000/api/puestos'
+  const url       = esEdicion ? `${import.meta.env.VITE_API_URL}/api/puestos/${puestoEditar.value.id_puesto}` : '${import.meta.env.VITE_API_URL}/api/puestos'
   const method    = esEdicion ? 'PUT' : 'POST'
   try {
     const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(payload) })

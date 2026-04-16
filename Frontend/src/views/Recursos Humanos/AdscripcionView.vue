@@ -306,7 +306,7 @@ const departamentosDisponibles = computed(() =>
 const cargarAdscripciones = async () => {
   cargando.value = true
   try {
-    const res = await fetch('http://localhost:8000/api/adscripciones')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/adscripciones')
     if (!res.ok) throw new Error()
     adscripciones.value = (await res.json()).map(normalizarAdscripcion)
     console.log('✅ Adscripciones cargadas:', adscripciones.value.length)
@@ -319,7 +319,7 @@ const cargarAdscripciones = async () => {
 
 const cargarDepartamentos = async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/departamentos')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/departamentos')
     if (!res.ok) throw new Error()
     departamentos.value = await res.json()
   } catch {
@@ -399,7 +399,7 @@ const buscarEmpleadoModal = () => {
   debounceEmpleado = setTimeout(async () => {
     try {
       const params = new URLSearchParams({ q: busquedaEmpleadoModal.value.trim() })
-      const res = await fetch(`http://localhost:8000/api/empleados?${params}`)
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/empleados?${params}`)
       if (!res.ok) throw new Error()
       const data = await res.json()
       resultadosEmpleado.value = data.map(e => ({
@@ -451,7 +451,7 @@ const guardarAdscripcion = async () => {
     fecha_fin:       form.value.fecha_fin || null,
   }
   try {
-    const res = await fetch('http://localhost:8000/api/adscripciones', {
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/adscripciones', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify(payload)

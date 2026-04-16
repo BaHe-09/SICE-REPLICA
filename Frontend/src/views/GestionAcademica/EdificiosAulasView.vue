@@ -427,7 +427,7 @@ const mostrarNotificacion = (mensaje, tipo = 'exito') => {
 // ── Carga de datos ───────────────────────────────────────────────
 const cargarEdificios = async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/edificios')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/edificios')
     if (!res.ok) throw new Error()
     edificios.value = await res.json()
   } catch {
@@ -437,7 +437,7 @@ const cargarEdificios = async () => {
 
 const cargarAulas = async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/aulas')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/aulas')
     if (!res.ok) throw new Error()
     aulas.value = await res.json()
   } catch {
@@ -547,8 +547,8 @@ const guardarEdificio = async () => {
   guardando.value = true
   const esEdicion = !!formEdificio.id_edificio
   const url    = esEdicion
-    ? `http://localhost:8000/api/edificios/${formEdificio.id_edificio}`
-    : 'http://localhost:8000/api/edificios'
+    ? `${import.meta.env.VITE_API_URL}/api/edificios/${formEdificio.id_edificio}`
+    : '${import.meta.env.VITE_API_URL}/api/edificios'
 
   try {
     const res = await fetch(url, {
@@ -617,8 +617,8 @@ const guardarAula = async () => {
   guardando.value = true
   const esEdicion = !!formAula.id_aula
   const url    = esEdicion
-    ? `http://localhost:8000/api/aulas/${formAula.id_aula}`
-    : 'http://localhost:8000/api/aulas'
+    ? `${import.meta.env.VITE_API_URL}/api/aulas/${formAula.id_aula}`
+    : '${import.meta.env.VITE_API_URL}/api/aulas'
 
   try {
     const res = await fetch(url, {
@@ -654,8 +654,8 @@ const confirmarEliminar = async () => {
 
   const esEdificio = tipoEliminar.value === 'edificio'
   const url = esEdificio
-    ? `http://localhost:8000/api/edificios/${itemAEliminar.value.id_edificio}`
-    : `http://localhost:8000/api/aulas/${itemAEliminar.value.id_aula}`
+    ? `${import.meta.env.VITE_API_URL}/api/edificios/${itemAEliminar.value.id_edificio}`
+    : `${import.meta.env.VITE_API_URL}/api/aulas/${itemAEliminar.value.id_aula}`
 
   try {
     const res = await fetch(url, {

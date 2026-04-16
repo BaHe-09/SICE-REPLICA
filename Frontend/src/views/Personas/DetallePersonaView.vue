@@ -288,13 +288,13 @@ const formatFechaHora = (fecha) => {
 onMounted(async () => {
   cargando.value = true
   try {
-    const res  = await fetch(`http://localhost:8000/api/personas/${route.params.id}`)
+    const res  = await fetch(`${import.meta.env.VITE_API_URL}/api/personas/${route.params.id}`)
     const data = await res.json()
     persona.value = data
 
     // Historial (endpoint opcional)
     try {
-      const resH  = await fetch(`http://localhost:8000/api/personas/${route.params.id}/historial`)
+      const resH  = await fetch(`${import.meta.env.VITE_API_URL}/api/personas/${route.params.id}/historial`)
       const dataH = await resH.json()
       historial.value = Array.isArray(dataH) ? dataH : []
     } catch { historial.value = [] }

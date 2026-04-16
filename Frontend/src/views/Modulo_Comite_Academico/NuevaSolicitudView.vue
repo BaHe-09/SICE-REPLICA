@@ -228,7 +228,7 @@ const mostrarNotificacion = (mensaje, tipo = 'exito') => {
 // ── Carga de tipos ────────────────────────────────────────────
 const cargarTipos = async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/comite/tipos-solicitud')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/comite/tipos-solicitud')
     if (!res.ok) throw new Error()
     tiposSolicitud.value = await res.json()
   } catch {
@@ -247,7 +247,7 @@ const buscarPersona = () => {
   debounce = setTimeout(async () => {
     buscandoPersona.value = true
     try {
-      const res = await fetch(`http://localhost:8000/api/personas/buscar?q=${encodeURIComponent(busquedaPersona.value)}`)
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/personas/buscar?q=${encodeURIComponent(busquedaPersona.value)}`)
       if (!res.ok) throw new Error()
       const data = await res.json()
       resultadosPersona.value = Array.isArray(data) ? data : data.data ?? []
@@ -295,7 +295,7 @@ const guardar = async () => {
   if (!validarTodo()) return mostrarNotificacion('Revisa los campos con error', 'error')
   cargando.value = true
   try {
-    const res = await fetch('http://localhost:8000/api/comite/solicitudes', {
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/comite/solicitudes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

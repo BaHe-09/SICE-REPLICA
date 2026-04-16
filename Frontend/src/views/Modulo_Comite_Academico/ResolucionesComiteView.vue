@@ -253,7 +253,7 @@ const mostrarNotificacion = (mensaje, tipo = 'exito') => {
 // ── Carga inicial ─────────────────────────────────────────────
 const cargarTipos = async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/comite/tipos-solicitud')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/comite/tipos-solicitud')
     if (!res.ok) throw new Error()
     tiposSolicitud.value = await res.json()
   } catch { /* silencioso */ }
@@ -261,7 +261,7 @@ const cargarTipos = async () => {
 
 const cargarSesiones = async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/comite/sesiones')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/comite/sesiones')
     if (!res.ok) throw new Error()
     const data = await res.json()
     sesiones.value = Array.isArray(data) ? data : data.data ?? []
@@ -270,7 +270,7 @@ const cargarSesiones = async () => {
 
 const cargarSolicitudesSinResolucion = async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/comite/solicitudes?sin_resolucion=1')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/comite/solicitudes?sin_resolucion=1')
     if (!res.ok) throw new Error()
     const data = await res.json()
     solicitudesSinRes.value = Array.isArray(data) ? data : data.data ?? []
@@ -284,7 +284,7 @@ const cargarResoluciones = async () => {
     const params = new URLSearchParams()
     if (filtroSesion.value) params.append('sesion_id', filtroSesion.value)
     if (filtroTipo.value)   params.append('tipo',      filtroTipo.value)
-    const url = 'http://localhost:8000/api/comite/resoluciones' + (params.toString() ? '?' + params : '')
+    const url = '${import.meta.env.VITE_API_URL}/api/comite/resoluciones' + (params.toString() ? '?' + params : '')
     const res = await fetch(url)
     if (!res.ok) throw new Error('Error en la respuesta del servidor')
     const data = await res.json()
@@ -331,7 +331,7 @@ const filtrar = async () => {
     if (busqueda.value)     params.append('q',        busqueda.value)
     if (filtroSesion.value) params.append('sesion_id', filtroSesion.value)
     if (filtroTipo.value)   params.append('tipo',      filtroTipo.value)
-    const url = 'http://localhost:8000/api/comite/resoluciones' + (params.toString() ? '?' + params : '')
+    const url = '${import.meta.env.VITE_API_URL}/api/comite/resoluciones' + (params.toString() ? '?' + params : '')
     const res = await fetch(url)
     if (!res.ok) throw new Error()
     const data = await res.json()
@@ -362,7 +362,7 @@ const guardarResolucion = async () => {
 
   cargando.value = true
   try {
-    const res = await fetch('http://localhost:8000/api/comite/resoluciones', {
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/comite/resoluciones', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

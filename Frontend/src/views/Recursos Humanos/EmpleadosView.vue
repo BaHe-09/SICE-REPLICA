@@ -310,7 +310,7 @@ const normalizarEmpleado = (e) => ({
 const cargarEmpleados = async () => {
   cargando.value = true
   try {
-    const response = await fetch('http://localhost:8000/api/empleados')
+    const response = await fetch('${import.meta.env.VITE_API_URL}/api/empleados')
     if (!response.ok) throw new Error('Error del servidor')
     const data = await response.json()
     empleados.value = data.map(normalizarEmpleado)

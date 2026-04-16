@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API = 'http://localhost:8000/api'
+const API = '${import.meta.env.VITE_API_URL}/api'
 
 export const getEvaluaciones = async (id_grupo) => {
   const { data } = await axios.get(`${API}/evaluaciones/${id_grupo}`)

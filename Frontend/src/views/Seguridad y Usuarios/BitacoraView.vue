@@ -340,14 +340,14 @@ const abrirDetalle = (registro) => {
 const cerrarModal = () => { showModal.value = false }
 
 // ── Carga de bitácora desde backend ─────────────────────────────────
-// Endpoint esperado: GET http://localhost:8000/api/bitacora
+// Endpoint esperado: GET ${import.meta.env.VITE_API_URL}/api/bitacora
 // Estructura esperada por registro:
 // { id_bitacora, fecha_hora, usuario, accion, modulo, descripcion, ip? }
 // Los registros deben venir ordenados por fecha_hora DESC desde el backend.
 const cargarBitacora = async () => {
   cargando.value = true
   try {
-    const response = await fetch('http://localhost:8000/api/bitacora')
+    const response = await fetch('${import.meta.env.VITE_API_URL}/api/bitacora')
     if (!response.ok) throw new Error('Error del servidor')
     const data = await response.json()
     bitacora.value = data

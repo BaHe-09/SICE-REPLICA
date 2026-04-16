@@ -194,7 +194,7 @@ const cargarSesiones = async () => {
   cargando.value   = true
   errorCarga.value = false
   try {
-    const res = await fetch('http://localhost:8000/api/comite/sesiones')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/comite/sesiones')
     if (!res.ok) throw new Error('Error en la respuesta del servidor')
     const data = await res.json()
     sesiones.value = Array.isArray(data) ? data : data.data ?? []
@@ -237,7 +237,7 @@ const guardarSesion = async () => {
     const payload = { fecha: formModal.value.fecha, descripcion: formModal.value.descripcion.trim() }
 
     if (modoEdicion.value && sesionEditando.value) {
-      const res = await fetch(`http://localhost:8000/api/comite/sesiones/${sesionEditando.value.id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/comite/sesiones/${sesionEditando.value.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -247,7 +247,7 @@ const guardarSesion = async () => {
       sesionEditando.value.descripcion = payload.descripcion
       mostrarNotificacion('Sesión actualizada correctamente')
     } else {
-      const res = await fetch('http://localhost:8000/api/comite/sesiones', {
+      const res = await fetch('${import.meta.env.VITE_API_URL}/api/comite/sesiones', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

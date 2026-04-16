@@ -345,7 +345,7 @@ const mostrarNotificacion = (mensaje, tipo = 'exito') => {
 const modulosPermisos = ref([])
 const cargarPermisos = async () => {
   try {
-    const response = await fetch('http://localhost:8000/api/permisos')
+    const response = await fetch('${import.meta.env.VITE_API_URL}/api/permisos')
     const data = await response.json()
 
     // Agrupar por módulo
@@ -378,7 +378,7 @@ const permisosSeleccionados = ref({})
 const cargarRoles = async () => {
   cargando.value = true
   try {
-    const response = await fetch('http://localhost:8000/api/roles')
+    const response = await fetch('${import.meta.env.VITE_API_URL}/api/roles')
     if (!response.ok) throw new Error('Error del servidor')
     roles.value = await response.json()
     console.log('✅ Roles cargados:', roles.value.length, 'registros')
@@ -430,7 +430,7 @@ const abrirModalPermisos = async (rol) => {
   rolPermisos.value = { ...rol }
 
   try {
-    const res = await fetch(`http://localhost:8000/api/roles/${rol.id_rol}/permisos`)
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/roles/${rol.id_rol}/permisos`)
     const data = await res.json()
 
     const estado = {}
@@ -466,8 +466,8 @@ const guardarRol = async () => {
 
   const esEdicion = !!rolEditar.value.id_rol
   const url = esEdicion 
-    ? `http://localhost:8000/api/roles/${rolEditar.value.id_rol}` 
-    : 'http://localhost:8000/api/roles'
+    ? `${import.meta.env.VITE_API_URL}/api/roles/${rolEditar.value.id_rol}` 
+    : '${import.meta.env.VITE_API_URL}/api/roles'
   const metodo = esEdicion ? 'PUT' : 'POST'
 
   const payload = {
@@ -506,7 +506,7 @@ const eliminarRol = async () => {
 
   guardando.value = true
   try {
-    const response = await fetch(`http://localhost:8000/api/roles/${rolEditar.value.id_rol}`, { method: 'DELETE' })
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/roles/${rolEditar.value.id_rol}`, { method: 'DELETE' })
     if (response.ok) {
       await cargarRoles()
       cerrarModal()
@@ -531,7 +531,7 @@ const guardarPermisos = async () => {
 
   guardandoPermisos.value = true
   try {
-    const response = await fetch(`http://localhost:8000/api/roles/${id}/permisos`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/roles/${id}/permisos`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ permisos: permisosActivos })

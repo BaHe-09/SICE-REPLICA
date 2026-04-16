@@ -365,7 +365,7 @@ const validarFormulario = () => {
 onMounted(async () => {
   if (esEdicion.value) {
     try {
-      const res  = await fetch(`http://localhost:8000/api/personas/${route.params.id}`)
+      const res  = await fetch(`${import.meta.env.VITE_API_URL}/api/personas/${route.params.id}`)
       const data = await res.json()
       Object.assign(form, {
         curp:            data.curp            || '',
@@ -410,8 +410,8 @@ const guardarPersona = async () => {
 
   try {
     const url    = esEdicion.value
-      ? `http://localhost:8000/api/personas/${route.params.id}`
-      : 'http://localhost:8000/api/personas'
+      ? `${import.meta.env.VITE_API_URL}/api/personas/${route.params.id}`
+      : '${import.meta.env.VITE_API_URL}/api/personas'
     const method = esEdicion.value ? 'PUT' : 'POST'
 
     const response = await fetch(url, {

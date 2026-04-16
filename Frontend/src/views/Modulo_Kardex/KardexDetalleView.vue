@@ -256,7 +256,7 @@ const cargarDatos = async () => {
   cargando.value   = true
   errorCarga.value = false
   try {
-    const res = await fetch(`http://localhost:8000/api/kardex/${route.params.no_control}`)
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/kardex/${route.params.no_control}`)
     if (!res.ok) throw new Error('Error en la respuesta del servidor')
     const data = await res.json()
 

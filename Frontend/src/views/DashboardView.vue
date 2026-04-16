@@ -193,7 +193,7 @@ const calcularPorcentajeSemestre = (cantidad) =>
 
 onMounted(async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/dashboard')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/dashboard')
     if (!res.ok) throw new Error('Error en API')
     const data = await res.json()
 

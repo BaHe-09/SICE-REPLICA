@@ -305,7 +305,7 @@ const mostrarNotificacion = (mensaje, tipo = 'exito') => {
 const cargarCarreras = async () => {
   cargando.value = true
   try {
-    const res = await fetch('http://localhost:8000/api/carreras')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/carreras')
     if (!res.ok) throw new Error('Error del servidor')
     carreras.value = await res.json()
   } catch (e) {
@@ -319,8 +319,8 @@ const cargarCarreras = async () => {
 const cargarCatalogos = async () => {
   try {
     const [resDep, resNiv] = await Promise.all([
-      fetch('http://localhost:8000/api/departamentos'),
-      fetch('http://localhost:8000/api/niveles-carrera')
+      fetch('${import.meta.env.VITE_API_URL}/api/departamentos'),
+      fetch('${import.meta.env.VITE_API_URL}/api/niveles-carrera')
     ])
     departamentos.value = await resDep.json()
     niveles.value       = await resNiv.json()
@@ -414,7 +414,7 @@ const guardar = async () => {
 
   guardando.value = true
   const esEdicion = !!form.id_carrera
-  const url    = esEdicion ? `http://localhost:8000/api/carreras/${form.id_carrera}` : 'http://localhost:8000/api/carreras'
+  const url    = esEdicion ? `${import.meta.env.VITE_API_URL}/api/carreras/${form.id_carrera}` : '${import.meta.env.VITE_API_URL}/api/carreras'
   const method = esEdicion ? 'PUT' : 'POST'
 
   const payload = {
@@ -446,7 +446,7 @@ const confirmarEliminar = async () => {
   if (!carreraAEliminar.value) return
   guardando.value = true
   try {
-    const res = await fetch(`http://localhost:8000/api/carreras/${carreraAEliminar.value.id_carrera}`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/carreras/${carreraAEliminar.value.id_carrera}`, {
       method: 'DELETE',
       headers: { 'Accept': 'application/json' }
     })

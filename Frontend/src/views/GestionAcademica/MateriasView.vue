@@ -285,7 +285,7 @@ const mostrarNotificacion = (mensaje, tipo = 'exito') => {
 const cargarMaterias = async () => {
   cargando.value = true
   try {
-    const res = await fetch('http://localhost:8000/api/materias')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/materias')
     if (!res.ok) throw new Error()
     materias.value = await res.json()
   } catch { mostrarNotificacion('No se pudieron cargar las materias.', 'error') }
@@ -294,7 +294,7 @@ const cargarMaterias = async () => {
 
 const cargarPlanes = async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/planes-estudio')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/planes-estudio')
     if (res.ok) planesDisponibles.value = await res.json()
   } catch {}
 }
@@ -329,7 +329,7 @@ const abrirModalPlanes = async (m) => {
   materiaPlanes.value = m
   nuevoPlanForm.id_plan = ''; nuevoPlanForm.semestre = ''
   try {
-    const res = await fetch(`http://localhost:8000/api/materias/${m.id_materia}/planes`)
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/materias/${m.id_materia}/planes`)
     planesAsociados.value = res.ok ? await res.json() : []
   } catch { planesAsociados.value = [] }
   showModalPlanes.value = true
@@ -351,7 +351,7 @@ const guardar = async () => {
   if (!validar()) return
   guardando.value = true
   const esEdicion = !!form.id_materia
-  const url = esEdicion ? `http://localhost:8000/api/materias/${form.id_materia}` : 'http://localhost:8000/api/materias'
+  const url = esEdicion ? `${import.meta.env.VITE_API_URL}/api/materias/${form.id_materia}` : '${import.meta.env.VITE_API_URL}/api/materias'
   const payload = { clave: form.clave.trim(), nombre: form.nombre.trim(), creditos: form.creditos, horas_teoria: form.horas_teoria, horas_practica: form.horas_practica, descripcion: form.descripcion.trim() || null, estatus: form.estatus }
   try {
     const res = await fetch(url, { method: esEdicion ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(payload) })
@@ -366,7 +366,7 @@ const agregarAPlan = async () => {
   if (!nuevoPlanForm.id_plan || !nuevoPlanForm.semestre) return
   guardando.value = true
   try {
-    const res = await fetch('http://localhost:8000/api/plan-materia', {
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/plan-materia', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({ id_plan: nuevoPlanForm.id_plan, id_materia: materiaPlanes.value.id_materia, semestre: nuevoPlanForm.semestre })
@@ -382,7 +382,7 @@ const confirmarEliminar = async () => {
   if (!materiaAEliminar.value) return
   guardando.value = true
   try {
-    const res = await fetch(`http://localhost:8000/api/materias/${materiaAEliminar.value.id_materia}`, { method: 'DELETE', headers: { 'Accept': 'application/json' } })
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/materias/${materiaAEliminar.value.id_materia}`, { method: 'DELETE', headers: { 'Accept': 'application/json' } })
     if (!res.ok) throw new Error()
     await cargarMaterias(); showModalEliminar.value = false; materiaAEliminar.value = null
     mostrarNotificacion('Materia eliminada correctamente.')

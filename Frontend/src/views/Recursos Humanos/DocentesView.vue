@@ -211,7 +211,7 @@ const normalizarDocente = (d) => ({
 const cargarDocentes = async () => {
   cargando.value = true
   try {
-    const res = await fetch('http://localhost:8000/api/docentes')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/docentes')
     if (!res.ok) throw new Error()
     docentes.value = (await res.json()).map(normalizarDocente)
     console.log('✅ Docentes cargados:', docentes.value.length)
@@ -270,7 +270,7 @@ const guardarDocente = async () => {
   }
   guardando.value = true
   try {
-    const res = await fetch(`http://localhost:8000/api/docentes/${docenteEditar.value.id_docente}`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/docentes/${docenteEditar.value.id_docente}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({ grado_academico: docenteEditar.value.grado_academico, especialidad: docenteEditar.value.especialidad })

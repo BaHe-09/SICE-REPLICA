@@ -130,7 +130,7 @@ const mostrarNotificacion = (mensaje, tipo = 'exito') => {
 const cargarDatos = async () => {
   cargando.value = true
   try {
-    const [resP, resM] = await Promise.all([fetch('http://localhost:8000/api/prerrequisitos'), fetch('http://localhost:8000/api/materias')])
+    const [resP, resM] = await Promise.all([fetch('${import.meta.env.VITE_API_URL}/api/prerrequisitos'), fetch('${import.meta.env.VITE_API_URL}/api/materias')])
     if (resP.ok) prerrequisitos.value = await resP.json()
     if (resM.ok) materias.value = await resM.json()
   } catch { mostrarNotificacion('No se pudieron cargar los datos.', 'error') }
@@ -168,7 +168,7 @@ const guardar = async () => {
   if (!validar()) return
   guardando.value = true
   try {
-    const res = await fetch('http://localhost:8000/api/prerrequisitos', {
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/prerrequisitos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({ id_materia: form.id_materia, id_materia_prerrequisito: form.id_materia_prerrequisito })
@@ -184,7 +184,7 @@ const confirmarEliminar = async () => {
   if (!preAEliminar.value) return
   guardando.value = true
   try {
-    const res = await fetch(`http://localhost:8000/api/prerrequisitos/${preAEliminar.value.id_materia}/${preAEliminar.value.id_materia_prerrequisito}`, { method: 'DELETE', headers: { 'Accept': 'application/json' } })
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/prerrequisitos/${preAEliminar.value.id_materia}/${preAEliminar.value.id_materia_prerrequisito}`, { method: 'DELETE', headers: { 'Accept': 'application/json' } })
     if (!res.ok) throw new Error()
     await cargarDatos(); showModalEliminar.value = false; preAEliminar.value = null
     mostrarNotificacion('Prerrequisito eliminado correctamente.')

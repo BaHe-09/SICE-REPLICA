@@ -311,7 +311,7 @@ const consultarKardex = async () => {
   kardex.value      = { semestres: [] }
 
   try {
-    const res = await fetch(`http://localhost:8000/api/kardex/${nc}`)
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/kardex/${nc}`)
     if (res.status === 404) {
       errorAlumno.value = true
       return

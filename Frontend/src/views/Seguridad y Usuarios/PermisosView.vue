@@ -237,7 +237,7 @@ const cerrarModalVer = () => { showModalVer.value = false }
 const cargarPermisos = async () => {
   cargando.value = true
   try {
-    const response = await fetch('http://localhost:8000/api/permisos')
+    const response = await fetch('${import.meta.env.VITE_API_URL}/api/permisos')
     if (!response.ok) throw new Error('Error del servidor')
     const data = await response.json()
     permisos.value = data

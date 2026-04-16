@@ -462,7 +462,7 @@ const mostrarNotificacion = (mensaje, tipo = 'exito') => {
 const cargarUsuarios = async () => {
   cargando.value = true
   try {
-    const res = await fetch('http://localhost:8000/api/usuarios')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/usuarios')
     if (!res.ok) throw new Error('Error del servidor')
     usuarios.value = await res.json()
   } catch (e) {
@@ -475,7 +475,7 @@ const cargarUsuarios = async () => {
 
 const cargarRoles = async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/roles-simple')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/roles-simple')
     if (res.ok) {
       rolesDisponibles.value = await res.json()
     } else {
@@ -546,8 +546,8 @@ const guardarUsuario = async () => {
 
   const esEdicion = !!usuarioEditar.value.id_usuario
   const url = esEdicion 
-    ? `http://localhost:8000/api/usuarios/${usuarioEditar.value.id_usuario}`
-    : 'http://localhost:8000/api/usuarios'
+    ? `${import.meta.env.VITE_API_URL}/api/usuarios/${usuarioEditar.value.id_usuario}`
+    : '${import.meta.env.VITE_API_URL}/api/usuarios'
 
   const rolesActivos = Object.keys(rolesSeleccionados.value)
     .filter(key => rolesSeleccionados.value[key])
@@ -604,7 +604,7 @@ const guardarContrasena = async () => {
   guardandoPass.value = true
 
   try {
-    const response = await fetch(`http://localhost:8000/api/usuarios/${id}/contrasena`, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/usuarios/${id}/contrasena`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contrasena: datosContrasena.value.nueva })

@@ -262,7 +262,7 @@ const errores = ref({ nombre: '', tipo_evento_id: '', fecha: '', lugar: '', cupo
 // ── Carga inicial ─────────────────────────────────────────────
 const cargarTipos = async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/tipos-evento')
+    const res = await fetch('${import.meta.env.VITE_API_URL}/api/tipos-evento')
     if (!res.ok) throw new Error()
     tiposEvento.value = await res.json()
   } catch {
@@ -274,7 +274,7 @@ const cargarEvento = async () => {
   cargando.value   = true
   errorCarga.value = false
   try {
-    const res = await fetch(`http://localhost:8000/api/eventos/${route.params.id}`)
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/eventos/${route.params.id}`)
     if (!res.ok) throw new Error('Error en la respuesta del servidor')
     const data = await res.json()
     form.value = {
@@ -339,8 +339,8 @@ const guardar = async () => {
       cupo_maximo:    form.value.tiene_cupo ? form.value.cupo_maximo : null,
     }
     const url    = modoEdicion.value
-      ? `http://localhost:8000/api/eventos/${route.params.id}`
-      : 'http://localhost:8000/api/eventos'
+      ? `${import.meta.env.VITE_API_URL}/api/eventos/${route.params.id}`
+      : '${import.meta.env.VITE_API_URL}/api/eventos'
     const method = modoEdicion.value ? 'PUT' : 'POST'
 
     const res = await fetch(url, {
