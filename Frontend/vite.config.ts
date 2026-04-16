@@ -19,6 +19,8 @@ export default defineConfig({
   // 👇 AGREGA ESTO
   preview: {
     host: true,
-    allowedHosts: 'all'
+    allowedHosts: [
+    'considerate-success-production-b16e.up.railway.app'
+  ]
   }
 })
