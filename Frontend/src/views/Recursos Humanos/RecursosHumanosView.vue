@@ -276,7 +276,7 @@ const irAPuestos       = () => router.push('/recursos-humanos/puestos')
   --morado:      #7C3AED;
 
   width: 100%;
-  max-width: 1100px;
+  
   background: var(--fondo);
   font-family: 'Montserrat', sans-serif;
   padding-bottom: 2rem;
