@@ -250,4 +250,3 @@ Route::prefix('comite')->group(function () {
     Route::get('/resoluciones', [ComiteAcademicoController::class, 'indexResoluciones']);
     Route::post('/resoluciones', [ComiteAcademicoController::class, 'storeResolucion']);
 });
-
