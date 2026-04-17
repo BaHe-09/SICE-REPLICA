@@ -206,52 +206,91 @@ import MainLayout from '@/layouts/MainLayout.vue'
 
 const router = useRouter()
 
-const cargando           = ref(false)
-const errorCarga         = ref(false)
-const busquedaPersona    = ref('')
+const API_COMITE = 'http://127.0.0.1:8000/api/comite'
+const API_PERSONAS = 'http://127.0.0.1:8000/api/personas'
+
+const cargando = ref(false)
+const errorCarga = ref(false)
+
+const busquedaPersona = ref('')
 const personaSeleccionada = ref(null)
-const resultadosPersona  = ref([])
-const buscandoPersona    = ref(false)
+const resultadosPersona = ref([])
+const buscandoPersona = ref(false)
 
 const tiposSolicitud = ref([])
-const form    = ref({ tipo_solicitud_id: '', persona_id: null, descripcion: '' })
-const errores = ref({ tipo_solicitud_id: '', persona_id: '', descripcion: '' })
 
-const notificacion = ref({ visible: false, mensaje: '', tipo: 'exito' })
+const form = ref({
+  id_tipo_solicitud: '',
+  id_persona: null,
+  descripcion: ''
+})
+
+const errores = ref({
+  id_tipo_solicitud: '',
+  id_persona: '',
+  descripcion: ''
+})
+
+const notificacion = ref({
+  visible: false,
+  mensaje: '',
+  tipo: 'exito'
+})
+
 let timerNotif = null
 const mostrarNotificacion = (mensaje, tipo = 'exito') => {
   if (timerNotif) clearTimeout(timerNotif)
   notificacion.value = { visible: true, mensaje, tipo }
-  timerNotif = setTimeout(() => { notificacion.value.visible = false }, 3500)
+  timerNotif = setTimeout(() => {
+    notificacion.value.visible = false
+  }, 3500)
 }
 
 // ── Carga de tipos ────────────────────────────────────────────
 const cargarTipos = async () => {
+  errorCarga.value = false
+
   try {
-    const res = await fetch('http://localhost:8000/api/comite/tipos-solicitud')
-    if (!res.ok) throw new Error()
-    tiposSolicitud.value = await res.json()
-  } catch {
+    const res = await fetch(`${API_COMITE}/tipos-solicitud`)
+    if (!res.ok) throw new Error('No se pudieron cargar los tipos')
+
+    const data = await res.json()
+    tiposSolicitud.value = Array.isArray(data) ? data : []
+  } catch (error) {
+    console.error('Error cargando tipos de solicitud:', error)
+    errorCarga.value = true
     mostrarNotificacion('No se pudieron cargar los tipos de solicitud.', 'error')
   }
 }
 
-onMounted(() => { cargarTipos() })
+onMounted(() => {
+  cargarTipos()
+})
 
 // ── Búsqueda de persona con debounce ─────────────────────────
 let debounce = null
+
 const buscarPersona = () => {
   resultadosPersona.value = []
-  if (busquedaPersona.value.length < 2) return
+
+  if (busquedaPersona.value.trim().length < 2) return
+
   clearTimeout(debounce)
+
   debounce = setTimeout(async () => {
     buscandoPersona.value = true
+
     try {
-      const res = await fetch(`http://localhost:8000/api/personas/buscar?q=${encodeURIComponent(busquedaPersona.value)}`)
-      if (!res.ok) throw new Error()
+      const res = await fetch(
+        `${API_PERSONAS}/buscar?q=${encodeURIComponent(busquedaPersona.value.trim())}`
+      )
+
+      if (!res.ok) throw new Error('No se pudieron buscar personas')
+
       const data = await res.json()
       resultadosPersona.value = Array.isArray(data) ? data : data.data ?? []
-    } catch {
+    } catch (error) {
+      console.error('Error buscando persona:', error)
       resultadosPersona.value = []
     } finally {
       buscandoPersona.value = false
@@ -261,58 +300,114 @@ const buscarPersona = () => {
 
 const seleccionarPersona = (p) => {
   personaSeleccionada.value = p
-  form.value.persona_id     = p.id
-  busquedaPersona.value     = ''
-  resultadosPersona.value   = []
-  errores.value.persona_id  = ''
+  form.value.id_persona = p.id_persona ?? p.id ?? null
+  busquedaPersona.value = ''
+  resultadosPersona.value = []
+  errores.value.id_persona = ''
 }
 
-const iniciales = (n) => n ? n.split(' ').slice(0,2).map(x => x[0]).join('').toUpperCase() : '?'
+const limpiarPersonaSeleccionada = () => {
+  personaSeleccionada.value = null
+  form.value.id_persona = null
+  busquedaPersona.value = ''
+  resultadosPersona.value = []
+}
+
+const nombreCompletoPersona = (p) => {
+  if (!p) return ''
+  return [p.nombre, p.apellido_paterno, p.apellido_materno]
+    .filter(Boolean)
+    .join(' ')
+    .trim()
+}
+
+const iniciales = (nombre) => {
+  return nombre
+    ? nombre
+        .split(' ')
+        .slice(0, 2)
+        .map(x => x[0])
+        .join('')
+        .toUpperCase()
+    : '?'
+}
 
 // ── Validaciones ──────────────────────────────────────────────
 const validarCampo = (campo) => {
   errores.value[campo] = ''
-  if (campo === 'tipo_solicitud_id' && !form.value.tipo_solicitud_id)
-    errores.value.tipo_solicitud_id = 'Selecciona un tipo de solicitud'
+
+  if (campo === 'id_tipo_solicitud' && !form.value.id_tipo_solicitud) {
+    errores.value.id_tipo_solicitud = 'Selecciona un tipo de solicitud'
+  }
+
   if (campo === 'descripcion') {
-    if (!form.value.descripcion.trim())
+    if (!form.value.descripcion.trim()) {
       errores.value.descripcion = 'La descripción es requerida'
-    else if (form.value.descripcion.trim().length < 50)
+    } else if (form.value.descripcion.trim().length < 50) {
       errores.value.descripcion = 'La descripción debe tener al menos 50 caracteres'
+    }
+  }
+
+  if (campo === 'id_persona' && !form.value.id_persona) {
+    errores.value.id_persona = 'Selecciona la persona solicitante'
   }
 }
 
 const validarTodo = () => {
-  validarCampo('tipo_solicitud_id')
+  validarCampo('id_tipo_solicitud')
+  validarCampo('id_persona')
   validarCampo('descripcion')
-  if (!personaSeleccionada.value)
-    errores.value.persona_id = 'Selecciona la persona solicitante'
+
   return Object.values(errores.value).every(e => !e)
 }
 
 // ── Guardar ───────────────────────────────────────────────────
 const guardar = async () => {
-  if (!validarTodo()) return mostrarNotificacion('Revisa los campos con error', 'error')
+  if (!validarTodo()) {
+    mostrarNotificacion('Revisa los campos con error', 'error')
+    return
+  }
+
   cargando.value = true
+
   try {
-    const res = await fetch('http://localhost:8000/api/comite/solicitudes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        tipo_solicitud_id: form.value.tipo_solicitud_id,
-        persona_id:        form.value.persona_id,
-        descripcion:       form.value.descripcion.trim(),
-      }),
-    })
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
-      throw new Error(err.message || 'Error del servidor')
+    const payload = {
+      id_tipo_solicitud: Number(form.value.id_tipo_solicitud),
+      id_persona: Number(form.value.id_persona),
+      descripcion: form.value.descripcion.trim()
     }
+
+    const res = await fetch(`${API_COMITE}/solicitudes`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    })
+
+    const data = await res.json().catch(() => ({}))
+
+    if (!res.ok) {
+      if (data.errors) {
+        errores.value.id_tipo_solicitud = data.errors.id_tipo_solicitud?.[0] ?? ''
+        errores.value.id_persona = data.errors.id_persona?.[0] ?? ''
+        errores.value.descripcion = data.errors.descripcion?.[0] ?? ''
+      }
+
+      throw new Error(data.message || 'Error del servidor')
+    }
+
     mostrarNotificacion('Solicitud registrada correctamente')
-    setTimeout(() => router.push('/comite/solicitudes'), 1200)
+
+    setTimeout(() => {
+      router.push('/comite/solicitudes')
+    }, 1200)
   } catch (error) {
     console.error('Error guardando solicitud:', error)
-    mostrarNotificacion(error.message || 'No se pudo registrar la solicitud. Intenta de nuevo.', 'error')
+    mostrarNotificacion(
+      error.message || 'No se pudo registrar la solicitud. Intenta de nuevo.',
+      'error'
+    )
   } finally {
     cargando.value = false
   }
