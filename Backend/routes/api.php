@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\EvaluacionController;
 use App\Http\Controllers\CalificacionController;
 use App\Http\Controllers\Api\InscripcionController;
 use App\Http\Controllers\Api\EventoController;
+use App\Http\Controllers\Api\ComiteAcademicoController;
 
 // DASHBOARD
 Route::get('/dashboard', [DashboardController::class, 'index']);
@@ -228,3 +229,25 @@ Route::get('/empleados/{idEmpleado}/adscripcion-activa',  [AdscripcionController
 // Docentes
 Route::get('/docentes',      [DocentesController::class, 'index']);
 Route::put('/docentes/{id}', [DocentesController::class, 'update']);
+
+
+
+
+// ======================Modulo Comite Academico ======================
+
+
+Route::prefix('comite')->group(function () {
+    Route::get('/dashboard', [ComiteAcademicoController::class, 'dashboard']);
+    Route::get('/tipos-solicitud', [ComiteAcademicoController::class, 'tiposSolicitud']);
+
+    Route::get('/solicitudes', [ComiteAcademicoController::class, 'indexSolicitudes']);
+    Route::post('/solicitudes', [ComiteAcademicoController::class, 'storeSolicitud']);
+
+    Route::get('/sesiones', [ComiteAcademicoController::class, 'indexSesiones']);
+    Route::post('/sesiones', [ComiteAcademicoController::class, 'storeSesion']);
+    Route::put('/sesiones/{id}', [ComiteAcademicoController::class, 'updateSesion']);
+
+    Route::get('/resoluciones', [ComiteAcademicoController::class, 'indexResoluciones']);
+    Route::post('/resoluciones', [ComiteAcademicoController::class, 'storeResolucion']);
+});
+
