@@ -200,29 +200,42 @@ import MainLayout from '@/layouts/MainLayout.vue'
 
 const router = useRouter()
 
-const cargando   = ref(false)
+const cargando = ref(false)
 const errorCarga = ref(false)
 
-const kpis                 = ref({ pendientes: 0, resueltas: 0, sesiones: 0 })
+const kpis = ref({
+  pendientes: 0,
+  resueltas: 0,
+  sesiones: 0
+})
+
 const solicitudesPendientes = ref([])
-const sesionesRecientes    = ref([])
+const sesionesRecientes = ref([])
+
+const API_BASE = 'http://127.0.0.1:8000/api/comite'
 
 // ── Carga inicial ─────────────────────────────────────────────
 const cargarDatos = async () => {
-  cargando.value   = true
+  cargando.value = true
   errorCarga.value = false
+
   try {
-    const res = await fetch('http://localhost:8000/api/comite/dashboard')
-    if (!res.ok) throw new Error('Error en la respuesta del servidor')
+    const res = await fetch(`${API_BASE}/dashboard`)
+    if (!res.ok) {
+      throw new Error('Error en la respuesta del servidor')
+    }
+
     const data = await res.json()
+    console.log('Dashboard comité:', data)
 
     kpis.value = {
       pendientes: data.kpis?.pendientes ?? 0,
-      resueltas:  data.kpis?.resueltas  ?? 0,
-      sesiones:   data.kpis?.sesiones   ?? 0,
+      resueltas: data.kpis?.resueltas ?? 0,
+      sesiones: data.kpis?.sesiones ?? 0
     }
-    solicitudesPendientes.value = data.solicitudes_recientes ?? []
-    sesionesRecientes.value     = data.sesiones_recientes    ?? []
+
+    solicitudesPendientes.value = data.solicitudes_pendientes ?? []
+    sesionesRecientes.value = data.sesiones_recientes ?? []
   } catch (error) {
     console.error('Error cargando dashboard del comité:', error)
     errorCarga.value = true
@@ -231,23 +244,61 @@ const cargarDatos = async () => {
   }
 }
 
-onMounted(() => { cargarDatos() })
+onMounted(() => {
+  cargarDatos()
+})
+
+// ── Navegación ────────────────────────────────────────────────
+const irASolicitudes = () => router.push('/comite/solicitudes')
+const irANuevaSolicitud = () => router.push('/comite/solicitudes/nueva')
+const irASesiones = () => router.push('/comite/sesiones')
+const irAResoluciones = () => router.push('/comite/resoluciones')
 
 // ── Helpers ───────────────────────────────────────────────────
 const colorEstado = (est) => {
-  const m = { 'Pendiente': '#1B396A', 'En revisión': '#F59E0B', 'Aprobada': '#16A34A', 'Rechazada': '#DC2626' }
+  const m = {
+    Pendiente: '#1B396A',
+    'En revisión': '#F59E0B',
+    Aprobada: '#16A34A',
+    Rechazada: '#DC2626',
+    Resuelta: '#0F766E'
+  }
   return m[est] || '#9CA3AF'
 }
+
 const estiloBadgeEstado = (est) => {
-  const fondos = { 'Pendiente': '#DBEAFE', 'En revisión': '#FEF3C7', 'Aprobada': '#DCFCE7', 'Rechazada': '#FEF2F2' }
-  const textos = { 'Pendiente': '#1B396A', 'En revisión': '#F59E0B', 'Aprobada': '#16A34A', 'Rechazada': '#DC2626' }
-  return { background: fondos[est] || '#F3F4F6', color: textos[est] || '#6B7280' }
+  const fondos = {
+    Pendiente: '#DBEAFE',
+    'En revisión': '#FEF3C7',
+    Aprobada: '#DCFCE7',
+    Rechazada: '#FEF2F2',
+    Resuelta: '#CCFBF1'
+  }
+
+  const textos = {
+    Pendiente: '#1B396A',
+    'En revisión': '#F59E0B',
+    Aprobada: '#16A34A',
+    Rechazada: '#DC2626',
+    Resuelta: '#0F766E'
+  }
+
+  return {
+    background: fondos[est] || '#F3F4F6',
+    color: textos[est] || '#6B7280'
+  }
 }
+
 const formatearFecha = (f) => {
   if (!f) return '—'
-  const [a, m, d] = f.split('-')
-  const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
-  return `${parseInt(d)} ${meses[parseInt(m)-1]} ${a}`
+
+  const partes = f.split('-')
+  if (partes.length !== 3) return f
+
+  const [a, m, d] = partes
+  const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
+
+  return `${parseInt(d)} ${meses[parseInt(m) - 1]} ${a}`
 }
 </script>
 
