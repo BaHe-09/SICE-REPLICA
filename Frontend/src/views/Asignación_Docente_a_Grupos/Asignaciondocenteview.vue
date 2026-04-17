@@ -1081,15 +1081,96 @@ const navegarTeclado = (e) => {
 .error-fade-enter-active, .error-fade-leave-active { transition: all 0.25s ease; }
 .error-fade-enter-from, .error-fade-leave-to { opacity: 0; }
 
-/* Footer modal ══ */
-.modal-footer { padding: 1rem 1.6rem; background: var(--fondo); display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid var(--borde); flex-shrink: 0; }
-.btn-secundario { padding: 10px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; background: #FFFFFF; color: var(--texto); border: 1px solid var(--borde); transition: background 0.15s; }
-.btn-secundario:hover { background: var(--fondo); }
-.btn-secundario:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-guardar { display: flex; align-items: center; gap: 8px; padding: 10px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; background: var(--azul); color: white; border: none; transition: background 0.15s; }
-.btn-guardar:hover:not(:disabled) { background: var(--azul-hover); }
-.btn-guardar:disabled { opacity: 0.65; cursor: not-allowed; }
-.spinner-btn { display: inline-block; width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: girar 0.7s linear infinite; }
 
+/* Footer modal ═══════════════════════════════ */
+.modal-footer {
+  padding: 1rem 1.6rem;
+  background: var(--fondo);
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  border-top: 1px solid var(--borde);
+  flex-shrink: 0;
+}
+
+/* Botón Guardar */
+.btn-guardar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1.02rem;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  background: #1B396A; /* Azul institucional */
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(27, 57, 106, 0.3);
+  transition: all 0.2s ease;
+}
+
+.btn-guardar:hover:not(:disabled) {
+  background: #1D4ED8;
+  box-shadow: 0 6px 16px rgba(27, 57, 106, 0.4);
+  transform: translateY(-1px);
+}
+
+.btn-guardar:disabled {
+  background: #9AA3AF;
+  color: white;
+  opacity: 0.85;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Botón Cancelar  */
+.btn-secundario {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  background: transparent;
+  color: #1B396A;
+  border: 2px solid #1B396A;
+  transition: all 0.2s ease;
+}
+
+.btn-secundario:hover:not(:disabled) {
+  background: #1B396A;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.btn-secundario:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Spinner del botón */
+.spinner-btn {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: girar 0.7s linear infinite;
+}
+
+/* Animación */
+@keyframes girar { 
+  to { transform: rotate(360deg); } 
+}
+
+@keyframes girar { to { transform: rotate(360deg); } }
+</style>
 @keyframes girar { to { transform: rotate(360deg); } }
 </style>
