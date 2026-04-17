@@ -230,7 +230,7 @@ const router = useRouter()
 const route  = useRoute()
 
 const idParam   = route.params.id
-const esEdicion = computed(() => !!idParam && idParam !== 'nuevo')
+const esEdicion = computed(() => !!idParam && idParam !== 'nuevo' && !isNaN(idParam))
 
 const cargando       = ref(false)
 const guardando      = ref(false)
