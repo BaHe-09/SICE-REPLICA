@@ -229,7 +229,7 @@ const estiloBadgeTipo = (t) => ({ background: colorFondoTipo(t), color: colorTip
 .breadcrumb-link { color: #6B7280; text-decoration: none; transition: color 0.15s; }
 .breadcrumb-link:hover { color: #1B396A; }
 .encabezado-seccion { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; }
-.titulo-pagina { color: #1B396A; font-size: 1.9rem; font-weight: 800; margin: 0 0 0.25rem; }
+.titulo-pagina { color: #1A1A1A; font-size: 1.9rem; font-weight: 800; margin: 0 0 0.25rem; }
 .subtitulo { color: #6B7280; font-size: 0.9rem; margin: 0; }
 .btn-primario { background: #1B396A; color: #FFFFFF; border: none; padding: 10px 18px; border-radius: 10px; font-weight: 600; font-size: 0.875rem; display: flex; align-items: center; gap: 6px; cursor: pointer; font-family: inherit; transition: background 0.2s; }
 .btn-primario:hover { background: #1D4ED8; }

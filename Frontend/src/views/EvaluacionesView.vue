@@ -778,7 +778,7 @@ const generarReporte = async () => {
 
 /* ENCABEZADO */
 .encabezado-seccion { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; }
-.titulo-pagina { color: #1B396A; font-size: 1.9rem; font-weight: 800; margin: 0 0 0.25rem; }
+.titulo-pagina { color: #1A1A1A; font-size: 1.9rem; font-weight: 800; margin: 0 0 0.25rem; }
 .subtitulo     { color: #6B7280; font-size: 0.9rem; margin: 0; }
 
 /* ESTADÍSTICAS */
