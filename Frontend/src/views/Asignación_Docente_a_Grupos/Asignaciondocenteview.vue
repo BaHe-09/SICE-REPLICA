@@ -1172,5 +1172,3 @@ const navegarTeclado = (e) => {
 
 @keyframes girar { to { transform: rotate(360deg); } }
 </style>
-@keyframes girar { to { transform: rotate(360deg); } }
-</style>
