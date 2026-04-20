@@ -767,15 +767,35 @@ const inicial = (nombre) => {
 .btn-secundario:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .btn-desasignar-confirmar {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 22px; border-radius: 8px;
-  font-weight: 600; cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 26px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
   font-family: 'Montserrat', sans-serif;
-  background: var(--rojo); color: white; border: none;
-  transition: background 0.15s;
+  background: #DC2626;           /* Rojo fuerte visible desde el inicio */
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+  transition: all 0.2s ease;
 }
-.btn-desasignar-confirmar:hover:not(:disabled) { background: #B91C1C; }
-.btn-desasignar-confirmar:disabled { opacity: 0.65; cursor: not-allowed; }
+
+.btn-desasignar-confirmar:hover:not(:disabled) {
+  background: #B91C1C;
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+  transform: translateY(-1px);
+}
+
+.btn-desasignar-confirmar:disabled {
+  background: #9AA3AF;
+  color: white;
+  opacity: 0.85;
+  cursor: not-allowed;
+  box-shadow: none;
+}
 
 .spinner-btn { display: inline-block; width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: girar 0.7s linear infinite; }
 

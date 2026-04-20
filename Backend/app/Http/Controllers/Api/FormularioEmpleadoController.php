@@ -234,7 +234,7 @@ class FormularioEmpleadoController extends Controller
                 'id_puesto'          => 'nullable|integer|exists:puesto,id_puesto',
                 'fecha_contratacion' => 'nullable|date',
                 'id_departamento'    => 'nullable|integer|exists:departamento,id_departamento',
-                'estatus'            => 'nullable|boolean',
+                'estatus'            => 'nullable',
                 'grado_academico'    => 'nullable|string|max:150',
                 'especialidad'       => 'nullable|string|max:150',
             ]);
@@ -247,11 +247,16 @@ class FormularioEmpleadoController extends Controller
 
             DB::beginTransaction();
 
+            $estatusRaw = $request->input('estatus');
+            $estatusBool = is_string($estatusRaw)
+                ? strtolower($estatusRaw) === 'activo'
+                : (bool) $estatusRaw;
+
             $campos = array_filter([
                 'numero_empleado'    => $request->input('numero_empleado'),
                 'id_puesto'          => $request->input('id_puesto'),
                 'fecha_contratacion' => $request->input('fecha_contratacion'),
-                'estatus'            => $request->input('estatus'),
+                'estatus'            => !is_null($estatusRaw) ? $estatusBool : null,
             ], fn($v) => !is_null($v));
 
             if (!empty($campos)) {

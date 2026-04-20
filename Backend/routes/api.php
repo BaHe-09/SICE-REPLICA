@@ -13,6 +13,8 @@ use App\Http\Controllers\CalificacionController;
 use App\Http\Controllers\Api\InscripcionController;
 use App\Http\Controllers\Api\EventoController;
 use App\Http\Controllers\Api\ComiteAcademicoController;
+use App\Http\Controllers\Docentes\AsignacionDocenteController;
+use App\Http\Controllers\Docentes\CargaDocenteController; 
 
 // DASHBOARD
 Route::get('/dashboard', [DashboardController::class, 'index']);
@@ -237,17 +239,32 @@ Route::put('/docentes/{id}', [DocentesController::class, 'update']);
 
 
 Route::prefix('comite')->group(function () {
-    Route::get('/dashboard', [ComiteAcademicoController::class, 'dashboard']);
-    Route::get('/tipos-solicitud', [ComiteAcademicoController::class, 'tiposSolicitud']);
+Route::get('/dashboard', [ComiteAcademicoController::class, 'dashboard']);
+Route::get('/tipos-solicitud', [ComiteAcademicoController::class, 'tiposSolicitud']);
 
-    Route::get('/solicitudes', [ComiteAcademicoController::class, 'indexSolicitudes']);
-    Route::post('/solicitudes', [ComiteAcademicoController::class, 'storeSolicitud']);
+Route::get('/solicitudes', [ComiteAcademicoController::class, 'indexSolicitudes']);
+Route::post('/solicitudes', [ComiteAcademicoController::class, 'storeSolicitud']);
 
-    Route::get('/sesiones', [ComiteAcademicoController::class, 'indexSesiones']);
-    Route::post('/sesiones', [ComiteAcademicoController::class, 'storeSesion']);
-    Route::put('/sesiones/{id}', [ComiteAcademicoController::class, 'updateSesion']);
+Route::get('/sesiones', [ComiteAcademicoController::class, 'indexSesiones']);
+Route::post('/sesiones', [ComiteAcademicoController::class, 'storeSesion']);
+Route::put('/sesiones/{id}', [ComiteAcademicoController::class, 'updateSesion']);
 
-    Route::get('/resoluciones', [ComiteAcademicoController::class, 'indexResoluciones']);
-    Route::post('/resoluciones', [ComiteAcademicoController::class, 'storeResolucion']);
+Route::get('/resoluciones', [ComiteAcademicoController::class, 'indexResoluciones']);
+Route::post('/resoluciones', [ComiteAcademicoController::class, 'storeResolucion']);
+
+// ====================== ASIGNACIÓN DOCENTE A GRUPOS ======================
+ 
+
+// --- AsignacionDocenteView (ya existentes) ---
+Route::get('/asignacion-docente/grupos', [AsignacionDocenteController::class, 'grupos']);
+Route::get('/docentes/disponibles', [AsignacionDocenteController::class, 'docentesDisponibles']);
+Route::post('/asignacion-docente', [AsignacionDocenteController::class, 'store']);
+
+// --- CargaDocenteView (NUEVAS) ---
+Route::get('/docentes', [CargaDocenteController::class, 'buscarDocentes']);                    
+Route::get('/carga-docente/{id_docente}', [CargaDocenteController::class, 'cargaPorDocente']); 
+Route::delete('/asignacion-docente/{id}', [CargaDocenteController::class, 'desasignar']);      
 });
+
+
 
