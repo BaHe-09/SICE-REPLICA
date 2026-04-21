@@ -242,12 +242,13 @@ const resoluciones      = ref([])
 const formModal = ref({ sesion_id: '', solicitud_id: '', decision: '' })
 const errModal  = ref({ sesion_id: '', solicitud_id: '', decision: '' })
 
-const notificacion = ref({ visible: false, mensaje: '', tipo: 'exito' })
+// ── Toast (corregido: era "notificacion") ─────────────────────
+const toast = ref({ visible: false, mensaje: '', tipo: 'exito' })
 let timerNotif = null
 const mostrarNotificacion = (mensaje, tipo = 'exito') => {
   if (timerNotif) clearTimeout(timerNotif)
-  notificacion.value = { visible: true, mensaje, tipo }
-  timerNotif = setTimeout(() => { notificacion.value.visible = false }, 3500)
+  toast.value = { visible: true, mensaje, tipo }
+  timerNotif = setTimeout(() => { toast.value.visible = false }, 3500)
 }
 
 // ── Carga inicial ─────────────────────────────────────────────
@@ -292,19 +293,16 @@ const cargarResoluciones = async () => {
   } catch (error) {
     console.error('Error cargando resoluciones:', error)
     errorCarga.value = true
+    mostrarNotificacion('No se pudieron cargar las resoluciones.', 'error')
   } finally {
     cargando.value = false
   }
 }
 
 onMounted(() => {
-  // Pre-filtrar si viene desde SesionesView con ?sesion=ID
-  if (route.query.sesion) filtroSesion.value = route.query.sesion
-  // Pre-llenar modal si viene con ?solicitud=ID
-  if (route.query.solicitud) {
-    formModal.value.solicitud_id = route.query.solicitud
-    mostrarModal.value = true
-  }
+  if (route.query.sesion)    filtroSesion.value           = route.query.sesion
+  if (route.query.solicitud) formModal.value.solicitud_id = route.query.solicitud
+  if (route.query.solicitud) mostrarModal.value           = true
   cargarTipos()
   cargarSesiones()
   cargarSolicitudesSinResolucion()
@@ -314,10 +312,10 @@ onMounted(() => {
 // ── Filtrado local reactivo ────────────────────────────────────
 const resolucionesFiltradas = computed(() =>
   resoluciones.value.filter(r => {
-    const q       = busqueda.value.toLowerCase()
+    const q        = busqueda.value.toLowerCase()
     const coincide = !q || r.folio_solicitud?.toLowerCase().includes(q) || r.solicitante?.toLowerCase().includes(q)
-    const sesion  = !filtroSesion.value || String(r.sesion_id) === String(filtroSesion.value)
-    const tipo    = !filtroTipo.value   || r.tipo === filtroTipo.value
+    const sesion   = !filtroSesion.value || String(r.sesion_id) === String(filtroSesion.value)
+    const tipo     = !filtroTipo.value   || r.tipo === filtroTipo.value
     return coincide && sesion && tipo
   })
 )
@@ -328,7 +326,7 @@ const filtrar = async () => {
   errorCarga.value = false
   try {
     const params = new URLSearchParams()
-    if (busqueda.value)     params.append('q',        busqueda.value)
+    if (busqueda.value)     params.append('q',         busqueda.value)
     if (filtroSesion.value) params.append('sesion_id', filtroSesion.value)
     if (filtroTipo.value)   params.append('tipo',      filtroTipo.value)
     const url = 'http://localhost:8000/api/comite/resoluciones' + (params.toString() ? '?' + params : '')
@@ -339,6 +337,7 @@ const filtrar = async () => {
   } catch (error) {
     console.error('Error filtrando resoluciones:', error)
     errorCarga.value = true
+    mostrarNotificacion('Error al filtrar resoluciones.', 'error')
   } finally {
     cargando.value = false
   }
@@ -362,13 +361,15 @@ const guardarResolucion = async () => {
 
   cargando.value = true
   try {
+    // POST /api/comite/resoluciones
+    // Corregido: el back espera id_sesion e id_solicitud
     const res = await fetch('http://localhost:8000/api/comite/resoluciones', {
-      method: 'POST',
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        sesion_comite_id:    formModal.value.sesion_id,
-        solicitud_comite_id: formModal.value.solicitud_id,
-        decision:            formModal.value.decision.trim(),
+        id_sesion:    Number(formModal.value.sesion_id),
+        id_solicitud: Number(formModal.value.solicitud_id),
+        decision:     formModal.value.decision.trim(),
       }),
     })
     if (!res.ok) {
@@ -377,7 +378,7 @@ const guardarResolucion = async () => {
     }
     mostrarNotificacion('Resolución registrada correctamente')
     cerrarModal()
-    // Recargar listas para reflejar el nuevo estado en la BD
+    // Recargar listas para reflejar el nuevo estado
     await Promise.all([cargarResoluciones(), cargarSolicitudesSinResolucion()])
   } catch (error) {
     console.error('Error guardando resolución:', error)
@@ -392,9 +393,9 @@ const formatearFechaCorta = (f) => {
   if (!f) return '—'
   const [a, m, d] = f.split('-')
   const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
-  return `${parseInt(d)} ${meses[parseInt(m)-1]} ${a}`
+  return `${parseInt(d)} ${meses[parseInt(m) - 1]} ${a}`
 }
-const iniciales = (n) => n ? n.split(' ').slice(0,2).map(x => x[0]).join('').toUpperCase() : '?'
+const iniciales = (n) => n ? n.split(' ').slice(0, 2).map(x => x[0]).join('').toUpperCase() : '?'
 const verDetalle = (res) => router.push(`/comite/resoluciones/${res.id}`)
 </script>
 
