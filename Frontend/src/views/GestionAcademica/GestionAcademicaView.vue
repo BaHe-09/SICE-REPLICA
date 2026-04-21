@@ -219,6 +219,9 @@
 import { ref, onMounted } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 
+// ── Variable de entorno — estandarización del proyecto ───────────
+const API = `${import.meta.env.VITE_API_URL}/api`
+
 // ── Estado ──────────────────────────────────────────────────────
 const cargando   = ref(false)
 const errorCarga = ref(false)
@@ -235,7 +238,7 @@ const cargarResumen = async () => {
   cargando.value   = true
   errorCarga.value = false
   try {
-    const res = await fetch('http://localhost:8000/api/gestion-academica/resumen')
+    const res = await fetch(`${API}/gestion-academica/resumen`)
     if (!res.ok) throw new Error('Error del servidor')
     const data = await res.json()
     resumen.value.carreras = data.carreras ?? 0
@@ -270,7 +273,6 @@ onMounted(() => { cargarResumen() })
   --amarillo:    #F59E0B;
 
   width: 100%;
-  
   background: var(--fondo);
   font-family: 'Montserrat', sans-serif;
   padding-bottom: 2rem;
@@ -406,14 +408,14 @@ onMounted(() => { cargarResumen() })
   height: 22px;
 }
 
-.kpi-azul    { background: #DBEAFE; }
-.kpi-azul    svg { stroke: var(--azul); }
-.kpi-verde   { background: #DCFCE7; }
-.kpi-verde   svg { stroke: var(--verde); }
+.kpi-azul     { background: #DBEAFE; }
+.kpi-azul     svg { stroke: var(--azul); }
+.kpi-verde    { background: #DCFCE7; }
+.kpi-verde    svg { stroke: var(--verde); }
 .kpi-amarillo { background: #FEF3C7; }
 .kpi-amarillo svg { stroke: var(--amarillo); }
-.kpi-morado  { background: #EDE9FE; }
-.kpi-morado  svg { stroke: #7C3AED; }
+.kpi-morado   { background: #EDE9FE; }
+.kpi-morado   svg { stroke: #7C3AED; }
 
 .kpi-info {
   display: flex;
@@ -539,7 +541,7 @@ onMounted(() => { cargarResumen() })
   transform: translateX(3px);
 }
 
-/* ── Footeer ─────────────────────────────────────────────────────── */
+/* ── Footer ─────────────────────────────────────────────────────── */
 .pie-pagina {
   text-align: center;
   color: #9CA3AF;
@@ -550,13 +552,12 @@ onMounted(() => { cargarResumen() })
   font-family: 'Montserrat', sans-serif;
 }
 
-
 @media (max-width: 900px) {
-  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .kpi-grid     { grid-template-columns: repeat(2, 1fr); }
   .accesos-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 600px) {
-  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .kpi-grid   { grid-template-columns: 1fr 1fr; }
   .page-title { font-size: 1.5rem; }
 }
 </style>

@@ -178,7 +178,7 @@
       </div>
     </div>
 
-    <!-- Modal Planes asociadoss -->
+    <!-- Modal Planes asociados -->
     <div v-if="showModalPlanes" class="modal-overlay" @click.self="showModalPlanes = false">
       <div class="modal-content modal-grande">
         <div class="modal-header"><h3>Planes de {{ materiaPlanes?.nombre }}</h3><button @click="showModalPlanes = false" class="btn-cerrar-modal">×</button></div>
@@ -251,15 +251,18 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 
-const materias        = ref([])
+// ── Variable de entorno — estandarización del proyecto ───────────
+const API = `${import.meta.env.VITE_API_URL}/api`
+
+const materias          = ref([])
 const planesDisponibles = ref([])
-const cargando        = ref(false)
-const guardando       = ref(false)
-const filaActiva      = ref(-1)
-const currentPage     = ref(1)
-const filasPorPagina  = ref(10)
-const busqueda        = ref('')
-const filtroEstatus   = ref('')
+const cargando          = ref(false)
+const guardando         = ref(false)
+const filaActiva        = ref(-1)
+const currentPage       = ref(1)
+const filasPorPagina    = ref(10)
+const busqueda          = ref('')
+const filtroEstatus     = ref('')
 
 const showModal         = ref(false)
 const showModalVer      = ref(false)
@@ -282,19 +285,27 @@ const mostrarNotificacion = (mensaje, tipo = 'exito') => {
   timerNotif = setTimeout(() => { notificacion.value.visible = false }, 3500)
 }
 
+/*
+ * GET /api/materias
+ * Respuesta: [{ id_materia, clave, nombre, creditos, horas_teoria, horas_practica, descripcion, estatus }]
+ */
 const cargarMaterias = async () => {
   cargando.value = true
   try {
-    const res = await fetch('http://localhost:8000/api/materias')
+    const res = await fetch(`${API}/materias`)
     if (!res.ok) throw new Error()
     materias.value = await res.json()
   } catch { mostrarNotificacion('No se pudieron cargar las materias.', 'error') }
   finally { cargando.value = false }
 }
 
+/*
+ * GET /api/planes-estudio
+ * Respuesta: [{ id_plan, nombre_plan }]
+ */
 const cargarPlanes = async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/planes-estudio')
+    const res = await fetch(`${API}/planes-estudio`)
     if (res.ok) planesDisponibles.value = await res.json()
   } catch {}
 }
@@ -311,25 +322,29 @@ const materiasFiltradas = computed(() =>
   })
 )
 
-const totalPages = computed(() => Math.ceil(materiasFiltradas.value.length / filasPorPagina.value) || 1)
+const totalPages        = computed(() => Math.ceil(materiasFiltradas.value.length / filasPorPagina.value) || 1)
 const materiasPaginadas = computed(() => { const s = (currentPage.value - 1) * filasPorPagina.value; return materiasFiltradas.value.slice(s, s + filasPorPagina.value) })
-const visiblePages = computed(() => { const t = totalPages.value, c = currentPage.value; if (t <= 7) return Array.from({ length: t }, (_, i) => i + 1); const p = new Set([1, t, c, c-1, c+1].filter(x => x >= 1 && x <= t)); return [...p].sort((a, b) => a - b) })
-const goToPage = (p) => { currentPage.value = p; filaActiva.value = -1 }
-const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
-const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
+const visiblePages      = computed(() => { const t = totalPages.value, c = currentPage.value; if (t <= 7) return Array.from({ length: t }, (_, i) => i + 1); const p = new Set([1, t, c, c-1, c+1].filter(x => x >= 1 && x <= t)); return [...p].sort((a, b) => a - b) })
+const goToPage  = (p) => { currentPage.value = p; filaActiva.value = -1 }
+const prevPage  = () => { if (currentPage.value > 1) currentPage.value-- }
+const nextPage  = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
 const limpiarFiltros = () => { busqueda.value = ''; filtroEstatus.value = ''; currentPage.value = 1; filaActiva.value = -1 }
 
 const resetForm = () => { form.id_materia = null; form.clave = ''; form.nombre = ''; form.creditos = ''; form.horas_teoria = ''; form.horas_practica = ''; form.descripcion = ''; form.estatus = 1; Object.keys(errors).forEach(k => delete errors[k]) }
-const abrirModalNuevo = () => { resetForm(); showModal.value = true }
-const abrirModalVer = (m) => { materiaVer.value = m; showModalVer.value = true }
+const abrirModalNuevo  = () => { resetForm(); showModal.value = true }
+const abrirModalVer    = (m) => { materiaVer.value = m; showModalVer.value = true }
 const abrirModalEditar = (m) => { resetForm(); Object.assign(form, { id_materia: m.id_materia, clave: m.clave, nombre: m.nombre, creditos: m.creditos, horas_teoria: m.horas_teoria, horas_practica: m.horas_practica, descripcion: m.descripcion || '', estatus: m.estatus }); showModal.value = true }
 const cerrarModal = () => { showModal.value = false; resetForm() }
 
+/*
+ * GET /api/materias/:id/planes
+ * Respuesta: [{ id_plan, semestre, plan: { nombre_plan, carrera: { nombre } } }]
+ */
 const abrirModalPlanes = async (m) => {
   materiaPlanes.value = m
   nuevoPlanForm.id_plan = ''; nuevoPlanForm.semestre = ''
   try {
-    const res = await fetch(`http://localhost:8000/api/materias/${m.id_materia}/planes`)
+    const res = await fetch(`${API}/materias/${m.id_materia}/planes`)
     planesAsociados.value = res.ok ? await res.json() : []
   } catch { planesAsociados.value = [] }
   showModalPlanes.value = true
@@ -339,19 +354,23 @@ const solicitarEliminar = () => { materiaAEliminar.value = { id_materia: form.id
 
 const validar = () => {
   Object.keys(errors).forEach(k => delete errors[k])
-  if (!form.clave.trim())           errors.clave          = 'La clave es obligatoria'
-  if (!form.nombre.trim())          errors.nombre         = 'El nombre es obligatorio'
-  if (!form.creditos || form.creditos < 1) errors.creditos = 'Los créditos deben ser mayores a 0'
-  if (form.horas_teoria === '' || form.horas_teoria < 0)   errors.horas_teoria   = 'Las horas de teoría son obligatorias'
+  if (!form.clave.trim())                                    errors.clave          = 'La clave es obligatoria'
+  if (!form.nombre.trim())                                   errors.nombre         = 'El nombre es obligatorio'
+  if (!form.creditos || form.creditos < 1)                   errors.creditos       = 'Los créditos deben ser mayores a 0'
+  if (form.horas_teoria === '' || form.horas_teoria < 0)     errors.horas_teoria   = 'Las horas de teoría son obligatorias'
   if (form.horas_practica === '' || form.horas_practica < 0) errors.horas_practica = 'Las horas de práctica son obligatorias'
   return Object.keys(errors).length === 0
 }
 
+/*
+ * POST /api/materias   body: { clave, nombre, creditos, horas_teoria, horas_practica, descripcion, estatus }
+ * PUT  /api/materias/:id  body: mismos campos
+ */
 const guardar = async () => {
   if (!validar()) return
   guardando.value = true
   const esEdicion = !!form.id_materia
-  const url = esEdicion ? `http://localhost:8000/api/materias/${form.id_materia}` : 'http://localhost:8000/api/materias'
+  const url     = esEdicion ? `${API}/materias/${form.id_materia}` : `${API}/materias`
   const payload = { clave: form.clave.trim(), nombre: form.nombre.trim(), creditos: form.creditos, horas_teoria: form.horas_teoria, horas_practica: form.horas_practica, descripcion: form.descripcion.trim() || null, estatus: form.estatus }
   try {
     const res = await fetch(url, { method: esEdicion ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(payload) })
@@ -362,11 +381,14 @@ const guardar = async () => {
   finally { guardando.value = false }
 }
 
+/*
+ * POST /api/plan-materia   body: { id_plan, id_materia, semestre }
+ */
 const agregarAPlan = async () => {
   if (!nuevoPlanForm.id_plan || !nuevoPlanForm.semestre) return
   guardando.value = true
   try {
-    const res = await fetch('http://localhost:8000/api/plan-materia', {
+    const res = await fetch(`${API}/plan-materia`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({ id_plan: nuevoPlanForm.id_plan, id_materia: materiaPlanes.value.id_materia, semestre: nuevoPlanForm.semestre })
@@ -378,11 +400,14 @@ const agregarAPlan = async () => {
   finally { guardando.value = false }
 }
 
+/*
+ * DELETE /api/materias/:id
+ */
 const confirmarEliminar = async () => {
   if (!materiaAEliminar.value) return
   guardando.value = true
   try {
-    const res = await fetch(`http://localhost:8000/api/materias/${materiaAEliminar.value.id_materia}`, { method: 'DELETE', headers: { 'Accept': 'application/json' } })
+    const res = await fetch(`${API}/materias/${materiaAEliminar.value.id_materia}`, { method: 'DELETE', headers: { 'Accept': 'application/json' } })
     if (!res.ok) throw new Error()
     await cargarMaterias(); showModalEliminar.value = false; materiaAEliminar.value = null
     mostrarNotificacion('Materia eliminada correctamente.')
@@ -393,22 +418,10 @@ const confirmarEliminar = async () => {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
-:root {
-  --azul:        #1B396A;
-  --azul-hover:  #1D4ED8;
-  --azul-suave:  #DBEAFE;
-  --borde:       #E5E7EB;
-  --fondo:       #F5F5F5;
-  --texto:       #1A1A1A;
-  --gris:        #6B7280;
-  --verde:       #16A34A;
-  --rojo:        #DC2626;
-  --amarillo:    #F59E0B;
-}
 
 .materias-page{--azul:#1B396A;--azul-hover:#1D4ED8;--azul-suave:#DBEAFE;--borde:#E5E7EB;--fondo:#F5F5F5;--texto:#1A1A1A;--gris:#6B7280;--verde:#16A34A;--rojo:#DC2626;width:100%;background:var(--fondo);font-family:'Montserrat',sans-serif;padding-bottom:2rem}
 .breadcrumb{display:flex;align-items:center;gap:6px;color:var(--gris);font-size:0.88rem;margin-bottom:0.75rem}.breadcrumb-link{color:var(--azul);font-weight:500;cursor:pointer;transition:color 0.15s}.breadcrumb-link:hover{color:var(--azul-hover);text-decoration:underline}.breadcrumb-sep{color:#9CA3AF}.breadcrumb-actual{color:var(--gris);font-weight:600}
-.page-header{display:flex;align-items:baseline;gap:1rem;margin-bottom:1.2rem}.page-title{color:var(--texto);font-size:1.75rem;font-weight:700;letter-spacing:-0.02em;margin:0}.page-subtitle{font-size:0.9rem;color:var(--gris);font-weight:500}
+.page-header{display:flex;flex-direction:column;gap:4px;margin-bottom:1.2rem}.page-title{color:var(--texto);font-size:1.75rem;font-weight:700;letter-spacing:-0.02em;margin:0}.page-subtitle{font-size:0.9rem;color:var(--gris);font-weight:500}
 .barra-carga{height:3px;background:transparent;border-radius:2px;margin-bottom:1rem;overflow:hidden;opacity:0;transition:opacity 0.3s}.barra-carga.visible{opacity:1}.barra-progreso{height:100%;width:40%;background:var(--azul);border-radius:2px;animation:deslizar 1.2s ease-in-out infinite}
 @keyframes deslizar{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
 .toast{position:fixed;bottom:2rem;right:2rem;display:flex;align-items:center;gap:10px;padding:12px 20px;border-radius:10px;color:white;font-weight:500;font-size:0.93rem;box-shadow:0 6px 20px rgba(0,0,0,0.18);z-index:3000;max-width:380px}.toast.exito{background:var(--azul)}.toast.error{background:var(--rojo)}.toast-icono{width:20px;height:20px;flex-shrink:0}
@@ -425,13 +438,13 @@ const confirmarEliminar = async () => {
 .celda-acciones{display:flex;gap:7px;align-items:center}.btn-accion{display:flex;align-items:center;gap:5px;padding:6px 13px;border-radius:6px;font-size:0.85rem;cursor:pointer;font-weight:600;font-family:'Montserrat',sans-serif;transition:background 0.15s;white-space:nowrap}.btn-accion svg{width:14px;height:14px}.btn-accion.ver{background:#F3F4F6;color:#1A1A1A;border:1px solid #D1D5DB}.btn-accion.ver:hover{background:#E5E7EB;border-color:#9CA3AF}.btn-accion.editar{background:#1B396A;color:#FFFFFF;border:1px solid #1B396A}.btn-accion.editar:hover{background:#1D4ED8;border-color:#1D4ED8}.btn-accion.planes{background:#DBEAFE;color:var(--azul);border:1px solid #BFDBFE}.btn-accion.planes:hover{background:#BFDBFE}
 .estado-vacio,.estado-cargando{text-align:center;padding:3.5rem 2rem;color:var(--gris)}.icono-vacio{width:56px;height:56px;stroke:#9CA3AF;margin-bottom:12px}.estado-vacio h3{font-size:1.2rem;color:var(--texto);margin:0 0 6px}.estado-vacio p{font-size:0.93rem;margin:0 0 1.2rem}.btn-limpiar-vacio{background:#FFFFFF;color:var(--texto);border:1px solid var(--borde);padding:9px 20px;border-radius:8px;font-weight:500;cursor:pointer;font-family:'Montserrat',sans-serif}.spinner-tabla{display:inline-block;width:36px;height:36px;border:3px solid #E5E7EB;border-top-color:var(--azul);border-radius:50%;animation:girar 0.8s linear infinite;margin-bottom:12px}
 .paginacion{margin-top:1.2rem;display:flex;justify-content:space-between;align-items:center;font-size:0.9rem;color:var(--gris);font-family:'Montserrat',sans-serif;flex-wrap:wrap;gap:0.5rem}.paginacion-izquierda,.paginacion-centro,.paginacion-derecha{display:flex;align-items:center;gap:8px}.select-filas{border:1px solid var(--borde);border-radius:6px;padding:4px 8px;font-size:0.9rem;background:#FFFFFF;font-family:'Montserrat',sans-serif}.btn-pag{padding:5px 11px;border:1px solid var(--borde);background:#FFFFFF;border-radius:6px;cursor:pointer;color:var(--texto);font-family:'Montserrat',sans-serif;font-size:0.9rem;transition:background 0.15s}.btn-pag:hover:not(:disabled){background:var(--fondo)}.btn-pag:disabled{opacity:0.4;cursor:not-allowed}.btn-pag.activo{background:var(--azul);color:white;border-color:var(--azul)}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;z-index:2000}.modal-content{background:#FFFFFF;width:520px;max-width:92%;border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,0.18);overflow:hidden;border:1px solid var(--borde)}.modal-grande{width:620px}.modal-confirmar{width:440px}.modal-header{background:var(--azul);color:white;padding:1.1rem 1.6rem;display:flex;justify-content:space-between;align-items:center}.modal-header h3{margin:0;font-size:1.2rem;font-weight:700;font-family:'Montserrat',sans-serif}.btn-cerrar-modal{background:none;border:none;color:white;font-size:1.7rem;cursor:pointer;line-height:1;opacity:0.85}.btn-cerrar-modal:hover{opacity:1}
-.modal-body{padding:1.6rem;max-height:70vh;overflow-y:auto}.form-grupo{margin-bottom:1.2rem}.form-grupo-doble{display:grid;grid-template-columns:1fr 1fr;gap:1rem}.form-grupo label{display:block;margin-bottom:6px;font-weight:600;font-size:0.9rem;color:var(--texto);font-family:'Montserrat',sans-serif}.obligatorio{color:var(--rojo)}.modal-input,.modal-select,.modal-textarea{width:100%;padding:10px 14px;border:1.5px solid var(--borde);border-radius:8px;font-size:0.95rem;background:#FFFFFF;color:var(--texto);font-family:'Montserrat',sans-serif;outline:none;transition:border-color 0.2s;box-sizing:border-box}.modal-input:focus,.modal-select:focus,.modal-textarea:focus{border-color:var(--azul)}.modal-textarea{resize:vertical;min-height:80px}.borde-error{border-color:var(--rojo)!important}.mensaje-error{display:block;color:var(--rojo);font-size:0.82rem;margin-top:5px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;z-index:2000}.modal-content{background:#FFFFFF;width:520px;max-width:92%;border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,0.18);overflow:hidden;border:1px solid #E5E7EB}.modal-grande{width:620px}.modal-confirmar{width:440px}.modal-header{background:#1B396A;color:white;padding:1.1rem 1.6rem;display:flex;justify-content:space-between;align-items:center}.modal-header h3{margin:0;font-size:1.2rem;font-weight:700;font-family:'Montserrat',sans-serif}.btn-cerrar-modal{background:none;border:none;color:white;font-size:1.7rem;cursor:pointer;line-height:1;opacity:0.85}.btn-cerrar-modal:hover{opacity:1}
+.modal-body{padding:1.6rem;max-height:70vh;overflow-y:auto}.form-grupo{margin-bottom:1.2rem}.form-grupo-doble{display:grid;grid-template-columns:1fr 1fr;gap:1rem}.form-grupo label{display:block;margin-bottom:6px;font-weight:600;font-size:0.9rem;color:#1A1A1A;font-family:'Montserrat',sans-serif}.obligatorio{color:#DC2626}.modal-input,.modal-select,.modal-textarea{width:100%;padding:10px 14px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:0.95rem;background:#FFFFFF;color:#1A1A1A;font-family:'Montserrat',sans-serif;outline:none;transition:border-color 0.2s;box-sizing:border-box}.modal-input:focus,.modal-select:focus,.modal-textarea:focus{border-color:#1B396A;box-shadow:0 0 0 3px #DBEAFE}.modal-textarea{resize:vertical;min-height:80px}.borde-error{border-color:#DC2626!important}.mensaje-error{display:block;color:#DC2626;font-size:0.82rem;margin-top:5px}
 .indicador-estatus{display:inline-flex;align-items:center;margin-top:7px;padding:4px 12px;border-radius:20px;font-size:0.82rem;font-weight:600}.indicador-estatus.activo{background:#DCFCE7;color:#16A34A}.indicador-estatus.inactivo{background:#F3F4F6;color:#6B7280}
-.planes-subtitulo{font-size:0.9rem;color:var(--gris);margin:0 0 1rem}.planes-lista{display:flex;flex-direction:column;gap:8px;margin-bottom:1.4rem}.plan-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--fondo);border-radius:8px;border:1px solid var(--borde)}.plan-info{display:flex;flex-direction:column}.plan-nombre{font-weight:600;font-size:0.9rem;color:var(--texto)}.plan-carrera{font-size:0.82rem;color:var(--gris)}.semestre-badge{background:#DBEAFE;color:var(--azul);padding:3px 10px;border-radius:20px;font-size:0.8rem;font-weight:600;white-space:nowrap}.planes-vacio{text-align:center;padding:1.5rem;color:var(--gris);font-size:0.9rem}.planes-agregar{border-top:1px solid var(--borde);padding-top:1.2rem;margin-top:0.5rem}.planes-agregar h4{font-size:0.95rem;font-weight:700;color:var(--texto);margin:0 0 1rem}
-.modal-footer{padding:1rem 1.6rem;background:var(--fondo);display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--borde)}.btn-secundario{padding:10px 22px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;background:#FFFFFF;color:var(--texto);border:1px solid var(--borde);transition:background 0.15s}.btn-secundario:hover{background:var(--fondo)}.btn-secundario:disabled{opacity:0.5;cursor:not-allowed}.btn-eliminar{padding:10px 22px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;background:var(--rojo);color:white;border:none;transition:background 0.15s}.btn-eliminar:hover{background:#B91C1C}.btn-eliminar:disabled{opacity:0.5;cursor:not-allowed}.btn-guardar{display:flex;align-items:center;gap:8px;padding:10px 22px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;background:#1B396A;color:#FFFFFF;border:none;transition:background 0.15s}.btn-guardar:hover:not(:disabled){background:#1D4ED8}.btn-guardar:disabled{background:#E5E7EB;color:#9CA3AF;cursor:not-allowed}.spinner-btn{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:girar 0.7s linear infinite;flex-shrink:0}
-.detalle-fila{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--borde);font-size:0.95rem}.detalle-fila:last-child{border-bottom:none}.detalle-label{font-weight:600;color:var(--gris)}.detalle-valor{font-weight:500;color:var(--texto)}
-.confirmar-body{display:flex;flex-direction:column;align-items:center;gap:1rem;text-align:center;padding:2rem 1.6rem}.confirmar-icono{width:52px;height:52px;stroke:#F59E0B}.confirmar-body p{color:var(--texto);font-size:0.95rem;margin:0;line-height:1.5}
+.planes-subtitulo{font-size:0.9rem;color:#6B7280;margin:0 0 1rem}.planes-lista{display:flex;flex-direction:column;gap:8px;margin-bottom:1.4rem}.plan-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#F5F5F5;border-radius:8px;border:1px solid #E5E7EB}.plan-info{display:flex;flex-direction:column}.plan-nombre{font-weight:600;font-size:0.9rem;color:#1A1A1A}.plan-carrera{font-size:0.82rem;color:#6B7280}.semestre-badge{background:#DBEAFE;color:#1B396A;padding:3px 10px;border-radius:20px;font-size:0.8rem;font-weight:600;white-space:nowrap}.planes-vacio{text-align:center;padding:1.5rem;color:#6B7280;font-size:0.9rem}.planes-agregar{border-top:1px solid #E5E7EB;padding-top:1.2rem;margin-top:0.5rem}.planes-agregar h4{font-size:0.95rem;font-weight:700;color:#1A1A1A;margin:0 0 1rem}
+.modal-footer{padding:1rem 1.6rem;background:#F5F5F5;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #E5E7EB}.btn-secundario{padding:10px 22px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;background:#FFFFFF;color:#1B396A;border:2px solid #1B396A;transition:background 0.15s}.btn-secundario:hover{background:#DBEAFE}.btn-secundario:disabled{opacity:0.5;cursor:not-allowed}.btn-eliminar{padding:10px 22px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;background:#DC2626;color:white;border:2px solid #DC2626;transition:background 0.15s}.btn-eliminar:hover{background:#B91C1C}.btn-eliminar:disabled{opacity:0.5;cursor:not-allowed}.btn-guardar{display:flex;align-items:center;gap:8px;padding:10px 22px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;background:#1B396A;color:#FFFFFF;border:2px solid #1B396A;transition:background 0.15s}.btn-guardar:hover:not(:disabled){background:#1D4ED8}.btn-guardar:disabled{opacity:0.55;cursor:not-allowed}.spinner-btn{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:girar 0.7s linear infinite;flex-shrink:0}
+.detalle-fila{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #E5E7EB;font-size:0.95rem;font-family:'Montserrat',sans-serif}.detalle-fila:last-child{border-bottom:none}.detalle-label{font-weight:600;color:#6B7280}.detalle-valor{font-weight:500;color:#1A1A1A}
+.confirmar-body{display:flex;flex-direction:column;align-items:center;gap:1rem;text-align:center;padding:2rem 1.6rem}.confirmar-icono{width:52px;height:52px;stroke:#F59E0B}.confirmar-body p{color:#1A1A1A;font-size:0.95rem;margin:0;line-height:1.5;font-family:'Montserrat',sans-serif}
 @keyframes girar{to{transform:rotate(360deg)}}
-.pie-pagina{text-align:center;color:#9CA3AF;font-size:0.82rem;padding-top:2rem;border-top:1px solid var(--borde);margin-top:1rem}
+.pie-pagina{text-align:center;color:#9CA3AF;font-size:0.82rem;padding-top:2rem;border-top:1px solid #E5E7EB;margin-top:1rem}
 </style>

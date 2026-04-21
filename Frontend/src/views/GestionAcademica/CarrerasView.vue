@@ -15,7 +15,7 @@
         <span class="page-subtitle">{{ carrerasFiltradas.length }} registro(s) encontrado(s)</span>
       </div>
 
-      <!-- Barra  carga -->
+      <!-- Barra de carga -->
       <div class="barra-carga" :class="{ visible: cargando }">
         <div class="barra-progreso"></div>
       </div>
@@ -267,7 +267,10 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 
-// ── Estado ──────────────────────────────────────────────────────
+// ── Variable de entorno — estandarización del proyecto ───────────
+const API = `${import.meta.env.VITE_API_URL}/api`
+
+// ── Estado ───────────────────────────────────────────────────────
 const carreras        = ref([])
 const departamentos   = ref([])
 const niveles         = ref([])
@@ -277,16 +280,16 @@ const filaActiva      = ref(-1)
 const currentPage     = ref(1)
 const filasPorPagina  = ref(10)
 
-const busqueda         = ref('')
+const busqueda           = ref('')
 const filtroDepartamento = ref('')
-const filtroNivel      = ref('')
-const filtroEstatus    = ref('')
+const filtroNivel        = ref('')
+const filtroEstatus      = ref('')
 
-const showModal        = ref(false)
-const showModalVer     = ref(false)
+const showModal         = ref(false)
+const showModalVer      = ref(false)
 const showModalEliminar = ref(false)
-const carreraVer       = ref({})
-const carreraAEliminar = ref(null)
+const carreraVer        = ref({})
+const carreraAEliminar  = ref(null)
 
 const form   = reactive({ id_carrera: null, nombre: '', id_departamento: '', id_nivel: '', estatus: 1 })
 const errors = reactive({})
@@ -302,10 +305,15 @@ const mostrarNotificacion = (mensaje, tipo = 'exito') => {
 }
 
 // ── Carga de datos ───────────────────────────────────────────────
+/*
+ * GET /api/carreras
+ * Respuesta: [{ id_carrera, nombre, id_departamento, departamento: { nombre },
+ *               id_nivel, nivel: { nombre_nivel }, estatus }]
+ */
 const cargarCarreras = async () => {
   cargando.value = true
   try {
-    const res = await fetch('http://localhost:8000/api/carreras')
+    const res = await fetch(`${API}/carreras`)
     if (!res.ok) throw new Error('Error del servidor')
     carreras.value = await res.json()
   } catch (e) {
@@ -316,11 +324,15 @@ const cargarCarreras = async () => {
   }
 }
 
+/*
+ * GET /api/departamentos     → [{ id_departamento, nombre }]
+ * GET /api/niveles-carrera   → [{ id_nivel, nombre_nivel }]
+ */
 const cargarCatalogos = async () => {
   try {
     const [resDep, resNiv] = await Promise.all([
-      fetch('http://localhost:8000/api/departamentos'),
-      fetch('http://localhost:8000/api/niveles-carrera')
+      fetch(`${API}/departamentos`),
+      fetch(`${API}/niveles-carrera`)
     ])
     departamentos.value = await resDep.json()
     niveles.value       = await resNiv.json()
@@ -329,20 +341,17 @@ const cargarCatalogos = async () => {
   }
 }
 
-onMounted(() => {
-  cargarCarreras()
-  cargarCatalogos()
-})
+onMounted(() => { cargarCarreras(); cargarCatalogos() })
 
 // ── Filtros y paginación ─────────────────────────────────────────
 const normalize = (t) => t?.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') ?? ''
 
 const carrerasFiltradas = computed(() =>
   carreras.value.filter(c => {
-    const coincideBusqueda  = !busqueda.value || normalize(c.nombre).includes(normalize(busqueda.value))
-    const coincideDep       = !filtroDepartamento.value || c.id_departamento == filtroDepartamento.value
-    const coincideNivel     = !filtroNivel.value || c.id_nivel == filtroNivel.value
-    const coincideEstatus   = !filtroEstatus.value || String(c.estatus) === filtroEstatus.value
+    const coincideBusqueda = !busqueda.value || normalize(c.nombre).includes(normalize(busqueda.value))
+    const coincideDep      = !filtroDepartamento.value || c.id_departamento == filtroDepartamento.value
+    const coincideNivel    = !filtroNivel.value || c.id_nivel == filtroNivel.value
+    const coincideEstatus  = !filtroEstatus.value || String(c.estatus) === filtroEstatus.value
     return coincideBusqueda && coincideDep && coincideNivel && coincideEstatus
   })
 )
@@ -362,10 +371,9 @@ const visiblePages = computed(() => {
   return [...pages].sort((a, b) => a - b)
 })
 
-const goToPage  = (p) => { currentPage.value = p; filaActiva.value = -1 }
-const prevPage  = () => { if (currentPage.value > 1) currentPage.value-- }
-const nextPage  = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
-
+const goToPage     = (p) => { currentPage.value = p; filaActiva.value = -1 }
+const prevPage     = () => { if (currentPage.value > 1) currentPage.value-- }
+const nextPage     = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
 const limpiarFiltros = () => {
   busqueda.value = ''; filtroDepartamento.value = ''; filtroNivel.value = ''; filtroEstatus.value = ''
   currentPage.value = 1; filaActiva.value = -1
@@ -377,10 +385,8 @@ const resetForm = () => {
   Object.keys(errors).forEach(k => delete errors[k])
 }
 
-const abrirModalNuevo = () => { resetForm(); showModal.value = true }
-
-const abrirModalVer = (c) => { carreraVer.value = c; showModalVer.value = true }
-
+const abrirModalNuevo  = () => { resetForm(); showModal.value = true }
+const abrirModalVer    = (c) => { carreraVer.value = c; showModalVer.value = true }
 const abrirModalEditar = (c) => {
   resetForm()
   form.id_carrera      = c.id_carrera
@@ -388,14 +394,13 @@ const abrirModalEditar = (c) => {
   form.id_departamento = c.id_departamento
   form.id_nivel        = c.id_nivel
   form.estatus         = c.estatus
-  showModal.value = true
+  showModal.value      = true
 }
-
 const cerrarModal = () => { showModal.value = false; resetForm() }
 
 const solicitarEliminar = () => {
   carreraAEliminar.value = { id_carrera: form.id_carrera, nombre: form.nombre }
-  showModal.value = false
+  showModal.value        = false
   showModalEliminar.value = true
 }
 
@@ -409,19 +414,25 @@ const validar = () => {
 }
 
 // ── CRUD ─────────────────────────────────────────────────────────
+/*
+ * POST /api/carreras
+ * Body: { nombre, id_departamento, id_nivel, estatus }
+ *
+ * PUT /api/carreras/:id_carrera
+ * Body: { nombre, id_departamento, id_nivel, estatus }
+ */
 const guardar = async () => {
   if (!validar()) return
-
   guardando.value = true
   const esEdicion = !!form.id_carrera
-  const url    = esEdicion ? `http://localhost:8000/api/carreras/${form.id_carrera}` : 'http://localhost:8000/api/carreras'
+  const url    = esEdicion ? `${API}/carreras/${form.id_carrera}` : `${API}/carreras`
   const method = esEdicion ? 'PUT' : 'POST'
 
   const payload = {
-    nombre:           form.nombre.trim(),
-    id_departamento:  form.id_departamento,
-    id_nivel:         form.id_nivel,
-    estatus:          form.estatus
+    nombre:          form.nombre.trim(),
+    id_departamento: form.id_departamento,
+    id_nivel:        form.id_nivel,
+    estatus:         form.estatus
   }
 
   try {
@@ -442,18 +453,21 @@ const guardar = async () => {
   }
 }
 
+/*
+ * DELETE /api/carreras/:id_carrera
+ */
 const confirmarEliminar = async () => {
   if (!carreraAEliminar.value) return
   guardando.value = true
   try {
-    const res = await fetch(`http://localhost:8000/api/carreras/${carreraAEliminar.value.id_carrera}`, {
+    const res = await fetch(`${API}/carreras/${carreraAEliminar.value.id_carrera}`, {
       method: 'DELETE',
       headers: { 'Accept': 'application/json' }
     })
     if (!res.ok) throw new Error('Error del servidor')
     await cargarCarreras()
     showModalEliminar.value = false
-    carreraAEliminar.value = null
+    carreraAEliminar.value  = null
     mostrarNotificacion('Carrera eliminada correctamente.')
   } catch (e) {
     console.error('Error eliminando carrera:', e)
@@ -466,19 +480,6 @@ const confirmarEliminar = async () => {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
-:root {
-  --azul:        #1B396A;
-  --azul-hover:  #1D4ED8;
-  --azul-suave:  #DBEAFE;
-  --borde:       #E5E7EB;
-  --fondo:       #F5F5F5;
-  --texto:       #1A1A1A;
-  --gris:        #6B7280;
-  --verde:       #16A34A;
-  --rojo:        #DC2626;
-  --amarillo:    #F59E0B;
-}
-
 
 .carreras-page {
   --azul:       #1B396A;
@@ -491,7 +492,7 @@ const confirmarEliminar = async () => {
   --verde:      #16A34A;
   --rojo:       #DC2626;
 
-  width: 100%; 
+  width: 100%;
   background: var(--fondo);
   font-family: 'Montserrat', sans-serif;
   padding-bottom: 2rem;
@@ -503,9 +504,9 @@ const confirmarEliminar = async () => {
 .breadcrumb-sep { color: #9CA3AF; }
 .breadcrumb-actual { color: var(--gris); font-weight: 600; }
 
-.page-header { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 1.2rem; }
+.page-header { display: flex; flex-direction: column; gap: 4px; margin-bottom: 1.2rem; }
 .page-title { color: var(--texto); font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
-.page-subtitle { font-size: 0.9rem; color: var(--gris); font-weight: 500; }
+.page-subtitle { font-size: 0.9rem; color: var(--gris); font-weight: 500; margin: 0; }
 
 .barra-carga { height: 3px; background: transparent; border-radius: 2px; margin-bottom: 1rem; overflow: hidden; opacity: 0; transition: opacity 0.3s; }
 .barra-carga.visible { opacity: 1; }
@@ -534,7 +535,7 @@ const confirmarEliminar = async () => {
 .btn-nuevo:hover { background: var(--azul-hover); }
 
 .table-container { background: #FFFFFF; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid var(--borde); }
-.data-table { width: 100%; border-collapse: collapse; outline: none; }
+.data-table { width: 100%; border-collapse: collapse; }
 .data-table th { background: var(--fondo); padding: 12px 16px; text-align: left; font-weight: 600; font-size: 0.88rem; color: var(--texto); border-bottom: 1px solid var(--borde); font-family: 'Montserrat', sans-serif; white-space: nowrap; }
 .data-table td { padding: 11px 16px; border-bottom: 1px solid var(--borde); color: var(--texto); font-size: 0.93rem; font-family: 'Montserrat', sans-serif; }
 .data-table tbody tr { transition: background 0.15s; cursor: pointer; }
@@ -551,9 +552,9 @@ const confirmarEliminar = async () => {
 .btn-accion { display: flex; align-items: center; gap: 5px; padding: 6px 13px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; font-weight: 600; font-family: 'Montserrat', sans-serif; transition: background 0.15s; white-space: nowrap; }
 .btn-accion svg { width: 14px; height: 14px; }
 .btn-accion.ver    { background: #F3F4F6; color: #1A1A1A; border: 1px solid #D1D5DB; }
-.btn-accion.ver:hover { background: #E5E7EB; border-color: #9CA3AF; }
-.btn-accion.editar { background: var(--azul); color: white; border: 1px solid var(--azul); }
-.btn-accion.editar:hover { background: var(--azul-hover); }
+.btn-accion.ver:hover { background: #E5E7EB; }
+.btn-accion.editar { background: #1B396A; color: white; border: 1px solid #1B396A; }
+.btn-accion.editar:hover { background: #1D4ED8; }
 
 .estado-vacio, .estado-cargando { text-align: center; padding: 3.5rem 2rem; color: var(--gris); }
 .icono-vacio { width: 56px; height: 56px; stroke: #9CA3AF; margin-bottom: 12px; }
@@ -570,44 +571,45 @@ const confirmarEliminar = async () => {
 .btn-pag:disabled { opacity: 0.4; cursor: not-allowed; }
 .btn-pag.activo { background: var(--azul); color: white; border-color: var(--azul); }
 
+.pie-pagina { text-align: center; color: #9CA3AF; font-size: 0.82rem; padding-top: 2rem; border-top: 1px solid var(--borde); margin-top: 1rem; }
+
+/* Modales — hardcoded para no depender del scope */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 2000; }
-.modal-content { background: #FFFFFF; width: 520px; max-width: 92%; border-radius: 14px; box-shadow: 0 20px 50px rgba(0,0,0,0.18); overflow: hidden; border: 1px solid var(--borde); }
+.modal-content { background: #FFFFFF; width: 520px; max-width: 92%; border-radius: 14px; box-shadow: 0 20px 50px rgba(0,0,0,0.18); overflow: hidden; border: 1px solid #E5E7EB; }
 .modal-confirmar { width: 440px; }
-.modal-header { background: var(--azul); color: white; padding: 1.1rem 1.6rem; display: flex; justify-content: space-between; align-items: center; }
+.modal-header { background: #1B396A; color: white; padding: 1.1rem 1.6rem; display: flex; justify-content: space-between; align-items: center; }
 .modal-header h3 { margin: 0; font-size: 1.2rem; font-weight: 700; font-family: 'Montserrat', sans-serif; }
 .btn-cerrar-modal { background: none; border: none; color: white; font-size: 1.7rem; cursor: pointer; line-height: 1; opacity: 0.85; }
 .btn-cerrar-modal:hover { opacity: 1; }
 .modal-body { padding: 1.6rem; }
 .form-grupo { margin-bottom: 1.2rem; }
-.form-grupo label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: var(--texto); font-family: 'Montserrat', sans-serif; }
-.obligatorio { color: var(--rojo); }
-.modal-input, .modal-select { width: 100%; padding: 10px 14px; border: 1.5px solid var(--borde); border-radius: 8px; font-size: 0.95rem; background: #FFFFFF; color: var(--texto); font-family: 'Montserrat', sans-serif; outline: none; transition: border-color 0.2s; box-sizing: border-box; }
-.modal-input:focus, .modal-select:focus { border-color: var(--azul); }
-.borde-error { border-color: var(--rojo) !important; }
-.mensaje-error { display: block; color: var(--rojo); font-size: 0.82rem; margin-top: 5px; }
-.indicador-estatus { display: inline-flex; align-items: center; margin-top: 7px; padding: 4px 12px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; }
+.form-grupo label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: #1A1A1A; font-family: 'Montserrat', sans-serif; }
+.obligatorio { color: #DC2626; }
+.modal-input, .modal-select { width: 100%; padding: 10px 14px; border: 1.5px solid #E5E7EB; border-radius: 8px; font-size: 0.95rem; background: #FFFFFF; color: #1A1A1A; font-family: 'Montserrat', sans-serif; outline: none; transition: border-color 0.2s; box-sizing: border-box; }
+.modal-input:focus, .modal-select:focus { border-color: #1B396A; box-shadow: 0 0 0 3px #DBEAFE; }
+.borde-error { border-color: #DC2626 !important; }
+.mensaje-error { display: block; color: #DC2626; font-size: 0.82rem; margin-top: 5px; }
+.indicador-estatus { display: inline-flex; align-items: center; margin-top: 7px; padding: 4px 12px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; font-family: 'Montserrat', sans-serif; }
 .indicador-estatus.activo   { background: #DCFCE7; color: #16A34A; }
 .indicador-estatus.inactivo { background: #F3F4F6; color: #6B7280; }
-.modal-footer { padding: 1rem 1.6rem; background: var(--fondo); display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid var(--borde); }
-.btn-secundario { padding: 10px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; background: #FFFFFF; color: var(--texto); border: 1px solid var(--borde); transition: background 0.15s; }
-.btn-secundario:hover { background: var(--fondo); }
+.modal-footer { padding: 1rem 1.6rem; background: #F5F5F5; display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid #E5E7EB; }
+.btn-secundario { padding: 10px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; background: #FFFFFF; color: #1B396A; border: 2px solid #1B396A; transition: background 0.15s; }
+.btn-secundario:hover { background: #DBEAFE; }
 .btn-secundario:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-eliminar { padding: 10px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; background: var(--rojo); color: white; border: none; transition: background 0.15s; }
+.btn-eliminar { padding: 10px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; background: #DC2626; color: white; border: 2px solid #DC2626; transition: background 0.15s; }
 .btn-eliminar:hover { background: #B91C1C; }
 .btn-eliminar:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-guardar { display: flex; align-items: center; gap: 8px; padding: 10px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; background: #1B396A; color: #FFFFFF; border: none; transition: background 0.15s; }
+.btn-guardar { display: flex; align-items: center; gap: 8px; padding: 10px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; background: #1B396A; color: #FFFFFF; border: 2px solid #1B396A; transition: background 0.15s; }
 .btn-guardar:hover:not(:disabled) { background: #1D4ED8; }
-.btn-guardar:disabled { background: #E5E7EB; color: #9CA3AF; cursor: not-allowed; }
+.btn-guardar:disabled { opacity: 0.55; cursor: not-allowed; }
 .spinner-btn { display: inline-block; width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: girar 0.7s linear infinite; flex-shrink: 0; }
-.detalle-fila { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--borde); font-size: 0.95rem; }
+.detalle-fila { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-bottom: 1px solid #E5E7EB; font-size: 0.95rem; font-family: 'Montserrat', sans-serif; }
 .detalle-fila:last-child { border-bottom: none; }
-.detalle-label { font-weight: 600; color: var(--gris); }
-.detalle-valor { font-weight: 500; color: var(--texto); }
+.detalle-label { font-weight: 600; color: #6B7280; }
+.detalle-valor { font-weight: 500; color: #1A1A1A; }
 .confirmar-body { display: flex; flex-direction: column; align-items: center; gap: 1rem; text-align: center; padding: 2rem 1.6rem; }
 .confirmar-icono { width: 52px; height: 52px; stroke: #F59E0B; }
-.confirmar-body p { color: var(--texto); font-size: 0.95rem; margin: 0; line-height: 1.5; }
+.confirmar-body p { color: #1A1A1A; font-size: 0.95rem; margin: 0; line-height: 1.5; font-family: 'Montserrat', sans-serif; }
 
 @keyframes girar { to { transform: rotate(360deg); } }
-
-.pie-pagina { text-align: center; color: #9CA3AF; font-size: 0.82rem; padding-top: 2rem; border-top: 1px solid var(--borde); margin-top: 1rem; }
 </style>

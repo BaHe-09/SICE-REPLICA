@@ -86,7 +86,6 @@
       <div class="modal-content">
         <div class="modal-header"><h3>{{ form.id_periodo ? 'Editar Periodo' : 'Nuevo Periodo Académico' }}</h3><button @click="cerrarModal" class="btn-cerrar-modal">×</button></div>
         <div class="modal-body">
-          <!-- Aviso cuando se activa un periodo y ya hay uno activo -->
           <div v-if="form.estatus && periodoActivoExistente && !form.id_periodo" class="aviso-amarillo">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="aviso-icono"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
             <span>El periodo actualmente activo quedará inactivo al guardar este nuevo periodo.</span>
@@ -152,6 +151,9 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 
+// ── Variable de entorno — estandarización del proyecto ───────────
+const API = `${import.meta.env.VITE_API_URL}/api`
+
 const periodos        = ref([])
 const cargando        = ref(false)
 const guardando       = ref(false)
@@ -174,13 +176,16 @@ const mostrarNotificacion = (mensaje, tipo = 'exito') => {
   timerNotif = setTimeout(() => { notificacion.value.visible = false }, 3500)
 }
 
-// Verifica si ya existe un periodo activo 
 const periodoActivoExistente = computed(() => periodos.value.some(p => p.estatus && p.id_periodo !== form.id_periodo))
 
+/*
+ * GET /api/periodos
+ * Respuesta: [{ id_periodo, nombre_periodo, fecha_inicio, fecha_fin, estatus }]
+ */
 const cargarPeriodos = async () => {
   cargando.value = true
   try {
-    const res = await fetch('http://localhost:8000/api/periodos')
+    const res = await fetch(`${API}/periodos`)
     if (!res.ok) throw new Error()
     periodos.value = await res.json()
   } catch { mostrarNotificacion('No se pudieron cargar los periodos.', 'error') }
@@ -206,10 +211,10 @@ const formatearFecha = (fecha) => {
 
 const limpiarFiltros = () => { busqueda.value = ''; filtroEstatus.value = ''; filaActiva.value = -1 }
 const resetForm = () => { form.id_periodo = null; form.nombre_periodo = ''; form.fecha_inicio = ''; form.fecha_fin = ''; form.estatus = 1; Object.keys(errors).forEach(k => delete errors[k]) }
-const abrirModalNuevo = () => { resetForm(); showModal.value = true }
-const abrirModalVer = (p) => { periodoVer.value = p; showModalVer.value = true }
+const abrirModalNuevo  = () => { resetForm(); showModal.value = true }
+const abrirModalVer    = (p) => { periodoVer.value = p; showModalVer.value = true }
 const abrirModalEditar = (p) => { resetForm(); form.id_periodo = p.id_periodo; form.nombre_periodo = p.nombre_periodo; form.fecha_inicio = p.fecha_inicio; form.fecha_fin = p.fecha_fin; form.estatus = p.estatus; showModal.value = true }
-const cerrarModal = () => { showModal.value = false; resetForm() }
+const cerrarModal      = () => { showModal.value = false; resetForm() }
 const solicitarEliminar = () => { periodoAEliminar.value = { id_periodo: form.id_periodo, nombre_periodo: form.nombre_periodo }; showModal.value = false; showModalEliminar.value = true }
 
 const validar = () => {
@@ -221,11 +226,15 @@ const validar = () => {
   return Object.keys(errors).length === 0
 }
 
+/*
+ * POST /api/periodos   body: { nombre_periodo, fecha_inicio, fecha_fin, estatus }
+ * PUT  /api/periodos/:id  body: mismos campos
+ */
 const guardar = async () => {
   if (!validar()) return
   guardando.value = true
   const esEdicion = !!form.id_periodo
-  const url = esEdicion ? `http://localhost:8000/api/periodos/${form.id_periodo}` : 'http://localhost:8000/api/periodos'
+  const url = esEdicion ? `${API}/periodos/${form.id_periodo}` : `${API}/periodos`
   const payload = { nombre_periodo: form.nombre_periodo.trim(), fecha_inicio: form.fecha_inicio, fecha_fin: form.fecha_fin, estatus: form.estatus }
   try {
     const res = await fetch(url, { method: esEdicion ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(payload) })
@@ -236,11 +245,14 @@ const guardar = async () => {
   finally { guardando.value = false }
 }
 
+/*
+ * DELETE /api/periodos/:id
+ */
 const confirmarEliminar = async () => {
   if (!periodoAEliminar.value) return
   guardando.value = true
   try {
-    const res = await fetch(`http://localhost:8000/api/periodos/${periodoAEliminar.value.id_periodo}`, { method: 'DELETE', headers: { 'Accept': 'application/json' } })
+    const res = await fetch(`${API}/periodos/${periodoAEliminar.value.id_periodo}`, { method: 'DELETE', headers: { 'Accept': 'application/json' } })
     if (!res.ok) throw new Error()
     await cargarPeriodos(); showModalEliminar.value = false; periodoAEliminar.value = null
     mostrarNotificacion('Periodo eliminado correctamente.')
@@ -251,22 +263,10 @@ const confirmarEliminar = async () => {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
-:root {
-  --azul:        #1B396A;
-  --azul-hover:  #1D4ED8;
-  --azul-suave:  #DBEAFE;
-  --borde:       #E5E7EB;
-  --fondo:       #F5F5F5;
-  --texto:       #1A1A1A;
-  --gris:        #6B7280;
-  --verde:       #16A34A;
-  --rojo:        #DC2626;
-  --amarillo:    #F59E0B;
-}
 
 .periodos-page{--azul:#1B396A;--azul-hover:#1D4ED8;--azul-suave:#DBEAFE;--borde:#E5E7EB;--fondo:#F5F5F5;--texto:#1A1A1A;--gris:#6B7280;--verde:#16A34A;--rojo:#DC2626;width:100%;background:var(--fondo);font-family:'Montserrat',sans-serif;padding-bottom:2rem}
 .breadcrumb{display:flex;align-items:center;gap:6px;color:var(--gris);font-size:0.88rem;margin-bottom:0.75rem}.breadcrumb-link{color:var(--azul);font-weight:500;cursor:pointer;transition:color 0.15s}.breadcrumb-link:hover{color:var(--azul-hover);text-decoration:underline}.breadcrumb-sep{color:#9CA3AF}.breadcrumb-actual{color:var(--gris);font-weight:600}
-.page-header{display:flex;align-items:baseline;gap:1rem;margin-bottom:1.2rem}.page-title{color:var(--texto);font-size:1.75rem;font-weight:700;letter-spacing:-0.02em;margin:0}.page-subtitle{font-size:0.9rem;color:var(--gris);font-weight:500}
+.page-header{display:flex;flex-direction:column;gap:4px;margin-bottom:1.2rem}.page-title{color:var(--texto);font-size:1.75rem;font-weight:700;letter-spacing:-0.02em;margin:0}.page-subtitle{font-size:0.9rem;color:var(--gris);font-weight:500}
 .barra-carga{height:3px;background:transparent;border-radius:2px;margin-bottom:1rem;overflow:hidden;opacity:0;transition:opacity 0.3s}.barra-carga.visible{opacity:1}.barra-progreso{height:100%;width:40%;background:var(--azul);border-radius:2px;animation:deslizar 1.2s ease-in-out infinite}
 @keyframes deslizar{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
 .toast{position:fixed;bottom:2rem;right:2rem;display:flex;align-items:center;gap:10px;padding:12px 20px;border-radius:10px;color:white;font-weight:500;font-size:0.93rem;box-shadow:0 6px 20px rgba(0,0,0,0.18);z-index:3000;max-width:380px}.toast.exito{background:var(--azul)}.toast.error{background:var(--rojo)}.toast-icono{width:20px;height:20px;flex-shrink:0}
@@ -282,12 +282,12 @@ const confirmarEliminar = async () => {
 .celda-acciones{display:flex;gap:7px;align-items:center}.btn-accion{display:flex;align-items:center;gap:5px;padding:6px 13px;border-radius:6px;font-size:0.85rem;cursor:pointer;font-weight:600;font-family:'Montserrat',sans-serif;transition:background 0.15s;white-space:nowrap}.btn-accion svg{width:14px;height:14px}.btn-accion.ver{background:#F3F4F6;color:#1A1A1A;border:1px solid #D1D5DB}.btn-accion.ver:hover{background:#E5E7EB;border-color:#9CA3AF}.btn-accion.editar{background:#1B396A;color:#FFFFFF;border:1px solid #1B396A}.btn-accion.editar:hover{background:#1D4ED8;border-color:#1D4ED8}
 .estado-vacio,.estado-cargando{text-align:center;padding:3.5rem 2rem;color:var(--gris)}.icono-vacio{width:56px;height:56px;stroke:#9CA3AF;margin-bottom:12px}.estado-vacio h3{font-size:1.2rem;color:var(--texto);margin:0 0 6px}.estado-vacio p{font-size:0.93rem;margin:0 0 1.2rem}.btn-limpiar-vacio{background:#FFFFFF;color:var(--texto);border:1px solid var(--borde);padding:9px 20px;border-radius:8px;font-weight:500;cursor:pointer;font-family:'Montserrat',sans-serif}.spinner-tabla{display:inline-block;width:36px;height:36px;border:3px solid #E5E7EB;border-top-color:var(--azul);border-radius:50%;animation:girar 0.8s linear infinite;margin-bottom:12px}
 .aviso-amarillo{display:flex;align-items:flex-start;gap:10px;background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;padding:12px 14px;margin-bottom:1.2rem;font-size:0.88rem;color:#92400E;font-weight:500}.aviso-icono{width:18px;height:18px;stroke:#D97706;flex-shrink:0;margin-top:1px}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;z-index:2000}.modal-content{background:#FFFFFF;width:520px;max-width:92%;border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,0.18);overflow:hidden;border:1px solid var(--borde)}.modal-confirmar{width:440px}.modal-header{background:var(--azul);color:white;padding:1.1rem 1.6rem;display:flex;justify-content:space-between;align-items:center}.modal-header h3{margin:0;font-size:1.2rem;font-weight:700;font-family:'Montserrat',sans-serif}.btn-cerrar-modal{background:none;border:none;color:white;font-size:1.7rem;cursor:pointer;line-height:1;opacity:0.85}.btn-cerrar-modal:hover{opacity:1}
-.modal-body{padding:1.6rem}.form-grupo{margin-bottom:1.2rem}.form-grupo-doble{display:grid;grid-template-columns:1fr 1fr;gap:1rem}.form-grupo label{display:block;margin-bottom:6px;font-weight:600;font-size:0.9rem;color:var(--texto);font-family:'Montserrat',sans-serif}.obligatorio{color:var(--rojo)}.modal-input,.modal-select{width:100%;padding:10px 14px;border:1.5px solid var(--borde);border-radius:8px;font-size:0.95rem;background:#FFFFFF;color:var(--texto);font-family:'Montserrat',sans-serif;outline:none;transition:border-color 0.2s;box-sizing:border-box}.modal-input:focus,.modal-select:focus{border-color:var(--azul)}.borde-error{border-color:var(--rojo)!important}.mensaje-error{display:block;color:var(--rojo);font-size:0.82rem;margin-top:5px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;z-index:2000}.modal-content{background:#FFFFFF;width:520px;max-width:92%;border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,0.18);overflow:hidden;border:1px solid #E5E7EB}.modal-confirmar{width:440px}.modal-header{background:#1B396A;color:white;padding:1.1rem 1.6rem;display:flex;justify-content:space-between;align-items:center}.modal-header h3{margin:0;font-size:1.2rem;font-weight:700;font-family:'Montserrat',sans-serif}.btn-cerrar-modal{background:none;border:none;color:white;font-size:1.7rem;cursor:pointer;line-height:1;opacity:0.85}.btn-cerrar-modal:hover{opacity:1}
+.modal-body{padding:1.6rem}.form-grupo{margin-bottom:1.2rem}.form-grupo-doble{display:grid;grid-template-columns:1fr 1fr;gap:1rem}.form-grupo label{display:block;margin-bottom:6px;font-weight:600;font-size:0.9rem;color:#1A1A1A;font-family:'Montserrat',sans-serif}.obligatorio{color:#DC2626}.modal-input,.modal-select{width:100%;padding:10px 14px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:0.95rem;background:#FFFFFF;color:#1A1A1A;font-family:'Montserrat',sans-serif;outline:none;transition:border-color 0.2s;box-sizing:border-box}.modal-input:focus,.modal-select:focus{border-color:#1B396A;box-shadow:0 0 0 3px #DBEAFE}.borde-error{border-color:#DC2626!important}.mensaje-error{display:block;color:#DC2626;font-size:0.82rem;margin-top:5px}
 .indicador-estatus{display:inline-flex;align-items:center;margin-top:7px;padding:4px 12px;border-radius:20px;font-size:0.82rem;font-weight:600}.indicador-estatus.activo{background:#DCFCE7;color:#16A34A}.indicador-estatus.inactivo{background:#F3F4F6;color:#6B7280}
-.modal-footer{padding:1rem 1.6rem;background:var(--fondo);display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--borde)}.btn-secundario{padding:10px 22px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;background:#FFFFFF;color:var(--texto);border:1px solid var(--borde);transition:background 0.15s}.btn-secundario:hover{background:var(--fondo)}.btn-secundario:disabled{opacity:0.5;cursor:not-allowed}.btn-eliminar{padding:10px 22px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;background:var(--rojo);color:white;border:none}.btn-eliminar:hover{background:#B91C1C}.btn-eliminar:disabled{opacity:0.5;cursor:not-allowed}.btn-guardar{display:flex;align-items:center;gap:8px;padding:10px 22px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;background:#1B396A;color:#FFFFFF;border:none;transition:background 0.15s}.btn-guardar:hover:not(:disabled){background:#1D4ED8}.btn-guardar:disabled{background:#E5E7EB;color:#9CA3AF;cursor:not-allowed}.spinner-btn{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:girar 0.7s linear infinite;flex-shrink:0}
-.detalle-fila{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--borde);font-size:0.95rem}.detalle-fila:last-child{border-bottom:none}.detalle-label{font-weight:600;color:var(--gris)}.detalle-valor{font-weight:500;color:var(--texto)}
-.confirmar-body{display:flex;flex-direction:column;align-items:center;gap:1rem;text-align:center;padding:2rem 1.6rem}.confirmar-icono{width:52px;height:52px;stroke:#F59E0B}.confirmar-body p{color:var(--texto);font-size:0.95rem;margin:0;line-height:1.5}
+.modal-footer{padding:1rem 1.6rem;background:#F5F5F5;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #E5E7EB}.btn-secundario{padding:10px 22px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;background:#FFFFFF;color:#1B396A;border:2px solid #1B396A;transition:background 0.15s}.btn-secundario:hover{background:#DBEAFE}.btn-secundario:disabled{opacity:0.5;cursor:not-allowed}.btn-eliminar{padding:10px 22px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;background:#DC2626;color:white;border:2px solid #DC2626;transition:background 0.15s}.btn-eliminar:hover{background:#B91C1C}.btn-eliminar:disabled{opacity:0.5;cursor:not-allowed}.btn-guardar{display:flex;align-items:center;gap:8px;padding:10px 22px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;background:#1B396A;color:#FFFFFF;border:2px solid #1B396A;transition:background 0.15s}.btn-guardar:hover:not(:disabled){background:#1D4ED8}.btn-guardar:disabled{opacity:0.55;cursor:not-allowed}.spinner-btn{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:girar 0.7s linear infinite;flex-shrink:0}
+.detalle-fila{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #E5E7EB;font-size:0.95rem;font-family:'Montserrat',sans-serif}.detalle-fila:last-child{border-bottom:none}.detalle-label{font-weight:600;color:#6B7280}.detalle-valor{font-weight:500;color:#1A1A1A}
+.confirmar-body{display:flex;flex-direction:column;align-items:center;gap:1rem;text-align:center;padding:2rem 1.6rem}.confirmar-icono{width:52px;height:52px;stroke:#F59E0B}.confirmar-body p{color:#1A1A1A;font-size:0.95rem;margin:0;line-height:1.5;font-family:'Montserrat',sans-serif}
 @keyframes girar{to{transform:rotate(360deg)}}
-.pie-pagina{text-align:center;color:#9CA3AF;font-size:0.82rem;padding-top:2rem;border-top:1px solid var(--borde);margin-top:1rem}
+.pie-pagina{text-align:center;color:#9CA3AF;font-size:0.82rem;padding-top:2rem;border-top:1px solid #E5E7EB;margin-top:1rem}
 </style>

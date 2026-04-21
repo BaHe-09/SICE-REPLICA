@@ -4,7 +4,7 @@
 
       <div class="page-header">
         <h1 class="page-title">Inscripciones</h1>
-        <span class="page-subtitle">{{ inscripcionesFiltradas.length }} registro(s) encontrado(s)</span>
+        <p class="page-subtitle">{{ inscripcionesFiltradas.length }} registro(s) encontrado(s)</p>
       </div>
 
       <div class="barra-carga-global" :class="{ visible: cargando }"><div class="barra-progreso"></div></div>
@@ -444,9 +444,9 @@ const claseEstatus = e => ({ 'activo':e==='Activo', 'baja-temporal':e==='Baja Te
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 .alumnos-page{--borde:#E5E7EB;--fondo:#F5F5F5;max-width:100%;background:var(--fondo);font-family:'Montserrat',sans-serif;padding-bottom:2rem}
-.page-header{display:flex;align-items:baseline;gap:1rem;margin-bottom:1.2rem}
+.page-header{display:flex;flex-direction:column;gap:4px;margin-bottom:1.2rem}
 .page-title{color:#1A1A1A;font-size:1.75rem;font-weight:700;letter-spacing:-.02em;margin:0}
-.page-subtitle{font-size:.9rem;color:#6B7280;font-weight:500}
+.page-subtitle{font-size:.9rem;color:#6B7280;font-weight:500;margin:0}
 .barra-carga-global{height:3px;background:transparent;border-radius:2px;margin-bottom:1rem;overflow:hidden;opacity:0;transition:opacity .3s}
 .barra-carga-global.visible{opacity:1}
 .barra-progreso{height:100%;width:40%;background:#1B396A;border-radius:2px;animation:deslizar 1.2s ease-in-out infinite}

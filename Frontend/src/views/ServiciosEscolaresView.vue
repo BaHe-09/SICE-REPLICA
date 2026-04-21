@@ -213,11 +213,13 @@ const mostrarNotificacion = (mensaje, tipo = 'exito') => {
   timerNotif = setTimeout(() => { notificacion.value.visible = false }, 3500)
 }
 
+const API = `${import.meta.env.VITE_API_URL}/api` 
+
 const cargarDatos = async () => {
   cargando.value   = true
   errorCarga.value = false
   try {
-    const res = await fetch('http://localhost:8000/api/dashboard')
+    const res = await fetch(`${API}/dashboard`)
     if (!res.ok) throw new Error('Error en la respuesta del servidor')
     const data = await res.json()
 

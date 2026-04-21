@@ -386,6 +386,9 @@
 import { ref, computed, onMounted, reactive, nextTick } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 
+// ── Variable de entorno — estandarización del proyecto ───────────
+const API = `${import.meta.env.VITE_API_URL}/api`
+
 // ── Estado ───────────────────────────────────────────────────────
 const edificios            = ref([])
 const aulas                = ref([])
@@ -425,9 +428,14 @@ const mostrarNotificacion = (mensaje, tipo = 'exito') => {
 }
 
 // ── Carga de datos ───────────────────────────────────────────────
+
+/*
+ * GET /api/edificios
+ * Respuesta: [{ id_edificio, nombre_edificio }]
+ */
 const cargarEdificios = async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/edificios')
+    const res = await fetch(`${API}/edificios`)
     if (!res.ok) throw new Error()
     edificios.value = await res.json()
   } catch {
@@ -435,9 +443,13 @@ const cargarEdificios = async () => {
   }
 }
 
+/*
+ * GET /api/aulas
+ * Respuesta: [{ id_aula, id_edificio, nombre, capacidad }]
+ */
 const cargarAulas = async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/aulas')
+    const res = await fetch(`${API}/aulas`)
     if (!res.ok) throw new Error()
     aulas.value = await res.json()
   } catch {
@@ -542,13 +554,17 @@ const validarEdificio = () => {
   return Object.keys(erroresEdificio).length === 0
 }
 
+/*
+ * POST /api/edificios   body: { nombre_edificio }
+ * PUT  /api/edificios/:id  body: { nombre_edificio }
+ */
 const guardarEdificio = async () => {
   if (!validarEdificio()) return
   guardando.value = true
   const esEdicion = !!formEdificio.id_edificio
-  const url    = esEdicion
-    ? `http://localhost:8000/api/edificios/${formEdificio.id_edificio}`
-    : 'http://localhost:8000/api/edificios'
+  const url = esEdicion
+    ? `${API}/edificios/${formEdificio.id_edificio}`
+    : `${API}/edificios`
 
   try {
     const res = await fetch(url, {
@@ -612,13 +628,17 @@ const validarAula = () => {
   return Object.keys(erroresAula).length === 0
 }
 
+/*
+ * POST /api/aulas   body: { id_edificio, nombre, capacidad }
+ * PUT  /api/aulas/:id  body: { id_edificio, nombre, capacidad }
+ */
 const guardarAula = async () => {
   if (!validarAula()) return
   guardando.value = true
   const esEdicion = !!formAula.id_aula
-  const url    = esEdicion
-    ? `http://localhost:8000/api/aulas/${formAula.id_aula}`
-    : 'http://localhost:8000/api/aulas'
+  const url = esEdicion
+    ? `${API}/aulas/${formAula.id_aula}`
+    : `${API}/aulas`
 
   try {
     const res = await fetch(url, {
@@ -648,14 +668,18 @@ const solicitarEliminarAula = (a) => {
 }
 
 // ── Eliminar ─────────────────────────────────────────────────────
+/*
+ * DELETE /api/edificios/:id
+ * DELETE /api/aulas/:id
+ */
 const confirmarEliminar = async () => {
   if (!itemAEliminar.value) return
   guardando.value = true
 
   const esEdificio = tipoEliminar.value === 'edificio'
   const url = esEdificio
-    ? `http://localhost:8000/api/edificios/${itemAEliminar.value.id_edificio}`
-    : `http://localhost:8000/api/aulas/${itemAEliminar.value.id_aula}`
+    ? `${API}/edificios/${itemAEliminar.value.id_edificio}`
+    : `${API}/aulas/${itemAEliminar.value.id_aula}`
 
   try {
     const res = await fetch(url, {
@@ -689,19 +713,6 @@ const confirmarEliminar = async () => {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
-:root {
-  --azul:        #1B396A;
-  --azul-hover:  #1D4ED8;
-  --azul-suave:  #DBEAFE;
-  --borde:       #E5E7EB;
-  --fondo:       #F5F5F5;
-  --texto:       #1A1A1A;
-  --gris:        #6B7280;
-  --verde:       #16A34A;
-  --rojo:        #DC2626;
-  --amarillo:    #F59E0B;
-}
-
 
 .ea-page {
   --azul:        #1B396A;
@@ -715,31 +726,26 @@ const confirmarEliminar = async () => {
   --rojo:        #DC2626;
 
   width: 100%;
-  
   background: var(--fondo);
   font-family: 'Montserrat', sans-serif;
   padding-bottom: 2rem;
 }
 
-/* Breadcrumb */
 .breadcrumb { display: flex; align-items: center; gap: 6px; color: var(--gris); font-size: 0.88rem; margin-bottom: 0.75rem; }
 .breadcrumb-link { color: var(--azul); font-weight: 500; cursor: pointer; transition: color 0.15s; }
 .breadcrumb-link:hover { color: var(--azul-hover); text-decoration: underline; }
 .breadcrumb-sep { color: #9CA3AF; }
 .breadcrumb-actual { color: var(--gris); font-weight: 600; }
 
-/* Encabezado */
 .page-header { margin-bottom: 1.4rem; }
 .page-title { color: var(--texto); font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 4px; }
 .page-subtitle { color: var(--gris); font-size: 0.93rem; margin: 0; }
 
-/* Barra carga */
 .barra-carga { height: 3px; background: transparent; border-radius: 2px; margin-bottom: 1rem; overflow: hidden; opacity: 0; transition: opacity 0.3s; }
 .barra-carga.visible { opacity: 1; }
 .barra-progreso { height: 100%; width: 40%; background: var(--azul); border-radius: 2px; animation: deslizar 1.2s ease-in-out infinite; }
 @keyframes deslizar { 0% { transform: translateX(-100%); } 100% { transform: translateX(350%); } }
 
-/* Toast */
 .toast { position: fixed; bottom: 2rem; right: 2rem; display: flex; align-items: center; gap: 10px; padding: 12px 20px; border-radius: 10px; color: white; font-weight: 500; font-size: 0.93rem; box-shadow: 0 6px 20px rgba(0,0,0,0.18); z-index: 3000; max-width: 380px; }
 .toast.exito { background: var(--azul); }
 .toast.error { background: var(--rojo); }
@@ -747,42 +753,32 @@ const confirmarEliminar = async () => {
 .toast-slide-enter-active, .toast-slide-leave-active { transition: all 0.35s ease; }
 .toast-slide-enter-from, .toast-slide-leave-to { opacity: 0; transform: translateX(110%); }
 
-/* Card de sección */
 .seccion-card { background: #FFFFFF; border-radius: 12px; border: 1px solid var(--borde); box-shadow: 0 4px 12px rgba(0,0,0,0.05); overflow: hidden; }
-
 .seccion-header { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 1.6rem; border-bottom: 1px solid var(--borde); background: #FAFAFA; flex-wrap: wrap; gap: 1rem; }
-
 .seccion-titulo-grupo { display: flex; align-items: center; gap: 0.85rem; }
-
 .seccion-icono-wrapper { width: 40px; height: 40px; border-radius: 9px; background: var(--azul-suave); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .seccion-icono-wrapper svg { width: 20px; height: 20px; stroke: var(--azul); }
 .seccion-icono-morado { background: #EDE9FE; }
 .seccion-icono-morado svg { stroke: #7C3AED; }
-
 .seccion-titulo { font-size: 1rem; font-weight: 700; color: var(--texto); margin: 0 0 2px; }
 .seccion-subtitulo { font-size: 0.82rem; color: var(--gris); margin: 0; }
 
 .btn-nuevo { background: var(--azul); color: white; border: none; padding: 9px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; font-family: 'Montserrat', sans-serif; font-size: 0.88rem; transition: background 0.2s; }
 .btn-nuevo:hover { background: var(--azul-hover); }
 
-/* Filtros */
 .filtro-row { display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.6rem; border-bottom: 1px solid var(--borde); flex-wrap: wrap; }
-
 .search-group { position: relative; flex: 0 0 260px; min-width: 180px; }
 .search-input { width: 100%; padding: 9px 14px 9px 40px; border: 1px solid var(--borde); border-radius: 8px; font-size: 0.9rem; background: #FFFFFF; color: var(--texto); font-family: 'Montserrat', sans-serif; outline: none; transition: border-color 0.2s, box-shadow 0.2s; box-sizing: border-box; }
 .search-input:focus { border-color: var(--azul); box-shadow: 0 0 0 3px #DBEAFE; }
 .search-input::placeholder { color: #9CA3AF; }
 .search-icon-svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 17px; height: 17px; stroke: var(--gris); pointer-events: none; }
-
 .filter-select { padding: 9px 12px; border: 1px solid var(--borde); border-radius: 8px; font-size: 0.9rem; background: #FFFFFF; color: var(--texto); font-family: 'Montserrat', sans-serif; cursor: pointer; outline: none; flex: 1 1 180px; min-width: 160px; }
 .filter-select:focus { border-color: var(--azul); }
 .filter-select:disabled { opacity: 0.5; cursor: not-allowed; background: var(--fondo); }
-
 .btn-limpiar { display: flex; align-items: center; gap: 5px; background: #FFFFFF; color: var(--texto); border: 1px solid var(--borde); padding: 9px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.88rem; white-space: nowrap; font-family: 'Montserrat', sans-serif; transition: background 0.15s; }
 .btn-limpiar:hover { background: var(--fondo); }
 .reset-icon { width: 15px; height: 15px; stroke: var(--gris); }
 
-/* Tabla */
 .tabla-interna { overflow-x: auto; }
 .data-table { width: 100%; border-collapse: collapse; }
 .data-table th { background: var(--fondo); padding: 11px 16px; text-align: left; font-weight: 600; font-size: 0.85rem; color: var(--texto); border-bottom: 1px solid var(--borde); font-family: 'Montserrat', sans-serif; white-space: nowrap; }
@@ -791,23 +787,19 @@ const confirmarEliminar = async () => {
 .td-centro { text-align: center; }
 .data-table tbody tr:last-child td { border-bottom: none; }
 .data-table tbody tr { transition: background 0.15s; }
-
 .fila-clickable { cursor: pointer; }
 .fila-clickable:hover { background: #F8FAFC; }
 .fila-seleccionada { background: var(--azul-suave) !important; }
 .fila-seleccionada .celda-nombre { color: var(--azul); font-weight: 700; }
 .fila-seleccionada-aula { background: #F0FDF4 !important; }
-
 .celda-nombre { font-weight: 600; }
 .nombre-con-icono { display: flex; align-items: center; gap: 8px; }
 .punto-edificio { width: 8px; height: 8px; border-radius: 50%; background: var(--azul); flex-shrink: 0; }
 
-/* Badges */
 .badge-cantidad { display: inline-flex; align-items: center; justify-content: center; background: var(--azul-suave); color: var(--azul); font-size: 0.82rem; font-weight: 700; padding: 3px 12px; border-radius: 20px; min-width: 32px; }
 .badge-edificio { display: inline-block; background: #F3F4F6; color: var(--gris); font-size: 0.82rem; font-weight: 600; padding: 3px 10px; border-radius: 6px; border: 1px solid var(--borde); }
 .badge-capacidad { display: inline-block; background: #DCFCE7; color: var(--verde); font-size: 0.82rem; font-weight: 600; padding: 3px 10px; border-radius: 20px; }
 
-/* Botones de acción */
 .acciones-fila { display: flex; gap: 6px; justify-content: center; align-items: center; }
 .btn-accion { display: flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 6px; font-size: 0.83rem; cursor: pointer; font-weight: 600; font-family: 'Montserrat', sans-serif; transition: background 0.15s; white-space: nowrap; }
 .btn-accion svg { width: 13px; height: 13px; }
@@ -816,31 +808,26 @@ const confirmarEliminar = async () => {
 .btn-accion.eliminar-btn { background: #FEF2F2; color: var(--rojo); border: 1px solid #FECACA; }
 .btn-accion.eliminar-btn:hover { background: #FEE2E2; }
 
-/* Estados vacíos */
 .estado-vacio, .estado-cargando { text-align: center; padding: 2.5rem 2rem; color: var(--gris); }
 .icono-vacio { width: 48px; height: 48px; stroke: #9CA3AF; margin-bottom: 10px; }
 .estado-vacio p { font-size: 0.9rem; margin: 0; }
 .spinner-tabla { display: inline-block; width: 32px; height: 32px; border: 3px solid #E5E7EB; border-top-color: var(--azul); border-radius: 50%; animation: girar 0.8s linear infinite; margin-bottom: 10px; }
 
-/* Indicador selección edificio */
 .indicador-seleccion { display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: var(--azul-suave); border-top: 1px solid #BFDBFE; font-size: 0.88rem; color: var(--azul); font-weight: 500; }
 .indicador-seleccion svg { width: 16px; height: 16px; stroke: var(--azul); flex-shrink: 0; }
 .btn-ver-todas { margin-left: auto; background: var(--azul); color: white; border: none; padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; transition: background 0.15s; }
 .btn-ver-todas:hover { background: var(--azul-hover); }
 
-/* Divisor */
 .divisor { padding: 1.2rem 0; display: flex; align-items: center; }
 .divisor-linea { width: 100%; height: 1px; background: var(--borde); }
 
-/* Modales */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 2000; }
 .modal-content { background: #FFFFFF; width: 480px; max-width: 92%; border-radius: 14px; box-shadow: 0 20px 50px rgba(0,0,0,0.18); overflow: hidden; border: 1px solid var(--borde); }
 .modal-confirmar { width: 440px; }
-.modal-header { background: var(--azul); color: white; padding: 1.1rem 1.6rem; display: flex; justify-content: space-between; align-items: center; }
+.modal-header { background: #1B396A; color: white; padding: 1.1rem 1.6rem; display: flex; justify-content: space-between; align-items: center; }
 .modal-header h3 { margin: 0; font-size: 1.1rem; font-weight: 700; font-family: 'Montserrat', sans-serif; }
 .btn-cerrar-modal { background: none; border: none; color: white; font-size: 1.7rem; cursor: pointer; line-height: 1; opacity: 0.85; }
 .btn-cerrar-modal:hover { opacity: 1; }
-
 .modal-body { padding: 1.6rem; }
 .form-grupo { margin-bottom: 1.2rem; }
 .form-grupo label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: var(--texto); font-family: 'Montserrat', sans-serif; }
@@ -850,12 +837,11 @@ const confirmarEliminar = async () => {
 .borde-error { border-color: var(--rojo) !important; }
 .mensaje-error { display: block; color: var(--rojo); font-size: 0.82rem; margin-top: 5px; font-family: 'Montserrat', sans-serif; }
 .campo-ayuda { display: block; color: var(--gris); font-size: 0.8rem; margin-top: 4px; font-family: 'Montserrat', sans-serif; }
-
 .modal-footer { padding: 1rem 1.6rem; background: var(--fondo); display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid var(--borde); }
 .btn-secundario { padding: 10px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; background: #FFFFFF; color: var(--texto); border: 1px solid var(--borde); transition: background 0.15s; }
 .btn-secundario:hover { background: var(--fondo); }
 .btn-secundario:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-eliminar { display: flex; align-items: center; gap: 8px; padding: 10px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; background: var(--rojo); color: white; border: none; transition: background 0.15s; }
+.btn-eliminar { display: flex; align-items: center; gap: 8px; padding: 10px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; background: #DC2626; color: white; border: none; transition: background 0.15s; }
 .btn-eliminar:hover { background: #B91C1C; }
 .btn-eliminar:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-guardar { display: flex; align-items: center; gap: 8px; padding: 10px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; background: #1B396A; color: #FFFFFF; border: none; transition: background 0.15s; }
@@ -863,15 +849,12 @@ const confirmarEliminar = async () => {
 .btn-guardar:disabled { background: #E5E7EB; color: #9CA3AF; cursor: not-allowed; }
 .spinner-btn { display: inline-block; width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: girar 0.7s linear infinite; flex-shrink: 0; }
 
-/* Confirmarr */
 .confirmar-body { display: flex; flex-direction: column; align-items: center; gap: 1rem; text-align: center; padding: 2rem 1.6rem; }
 .confirmar-icono { width: 52px; height: 52px; stroke: #F59E0B; }
 .confirmar-body p { color: var(--texto); font-size: 0.95rem; margin: 0; line-height: 1.5; }
 
-/* Footer */
 .pie-pagina { text-align: center; color: #9CA3AF; font-size: 0.82rem; padding-top: 2rem; border-top: 1px solid var(--borde); margin-top: 1.2rem; font-family: 'Montserrat', sans-serif; }
 
-/* Responsive */
 @media (max-width: 700px) {
   .seccion-header { flex-direction: column; align-items: flex-start; }
   .filtro-row { flex-direction: column; }
