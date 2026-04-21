@@ -23,11 +23,9 @@ class AlumnoController extends Controller
 
     public function store(Request $request)
     {
-        // Iniciamos transacción para que no se cree una persona si falla el alumno
         DB::beginTransaction();
 
         try {
-            // 1. Validación de los datos que vienen de Vue
             $request->validate([
                 'numero_control'   => 'required|string|unique:alumno,numero_control',
                 'nombre'           => 'required|string',
@@ -39,31 +37,29 @@ class AlumnoController extends Controller
                 'fecha_ingreso'    => 'required|date',
             ]);
 
-            // Mapeo simple para el id_genero de tu tabla persona
             $idGenero = match ($request->genero) {
                 'Masculino' => 1,
                 'Femenino'  => 2,
                 default     => 3,
             };
 
-            // 2. Crear la Persona
+            // Crear Persona
             $persona = Persona::create([
                 'nombre'           => $request->nombre,
                 'apellido_paterno' => $request->apellido_paterno,
-                'apellido_materno' => $request->apellido_materno,
+                'apellido_materno' => $request->apellido_materno ?? null,
                 'id_genero'        => $idGenero,
-                // Agrega campos por defecto para curp o fecha si son obligatorios en tu BD
                 'curp'             => $request->curp ?? null,
                 'fecha_nacimiento' => $request->fecha_nacimiento ?? null,
             ]);
 
-            // 3. Crear el Alumno vinculado a esa persona
+            // Crear Alumno
             $alumno = Alumno::create([
                 'numero_control'   => $request->numero_control,
                 'id_persona'       => $persona->id_persona,
                 'id_carrera'       => $request->id_carrera,
                 'semestre_actual'  => $request->semestre_actual,
-                'estatus'          => $request->estatus,
+                'estatus'          => $request->estatus,           // ya viene como 1/0 desde el form
                 'fecha_ingreso'    => $request->fecha_ingreso,
             ]);
 
@@ -71,20 +67,17 @@ class AlumnoController extends Controller
 
             return response()->json([
                 'message' => 'Alumno registrado correctamente',
-                'data' => $alumno->load('persona')
+                'data'    => $alumno->load(['persona', 'carrera'])
             ], 201);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
-            return response()->json([
-                'error' => 'Datos inválidos',
-                'detalle' => $e->errors() 
-            ], 422);
+            return response()->json(['error' => 'Datos inválidos', 'detalle' => $e->errors()], 422);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error("Error al crear alumno: " . $e->getMessage());
             return response()->json([
-                'error' => 'Error interno del servidor',
+                'error'   => 'Error interno del servidor',
                 'detalle' => $e->getMessage()
             ], 500);
         }
@@ -93,40 +86,49 @@ class AlumnoController extends Controller
     public function update(Request $request, $id)
     {
         DB::beginTransaction();
-
         try {
             Log::info("Actualizando alumno ID: {$id}", $request->all());
 
             $alumno = Alumno::findOrFail($id);
 
-            // 🔹 ACTUALIZAR PERSONA (nombre)
             if ($alumno->persona) {
+                $nombreCompleto = explode(' ', trim($request->nombre));
+                $nombre           = $nombreCompleto[0] ?? '';
+                $apellido_paterno = $nombreCompleto[1] ?? '';
+                $apellido_materno = implode(' ', array_slice($nombreCompleto, 2));
+
                 $alumno->persona->update([
-                    'nombre' => $request->nombre ?? $alumno->persona->nombre,
+                    'nombre'           => $nombre,
+                    'apellido_paterno' => $apellido_paterno,
+                    'apellido_materno' => $apellido_materno,
                 ]);
             }
 
-            // 🔹 ACTUALIZAR ALUMNO
+            // 👇 Convierte el texto a BOOLEAN (1/0) que espera la BD
+            $estatusBoolean = match($request->estatus) {
+                'Activo'          => 1,
+                'Baja Temporal'   => 0,
+                'Baja Definitiva' => 0,
+                default           => $alumno->estatus
+            };
+
             $alumno->update([
-                'id_carrera'      => $request->id_carrera ?? $alumno->id_carrera,
-                'semestre_actual' => $request->semestre_actual ?? $alumno->semestre_actual,
-                'estatus'         => $request->estatus ?? $alumno->estatus,
+                'id_carrera'      => $request->id_carrera      ?? $alumno->id_carrera,
+                'semestre_actual' => $request->semestre_actual  ?? $alumno->semestre_actual,
+                'estatus'         => $estatusBoolean,
             ]);
 
             DB::commit();
-
             return response()->json([
                 'message' => 'Alumno actualizado con éxito',
-                'data' => $alumno->load(['persona', 'carrera'])
+                'data'    => $alumno->load(['persona', 'carrera'])
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
-
             Log::error("Error al actualizar alumno ID {$id}: " . $e->getMessage());
-
             return response()->json([
-                'error' => 'No se pudo actualizar el alumno',
+                'error'   => 'No se pudo actualizar el alumno',
                 'detalle' => $e->getMessage()
             ], 500);
         }
@@ -134,14 +136,77 @@ class AlumnoController extends Controller
 
     public function destroy($id)
     {
-        try {
-            $alumno = Alumno::where('id_alumno', $id)->firstOrFail();
-            $alumno->delete();
+        DB::beginTransaction();
 
-            return response()->json(['message' => 'Alumno eliminado con éxito']);
+        try {
+            $alumno = Alumno::with('persona')->findOrFail($id);
+            $idPersona = $alumno->id_persona;
+
+            // ==================== 1. LIMPIEZA DE ALUMNO ====================
+            DB::table('calificacion')
+                ->whereIn('id_inscripcion', function ($query) use ($id) {
+                    $query->select('id_inscripcion')
+                        ->from('inscripcion')
+                        ->where('id_alumno', $id);
+                })
+                ->delete();
+
+            DB::table('inscripcion')->where('id_alumno', $id)->delete();
+            DB::table('participacion_evento')->where('id_alumno', $id)->delete();
+            DB::table('alumno')->where('id_alumno', $id)->delete();
+
+          
+            DB::table('persona_correo')->where('id_persona', $idPersona)->delete();
+            DB::table('persona_telefono')->where('id_persona', $idPersona)->delete();
+            DB::table('persona_direccion')->where('id_persona', $idPersona)->delete();
+
+          
+            DB::table('resolucion_comite')
+                ->whereIn('id_solicitud', function ($query) use ($idPersona) {
+                    $query->select('id_solicitud')
+                        ->from('solicitud_comite')
+                        ->where('id_persona', $idPersona);
+                })
+                ->delete();
+
+            DB::table('solicitud_comite')->where('id_persona', $idPersona)->delete();
+
+       
+            $usuarios = DB::table('usuario')
+                        ->where('id_persona', $idPersona)
+                        ->pluck('id_usuario');
+
+            if ($usuarios->isNotEmpty()) {
+                DB::table('bitacora')->whereIn('id_usuario', $usuarios)->delete();
+                DB::table('usuario_rol')->whereIn('id_usuario', $usuarios)->delete();
+                DB::table('usuario')->whereIn('id_usuario', $usuarios)->delete();
+            }
+
+            $empleados = DB::table('empleado')
+                        ->where('id_persona', $idPersona)
+                        ->pluck('id_empleado');
+
+            if ($empleados->isNotEmpty()) {
+                DB::table('adscripcion')->whereIn('id_empleado', $empleados)->delete();
+                DB::table('docente')->whereIn('id_empleado', $empleados)->delete();
+                DB::table('empleado')->whereIn('id_empleado', $empleados)->delete();
+            }
+
+
+            DB::table('persona')->where('id_persona', $idPersona)->delete();
+
+            DB::commit();
+
+            return response()->json(['message' => 'Alumno eliminado correctamente']);
+
         } catch (\Exception $e) {
-            Log::error("Error al eliminar alumno ID {$id}: " . $e->getMessage());
-            return response()->json(['error' => 'No se pudo eliminar'], 500);
+            DB::rollBack();
+            Log::error("ERROR DELETE ALUMNO ID {$id}: " . $e->getMessage());
+            
+            return response()->json([
+                'error'   => 'No se pudo eliminar',
+                'detalle' => $e->getMessage()
+            ], 500);
         }
     }
 }
