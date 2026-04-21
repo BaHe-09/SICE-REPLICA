@@ -90,7 +90,6 @@ class ComiteAcademicoController extends Controller
                 )
                 ->orderBy('nombre_tipo')
                 ->get();
-
             return response()->json($tipos);
         } catch (\Throwable $e) {
             return response()->json([
@@ -145,10 +144,19 @@ class ComiteAcademicoController extends Controller
             ], 500);
         }
     }
-
+    
     public function storeSolicitud(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        // 🔥 AQUÍ VA (justo al inicio del método)
+        $id_tipo_solicitud = $request->id_tipo_solicitud ?? $request->tipo_solicitud_id;
+        $id_persona = $request->id_persona ?? $request->persona_id;
+
+        // 🔹 VALIDACIÓN (después de obtener valores)
+        $validator = Validator::make([
+            'id_tipo_solicitud' => $id_tipo_solicitud,
+            'id_persona' => $id_persona,
+            'descripcion' => $request->descripcion
+        ], [
             'id_tipo_solicitud' => 'required|integer|exists:tipo_solicitud,id_tipo_solicitud',
             'id_persona' => 'required|integer|exists:persona,id_persona',
             'descripcion' => 'required|string|min:10'
@@ -165,10 +173,11 @@ class ComiteAcademicoController extends Controller
             ], 422);
         }
 
+        // 🔹 INSERT (usa las variables ya adaptadas)
         try {
             $id = DB::table('solicitud_comite')->insertGetId([
-                'id_persona' => $request->id_persona,
-                'id_tipo_solicitud' => $request->id_tipo_solicitud,
+                'id_persona' => $id_persona,
+                'id_tipo_solicitud' => $id_tipo_solicitud,
                 'descripcion' => trim($request->descripcion),
                 'fecha_solicitud' => now(),
                 'estatus' => 'Pendiente'
@@ -182,6 +191,7 @@ class ComiteAcademicoController extends Controller
                     'estatus' => 'Pendiente'
                 ]
             ], 201);
+
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Error al registrar la solicitud.',
@@ -346,6 +356,40 @@ class ComiteAcademicoController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Error al cargar resoluciones.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function buscarPersonas(Request $request)
+    {
+        try {
+            $q = trim($request->q ?? '');
+
+            if ($q === '') {
+                return response()->json([]);
+            }
+
+            $personas = DB::table('persona')
+                ->select(
+                    'id_persona as id',
+                    'nombre',
+                    'apellido_paterno',
+                    'apellido_materno'
+                )
+                ->where(function ($query) use ($q) {
+                    $query->where('nombre', 'like', "%{$q}%")
+                        ->orWhere('apellido_paterno', 'like', "%{$q}%")
+                        ->orWhere('apellido_materno', 'like', "%{$q}%")
+                        ->orWhere('id_persona', 'like', "%{$q}%");
+                })
+                ->limit(10)
+                ->get();
+
+            return response()->json($personas);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Error al buscar personas.',
                 'error' => $e->getMessage()
             ], 500);
         }

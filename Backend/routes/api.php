@@ -240,24 +240,24 @@ Route::put('/docentes/{id}', [DocentesController::class, 'update']);
 
 
 
-// ======================Modulo Comite Academico ======================
-
-
 Route::prefix('comite')->group(function () {
-Route::get('/dashboard', [ComiteAcademicoController::class, 'dashboard']);
-Route::get('/tipos-solicitud', [ComiteAcademicoController::class, 'tiposSolicitud']);
+    Route::get('/dashboard', [ComiteAcademicoController::class, 'dashboard']);
+    Route::get('/tipos-solicitud', [ComiteAcademicoController::class, 'tiposSolicitud']);
 
-Route::get('/solicitudes', [ComiteAcademicoController::class, 'indexSolicitudes']);
-Route::post('/solicitudes', [ComiteAcademicoController::class, 'storeSolicitud']);
+    Route::get('/solicitudes', [ComiteAcademicoController::class, 'indexSolicitudes']);
+    Route::post('/solicitudes', [ComiteAcademicoController::class, 'storeSolicitud']);
 
-Route::get('/sesiones', [ComiteAcademicoController::class, 'indexSesiones']);
-Route::post('/sesiones', [ComiteAcademicoController::class, 'storeSesion']);
-Route::put('/sesiones/{id}', [ComiteAcademicoController::class, 'updateSesion']);
+    Route::get('/sesiones', [ComiteAcademicoController::class, 'indexSesiones']);
+    Route::post('/sesiones', [ComiteAcademicoController::class, 'storeSesion']);
+    Route::put('/sesiones/{id}', [ComiteAcademicoController::class, 'updateSesion']);
 
-Route::get('/resoluciones', [ComiteAcademicoController::class, 'indexResoluciones']);
-Route::post('/resoluciones', [ComiteAcademicoController::class, 'storeResolucion']);
+    Route::get('/resoluciones', [ComiteAcademicoController::class, 'indexResoluciones']);
+    Route::post('/resoluciones', [ComiteAcademicoController::class, 'storeResolucion']);
 
+    Route::get('/personas/buscar', [ComiteAcademicoController::class, 'buscarPersonas']);
 });
+
+Route::get('/personas/buscar', [ComiteAcademicoController::class, 'buscarPersonas']);
 
 // ====================== ASIGNACIÓN DOCENTE A GRUPOS ======================
 

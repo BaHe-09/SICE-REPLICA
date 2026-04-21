@@ -221,6 +221,7 @@ const tiposSolicitud = ref([])
 
 const form = ref({
   id_tipo_solicitud: '',
+  tipo_solicitud_id: '',
   id_persona: null,
   descripcion: ''
 })
@@ -231,7 +232,7 @@ const errores = ref({
   descripcion: ''
 })
 
-const notificacion = ref({
+const toast = ref({
   visible: false,
   mensaje: '',
   tipo: 'exito'
@@ -240,9 +241,9 @@ const notificacion = ref({
 let timerNotif = null
 const mostrarNotificacion = (mensaje, tipo = 'exito') => {
   if (timerNotif) clearTimeout(timerNotif)
-  notificacion.value = { visible: true, mensaje, tipo }
+  toast.value = { visible: true, mensaje, tipo }
   timerNotif = setTimeout(() => {
-    notificacion.value.visible = false
+    toast.value.visible = false
   }, 3500)
 }
 
@@ -255,7 +256,10 @@ const cargarTipos = async () => {
     if (!res.ok) throw new Error('No se pudieron cargar los tipos')
 
     const data = await res.json()
+    console.log('TIPOS CARGADOS:', data)
+
     tiposSolicitud.value = Array.isArray(data) ? data : []
+    console.log('tiposSolicitud.value:', tiposSolicitud.value)
   } catch (error) {
     console.error('Error cargando tipos de solicitud:', error)
     errorCarga.value = true
@@ -336,8 +340,11 @@ const iniciales = (nombre) => {
 const validarCampo = (campo) => {
   errores.value[campo] = ''
 
-  if (campo === 'id_tipo_solicitud' && !form.value.id_tipo_solicitud) {
-    errores.value.id_tipo_solicitud = 'Selecciona un tipo de solicitud'
+  if (campo === 'id_tipo_solicitud') {
+    const val = form.value.id_tipo_solicitud || form.value.tipo_solicitud_id
+    if (!val) {
+      errores.value.id_tipo_solicitud = 'Selecciona un tipo de solicitud'
+    }
   }
 
   if (campo === 'descripcion') {
@@ -354,10 +361,10 @@ const validarCampo = (campo) => {
 }
 
 const validarTodo = () => {
+  console.log('form al guardar:', JSON.stringify(form.value)) // ← agrega esto
   validarCampo('id_tipo_solicitud')
   validarCampo('id_persona')
   validarCampo('descripcion')
-
   return Object.values(errores.value).every(e => !e)
 }
 
@@ -372,7 +379,7 @@ const guardar = async () => {
 
   try {
     const payload = {
-      id_tipo_solicitud: Number(form.value.id_tipo_solicitud),
+      id_tipo_solicitud: Number(form.value.id_tipo_solicitud || form.value.tipo_solicitud_id),
       id_persona: Number(form.value.id_persona),
       descripcion: form.value.descripcion.trim()
     }
