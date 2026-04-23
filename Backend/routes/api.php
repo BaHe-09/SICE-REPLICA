@@ -271,5 +271,17 @@ Route::get('/docentes', [CargaDocenteController::class, 'buscarDocentes']);
 Route::get('/carga-docente/{id_docente}', [CargaDocenteController::class, 'cargaPorDocente']);
 Route::delete('/asignacion-docente/{id}', [CargaDocenteController::class, 'desasignar']);
 
+// ====================== MÓDULO DE INSCRIPCIÓN DETALLADA ======================
 
+Route::prefix('form')->group(function () {
+    Route::get('/inscripciones', [InscripcionController::class, 'index']);
+    Route::get('/kpis', [InscripcionController::class, 'kpis']);
+    Route::get('/grupos/disponibles', [InscripcionController::class, 'gruposDisponibles']);
+    Route::get('/periodos', [InscripcionController::class, 'periodos']);
+    Route::get('/carreras', [InscripcionController::class, 'carreras']);
+    Route::get('/alumnos/control/{numero}', [InscripcionController::class, 'buscarAlumno']);
 
+    Route::post('/inscripciones', [InscripcionController::class, 'store']);
+    Route::put('/inscripciones/{id}', [InscripcionController::class, 'update']);
+    Route::delete('/inscripciones/{id}', [InscripcionController::class, 'destroy']);
+});
