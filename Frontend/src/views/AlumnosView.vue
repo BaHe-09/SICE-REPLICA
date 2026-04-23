@@ -336,7 +336,7 @@ const claseEstatus = (estatus) => {
 const cargarAlumnosDesdeBD = async () => {
   cargando.value = true
   try {
-    const response = await fetch('http://localhost:8000/api/alumnos-full')
+    const response = await fetch('https://sice-backend.up.railway.app/api/alumnos-full')
     if (!response.ok) throw new Error('Error del servidor')
     const data = await response.json()
     alumnos.value = data
@@ -427,7 +427,7 @@ const guardarCambios = async () => {
   guardando.value = true
   try {
     console.log('🔵 Enviando update:', payload)
-    const response = await fetch(`http://localhost:8000/api/alumnos/${id}`, {
+    const response = await fetch(`https://sice-backend.up.railway.app/api/alumnos/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify(payload)
@@ -462,7 +462,7 @@ const eliminarAlumno = async () => {
 
   guardando.value = true
   try {
-    const response = await fetch(`http://localhost:8000/api/alumnos/${id}`, {
+    const response = await fetch(`https://sice-backend.up.railway.app/api/alumnos/${id}`, {
       method: 'DELETE',
       headers: { 'Accept': 'application/json' }
     })

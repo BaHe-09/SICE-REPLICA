@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API = 'http://localhost:8000/api'
+const API = 'https://sice-backend.up.railway.app/api'
 
 export const getCalificacionesGrupo = async (filtros = {}) => {
   const params = {}

@@ -2,7 +2,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api',   // 👈 usa el puerto de Laravel
+  baseURL: 'https://sice-backend.up.railway.app/api',   // 👈 usa el puerto de Laravel
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'

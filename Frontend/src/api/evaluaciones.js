@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API = 'http://localhost:8000/api'
+const API = 'https://sice-backend.up.railway.app/api'
 
 export const getEvaluaciones = async (id_grupo) => {
   const { data } = await axios.get(`${API}/evaluaciones/${id_grupo}`)
