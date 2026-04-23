@@ -153,4 +153,166 @@ class InscripcionController extends Controller
             ], 500);
         }
     }
+
+    // =====================================================
+    // 🔹 LISTADO DE INSCRIPCIONES
+    // GET /api/form/inscripciones
+    // =====================================================
+    public function index()
+    {
+        $data = DB::table('inscripcion as i')
+            ->join('alumno as a', 'i.id_alumno', '=', 'a.id_alumno')
+            ->join('persona as p', 'a.id_persona', '=', 'p.id_persona')
+            ->join('carrera as c', 'a.id_carrera', '=', 'c.id_carrera')
+            ->join('grupo as g', 'i.id_grupo', '=', 'g.id_grupo')
+            ->join('materia as m', 'g.id_materia', '=', 'm.id_materia')
+            ->join('periodo as pe', 'g.id_periodo', '=', 'pe.id_periodo')
+            ->leftJoin('docente as d', 'g.id_docente', '=', 'd.id_docente')
+            ->leftJoin('empleado as e', 'd.id_empleado', '=', 'e.id_empleado')
+            ->leftJoin('persona as pd', 'e.id_persona', '=', 'pd.id_persona')
+            ->leftJoin('aula as au', 'g.id_aula', '=', 'au.id_aula')
+            ->select(
+                'i.id_inscripcion',
+                'i.id_alumno',
+                'i.id_grupo',
+                'a.numero_control',
+                DB::raw("CONCAT(p.nombre,' ',p.apellido_paterno,' ',p.apellido_materno) as nombre_alumno"),
+                'c.id_carrera',
+                'c.nombre as nombre_carrera',
+                'g.clave_grupo',
+                'm.nombre as nombre_materia',
+                'pe.id_periodo',
+                'pe.nombre_periodo',
+                DB::raw("CONCAT(pd.nombre,' ',pd.apellido_paterno,' ',pd.apellido_materno) as nombre_docente"),
+                'au.nombre as nombre_aula',
+                'i.fecha_inscripcion',
+                'i.estatus'
+            )
+            ->get();
+
+        return response()->json($data);
+    }
+
+    // =====================================================
+    // 🔹 KPIs
+    // GET /api/form/kpis
+    // =====================================================
+    public function kpis()
+    {
+        $data = DB::table('inscripcion')
+            ->select('estatus', DB::raw('COUNT(*) as total'))
+            ->groupBy('estatus')
+            ->get();
+
+        $kpis = [
+            'totalInscritos' => $data->sum('total'),
+            'activos' => 0,
+            'bajaTemporal' => 0,
+            'bajaDefinitiva' => 0
+        ];
+
+        foreach ($data as $row) {
+            if ($row->estatus === 'Activo') $kpis['activos'] = $row->total;
+            if ($row->estatus === 'Baja Temporal') $kpis['bajaTemporal'] = $row->total;
+            if ($row->estatus === 'Baja Definitiva') $kpis['bajaDefinitiva'] = $row->total;
+        }
+
+        return response()->json($kpis);
+    }
+
+    // =====================================================
+    // 🔹 PERIODOS
+    // GET /api/form/periodos
+    // =====================================================
+    public function periodos()
+    {
+        return response()->json(
+            DB::table('periodo')->select('id_periodo', 'nombre_periodo')->get()
+        );
+    }
+
+    // =====================================================
+    // 🔹 CARRERAS
+    // GET /api/form/carreras
+    // =====================================================
+    public function carreras()
+    {
+        return response()->json(
+            DB::table('carrera')->select('id_carrera', 'nombre')->get()
+        );
+    }
+
+
+    // =====================================================
+    // 🔹 CREAR INSCRIPCION
+    // POST /api/form/inscripciones
+    // =====================================================
+    public function store(Request $request)
+    {
+        $request->validate([
+            'id_alumno' => 'required',
+            'id_grupo' => 'required',
+            'fecha_inscripcion' => 'required|date',
+            'estatus' => 'required'
+        ]);
+
+        // validar duplicado
+        $existe = DB::table('inscripcion')
+            ->where('id_alumno', $request->id_alumno)
+            ->where('id_grupo', $request->id_grupo)
+            ->exists();
+
+        if ($existe) {
+            return response()->json([
+                'message' => 'El alumno ya está inscrito en ese grupo'
+            ], 400);
+        }
+
+        DB::table('inscripcion')->insert([
+            'id_alumno' => $request->id_alumno,
+            'id_grupo' => $request->id_grupo,
+            'fecha_inscripcion' => $request->fecha_inscripcion,
+            'estatus' => $request->estatus
+        ]);
+
+        return response()->json([
+            'message' => 'Inscripción creada correctamente'
+        ]);
+    }
+
+    // =====================================================
+    // 🔹 ACTUALIZAR (SOLO ESTATUS)
+    // PUT /api/form/inscripciones/{id}
+    // =====================================================
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'estatus' => 'required'
+        ]);
+
+        DB::table('inscripcion')
+            ->where('id_inscripcion', $id)
+            ->update([
+                'estatus' => $request->estatus
+            ]);
+
+        return response()->json([
+            'message' => 'Inscripción actualizada'
+        ]);
+    }
+
+    // =====================================================
+    // 🔹 ELIMINAR
+    // DELETE /api/form/inscripciones/{id}
+    // =====================================================
+    public function destroy($id)
+    {
+        DB::table('inscripcion')
+            ->where('id_inscripcion', $id)
+            ->delete();
+
+        return response()->json([
+            'message' => 'Eliminado correctamente'
+        ]);
+    }
 }
