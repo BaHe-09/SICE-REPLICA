@@ -17,7 +17,13 @@ export default defineConfig({
   },
 
   // 👇 AGREGA ESTO
-  preview: {
+  server: {
+  host: true,
+  allowedHosts: [
+    'sice.up.railway.app'
+  ]
+},
+preview: {
   host: true,
   allowedHosts: [
     'sice.up.railway.app'
