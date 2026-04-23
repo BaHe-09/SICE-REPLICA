@@ -314,9 +314,16 @@ watch(busquedaPersona, () => {
 const showViewModal = ref(false)
 const personaVer    = ref({})
 
-const abrirModalVer = (persona) => {
+const abrirModalVer = async (persona) => {
   personaVer.value = { ...persona }
   showViewModal.value = true
+  try {
+    const res = await fetch(`${API}/personas/${persona.id_persona || persona.id}`)
+    if (res.ok) {
+      const data = await res.json()
+      personaVer.value = data
+    }
+  } catch { /* mantiene los datos básicos de la fila */ }
 }
 const cerrarModalVer = () => { showViewModal.value = false }
 

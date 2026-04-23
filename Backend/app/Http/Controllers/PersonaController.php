@@ -18,6 +18,8 @@ class PersonaController extends Controller
             $query = DB::table('persona as pe')
                 ->leftJoin('genero as g', 'pe.id_genero', '=', 'g.id_genero')
                 ->where('pe.estatus', true)
+                ->leftJoin('alumno as al', 'pe.id_persona', '=', 'al.id_persona')
+                ->leftJoin('empleado as em', 'pe.id_persona', '=', 'em.id_persona')
                 ->select(
                     'pe.id_persona',
                     'pe.nombre',
@@ -25,7 +27,12 @@ class PersonaController extends Controller
                     'pe.apellido_materno',
                     'pe.curp',
                     'pe.fecha_nacimiento',
-                    'g.nombre_genero as genero'
+                    'g.nombre_genero as genero',
+                    DB::raw("CASE
+                        WHEN al.id_alumno IS NOT NULL THEN 'Alumno'
+                        WHEN em.id_empleado IS NOT NULL THEN 'Empleado'
+                        ELSE 'Sin asignar'
+                    END as tipo")
                 )
                 ->orderBy('pe.apellido_paterno')
                 ->orderBy('pe.nombre');
@@ -60,6 +67,8 @@ class PersonaController extends Controller
                 ->leftJoin('persona_correo as pc', 'pe.id_persona', '=', 'pc.id_persona')
                 ->leftJoin('persona_telefono as pt', 'pe.id_persona', '=', 'pt.id_persona')
                 ->leftJoin('persona_direccion as pd', 'pe.id_persona', '=', 'pd.id_persona')
+                ->leftJoin('alumno as al', 'pe.id_persona', '=', 'al.id_persona')
+                ->leftJoin('empleado as em', 'pe.id_persona', '=', 'em.id_persona')
                 ->where('pe.id_persona', $id)
                 ->select(
                     'pe.id_persona',
@@ -69,10 +78,17 @@ class PersonaController extends Controller
                     'pe.curp',
                     'pe.fecha_nacimiento',
                     'pe.id_genero',
+                    'pe.estado_civil',
+                    'pe.nacionalidad',
                     'g.nombre_genero as genero',
                     'pc.correo',
                     'pt.telefono',
-                    'pd.direccion'
+                    'pd.direccion',
+                    DB::raw("CASE
+                        WHEN al.id_alumno IS NOT NULL THEN 'Alumno'
+                        WHEN em.id_empleado IS NOT NULL THEN 'Empleado'
+                        ELSE 'Sin asignar'
+                    END as tipo")
                 )
                 ->first();
 
@@ -80,11 +96,26 @@ class PersonaController extends Controller
                 return response()->json(['success' => false, 'error' => 'Persona no encontrada'], 404);
             }
 
-            return response()->json(['success' => true, 'data' => $persona], 200);
+            return response()->json($persona, 200);
 
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * Resolver id_genero a partir del nombre de género enviado por el frontend
+     */
+    private function resolverIdGenero(Request $request): ?int
+    {
+        if ($request->filled('id_genero') && is_numeric($request->id_genero)) {
+            return (int) $request->id_genero;
+        }
+        if ($request->filled('genero')) {
+            $row = DB::table('genero')->where('nombre_genero', $request->genero)->first();
+            return $row ? $row->id_genero : null;
+        }
+        return null;
     }
 
     /**
@@ -99,13 +130,15 @@ class PersonaController extends Controller
                 'apellido_materno' => 'nullable|string|max:100',
                 'curp'             => 'nullable|string|max:18|unique:persona,curp',
                 'fecha_nacimiento' => 'nullable|date',
-                'id_genero'        => 'nullable|integer|exists:genero,id_genero',
+                'genero'           => 'nullable|string|max:50',
+                'estado_civil'     => 'nullable|string|max:50',
+                'nacionalidad'     => 'nullable|string|max:60',
                 'correo'           => 'nullable|email|max:120',
                 'telefono'         => 'nullable|string|max:20',
                 'direccion'        => 'nullable|string',
             ], [
-                'nombre.required'  => 'El nombre es requerido',
-                'curp.unique'      => 'La CURP ya está registrada',
+                'nombre.required' => 'El nombre es requerido',
+                'curp.unique'     => 'La CURP ya está registrada',
             ]);
 
             if ($validator->fails()) {
@@ -120,7 +153,9 @@ class PersonaController extends Controller
                 'apellido_materno' => $request->apellido_materno,
                 'curp'             => $request->curp,
                 'fecha_nacimiento' => $request->fecha_nacimiento,
-                'id_genero'        => $request->id_genero,
+                'id_genero'        => $this->resolverIdGenero($request),
+                'estado_civil'     => $request->estado_civil,
+                'nacionalidad'     => $request->nacionalidad,
             ]);
 
             if ($request->filled('correo')) {
@@ -164,7 +199,9 @@ class PersonaController extends Controller
                 'apellido_materno' => 'nullable|string|max:100',
                 'curp'             => 'nullable|string|max:18|unique:persona,curp,' . $id . ',id_persona',
                 'fecha_nacimiento' => 'nullable|date',
-                'id_genero'        => 'nullable|integer|exists:genero,id_genero',
+                'genero'           => 'nullable|string|max:50',
+                'estado_civil'     => 'nullable|string|max:50',
+                'nacionalidad'     => 'nullable|string|max:60',
                 'correo'           => 'nullable|email|max:120',
                 'telefono'         => 'nullable|string|max:20',
                 'direccion'        => 'nullable|string',
@@ -185,7 +222,9 @@ class PersonaController extends Controller
                 'apellido_materno' => $request->apellido_materno,
                 'curp'             => $request->curp,
                 'fecha_nacimiento' => $request->fecha_nacimiento,
-                'id_genero'        => $request->id_genero,
+                'id_genero'        => $this->resolverIdGenero($request),
+                'estado_civil'     => $request->estado_civil,
+                'nacionalidad'     => $request->nacionalidad,
             ]);
 
             // Correo: actualizar o insertar
