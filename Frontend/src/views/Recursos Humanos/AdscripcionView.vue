@@ -263,6 +263,7 @@ import {
   eliminarAdscripcion as eliminarAdscripcionAPI
 } from '@/api/recursosHumanos'
 
+const API = `${import.meta.env.VITE_API_URL}/api`
 
 const adscripciones   = ref([])
 const departamentos   = ref([])
@@ -386,7 +387,7 @@ const departamentosDisponibles = computed(() =>
 
 const cargarDepartamentos = async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/departamentos')
+    const res = await fetch(`${API}/departamentos`)
     if (!res.ok) throw new Error()
     departamentos.value = await res.json()
   } catch {
@@ -466,7 +467,7 @@ const buscarEmpleadoModal = () => {
   debounceEmpleado = setTimeout(async () => {
     try {
       const params = new URLSearchParams({ q: busquedaEmpleadoModal.value.trim() })
-      const res = await fetch(`http://localhost:8000/api/empleados?${params}`)
+      const res = await fetch(`${API}/empleados?${params}`)
       if (!res.ok) throw new Error()
       const json = await res.json()
       const lista = json.data || json
@@ -519,7 +520,7 @@ const guardarAdscripcion = async () => {
     fecha_fin:       form.value.fecha_fin || null,
   }
   try {
-    const res = await fetch('http://localhost:8000/api/adscripciones', {
+    const res = await fetch(`${API}/adscripciones`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify(payload)

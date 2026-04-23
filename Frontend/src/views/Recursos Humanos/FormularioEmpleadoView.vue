@@ -265,6 +265,8 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
+const API = `${import.meta.env.VITE_API_URL}/api`
+
 const router = useRouter()
 const route  = useRoute()
 
@@ -306,7 +308,7 @@ const buscarPersonas = () => {
   debouncePersona = setTimeout(async () => {
     try {
       const params = new URLSearchParams({ q: busquedaPersona.value.trim() })
-      const res = await fetch(`http://localhost:8000/api/personas?${params}`)
+      const res = await fetch(`${API}/personas?${params}`)
       if (!res.ok) throw new Error()
       const data = await res.json()
       resultadosPersona.value = data.map(p => ({
@@ -339,7 +341,7 @@ const cambiarPersona = () => {
 // ── Cargar puestos y datos en edición ──
 const cargarPuestos = async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/puestos')
+    const res = await fetch(`${API}/puestos`)
     if (!res.ok) throw new Error()
     const json = await res.json()
     puestos.value = json.data || json
@@ -351,7 +353,7 @@ const cargarPuestos = async () => {
 
 const cargarEmpleado = async (id) => {
   try {
-    const res = await fetch(`http://localhost:8000/api/empleados/${id}`)
+    const res = await fetch(`${API}/empleados/${id}`)
     if (!res.ok) throw new Error()
     const data = await res.json()
     form.noEmpleado        = data.numero_empleado || ''
@@ -442,8 +444,8 @@ const guardarEmpleado = async () => {
 
   try {
     const url    = modoEdicion.value
-      ? `http://localhost:8000/api/empleados/${route.params.id}`
-      : 'http://localhost:8000/api/empleados'
+      ? `${API}/empleados/${route.params.id}`
+      : `${API}/empleados`
     const method = modoEdicion.value ? 'PUT' : 'POST'
 
     console.log(`🔵 ${method} payload:`, payload)

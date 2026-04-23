@@ -270,7 +270,7 @@ import MainLayout from '@/layouts/MainLayout.vue'
 // ─────────────────────────────────────────────────────────────────────────────
 // BASE URL — el equipo de back solo cambia esta constante
 // ─────────────────────────────────────────────────────────────────────────────
-const API = 'http://localhost:8000/api'
+const API = `${import.meta.env.VITE_API_URL}/api`
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ESTADOS

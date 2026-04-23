@@ -246,6 +246,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
+const API = `${import.meta.env.VITE_API_URL}/api`
+
 const router     = useRouter()
 const route      = useRoute()
 const anioActual = new Date().getFullYear()
@@ -288,13 +290,13 @@ const formatFechaHora = (fecha) => {
 onMounted(async () => {
   cargando.value = true
   try {
-    const res  = await fetch(`http://localhost:8000/api/personas/${route.params.id}`)
+    const res = await fetch(`${API}/personas/${route.params.id}`)
     const data = await res.json()
     persona.value = data
 
     // Historial (endpoint opcional)
     try {
-      const resH  = await fetch(`http://localhost:8000/api/personas/${route.params.id}/historial`)
+      const resH = await fetch(`${API}/personas/${route.params.id}/historial`)
       const dataH = await resH.json()
       historial.value = Array.isArray(dataH) ? dataH : []
     } catch { historial.value = [] }

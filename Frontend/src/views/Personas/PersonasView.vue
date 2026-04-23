@@ -237,6 +237,8 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
+const API = `${import.meta.env.VITE_API_URL}/api`
+
 const router = useRouter()
 const anioActual = new Date().getFullYear()
 
@@ -285,7 +287,7 @@ const claseTipo = (tipo) => {
 const cargarPersonas = async () => {
   cargando.value = true
   try {
-    const response = await fetch('http://localhost:8000/api/personas')
+    const response = await fetch(`${API}/personas`)
     if (!response.ok) throw new Error('Error del servidor')
     const data = await response.json()
     personas.value = data

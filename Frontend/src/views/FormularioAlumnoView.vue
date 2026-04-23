@@ -263,11 +263,12 @@ import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
+const API = `${import.meta.env.VITE_API_URL}/api`
+
 const router = useRouter()
 
-
 const anioActual  = new Date().getFullYear()
-const prefijoAnio = String(anioActual).slice(-2)   // "26" si es 2026
+const prefijoAnio = String(anioActual).slice(-2)  
 const hoyISO      = new Date().toISOString().split('T')[0]
 
 
@@ -422,7 +423,7 @@ const guardarAlumno = async () => {
     console.log('ID carrera:', getIdCarrera(form.carrera))
     console.log('Payload enviado:', payload)
 
-    const response = await fetch('http://localhost:8000/api/alumnos', {
+    const response = await fetch(`${API}/alumnos`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

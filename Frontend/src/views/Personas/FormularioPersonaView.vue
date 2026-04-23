@@ -263,6 +263,8 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
+const API = `${import.meta.env.VITE_API_URL}/api`
+
 const router     = useRouter()
 const route      = useRoute()
 const anioActual = new Date().getFullYear()
@@ -350,7 +352,7 @@ const validarFormulario = () => {
 onMounted(async () => {
   if (esEdicion.value) {
     try {
-      const res  = await fetch(`http://localhost:8000/api/personas/${route.params.id}`)
+      const res = await fetch(`${API}/personas/${route.params.id}`)
       const data = await res.json()
       Object.assign(form, {
         curp: data.curp || '', nombre: data.nombre || '',
@@ -377,7 +379,7 @@ const guardarPersona = async () => {
     correo: form.correo || null, telefono: form.telefono || null, direccion: form.direccion || null
   }
   try {
-    const url    = esEdicion.value ? `http://localhost:8000/api/personas/${route.params.id}` : 'http://localhost:8000/api/personas'
+    const url = esEdicion.value ? `${API}/personas/${route.params.id}` : `${API}/personas`
     const method = esEdicion.value ? 'PUT' : 'POST'
     const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(payload) })
     const data = await response.json()

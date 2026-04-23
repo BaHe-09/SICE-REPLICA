@@ -287,7 +287,9 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 
-const API_BASE = 'http://127.0.0.1:8000/api/inscripcion'
+const API = `${import.meta.env.VITE_API_URL}/api`
+
+const API_BASE = `${API}/inscripcion`
 
 const paso = ref(1)
 const periodo = ref('Ene/Jun 2025')

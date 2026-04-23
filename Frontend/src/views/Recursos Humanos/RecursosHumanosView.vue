@@ -211,6 +211,8 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
+const API = `${import.meta.env.VITE_API_URL}/api`
+
 const router = useRouter()
 
 const cargando           = ref(false)
@@ -233,7 +235,7 @@ const cargarDatos = async () => {
   cargando.value   = true
   errorCarga.value = false
   try {
-    const res = await fetch('http://localhost:8000/api/recursos-humanos/dashboard')
+    const res = await fetch(`${API}/recursos-humanos/dashboard`)
     if (!res.ok) throw new Error('Error en la respuesta del servidor')
     const data = await res.json()
 

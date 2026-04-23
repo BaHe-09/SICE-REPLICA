@@ -257,6 +257,8 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
+const API = `${import.meta.env.VITE_API_URL}/api`
+
 const router = useRouter()
 
 const busquedaControl = ref('')
@@ -377,7 +379,7 @@ const cargarGrupos = async () => {
   errorCarga.value = ''
   mensajeCarga.value = 'Cargando grupos...'
   try {
-    const response = await fetch('http://localhost:8000/api/grupos')
+    const response = await fetch(`${API}/grupos`) // [1]
     if (!response.ok) throw new Error('Error del servidor')
     const data = await response.json()
     grupos.value = data.map(normalizarGrupo)
@@ -495,7 +497,7 @@ const guardarGrupo = async () => {
       hora_inicio:    grupoEditar.value.horario.horaInicio,
       hora_fin:       grupoEditar.value.horario.horaFin
     }
-    const url    = esEdicion ? `http://localhost:8000/api/grupos/${grupoEditar.value.id}` : 'http://localhost:8000/api/grupos'
+    const url    = esEdicion ? `${API}/grupos/${grupoEditar.value.id}` : `${API}/grupos`
     const method = esEdicion ? 'PUT' : 'POST'
     const response = await fetch(url, {
       method,
@@ -539,7 +541,7 @@ const confirmarEliminar = async () => {
   cargando.value = true
   mensajeCarga.value = 'Eliminando grupo...'
   try {
-    const response = await fetch(`http://localhost:8000/api/grupos/${grupoAEliminar.value.id}`, {
+    const response = await fetch(`${API}/grupos/${grupoAEliminar.value.id}`, {
       method: 'DELETE',
       headers: { 'Accept': 'application/json' }
     })
