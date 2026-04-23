@@ -1,0 +1,9 @@
+# para entornos virtuales de python
+venv/
+Frontend/node_modules/
+Frontend/node_modules/
+node_modules/
+.env
+*__pycache__
+
+
