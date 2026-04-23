@@ -20,7 +20,7 @@ export default defineConfig({
   preview: {
   host: true,
   allowedHosts: [
-    'sice.up.railway.app/'
+    'sice.up.railway.app'
   ]
 }
 })
