@@ -139,31 +139,71 @@ Emitir
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
-const router = useRouter()
-const route = useRoute()
-const API = `${import.meta.env.VITE_API_URL}/api`
 
-const cargando = ref(false)
+const router = useRouter()
+const route  = useRoute()
+
+// Bug 1 corregido: VITE_API_URL undefined
+const API = 'http://localhost:8000/api'
+
+const cargando             = ref(false)
 const mostrarModalRegistro = ref(false)
-const busquedaModal = ref('')
-const alumnoEncontrado = ref(null)
-const evento = ref({ id_evento: null, nombre_evento: '', fecha: '', descripcion: '' })
-const participantes = ref([])
+const busquedaModal        = ref('')
+const alumnoEncontrado     = ref(null)
+const participantes        = ref([])
 const toast = ref({ visible: false, mensaje: '', tipo: 'exito' })
 let timerNotif = null, debounce = null
 
-const mostrarNotificacion = (m, t = 'exito') => { clearTimeout(timerNotif); toast.value = { visible: true, mensaje: m, tipo: t }; timerNotif = setTimeout(() => toast.value.visible = false, 3500) }
+// Bug 2 corregido: evento debe tener nombre_evento para que el template
+// lo muestre correctamente, el back ya devuelve nombre_evento con el fix anterior
+const evento = ref({ id_evento: null, nombre_evento: '', fecha: '', descripcion: '' })
+
+const mostrarNotificacion = (m, t = 'exito') => {
+  clearTimeout(timerNotif)
+  toast.value = { visible: true, mensaje: m, tipo: t }
+  timerNotif = setTimeout(() => toast.value.visible = false, 3500)
+}
 
 const cargarEvento = async () => {
-  try { const r = await fetch(`${API}/eventos/${route.params.id}`); if(!r.ok) throw new Error(); evento.value = await r.json() }
-  catch (e) { console.error(e); mostrarNotificacion('No se pudo cargar el evento', 'error') }
+  try {
+    const r = await fetch(`${API}/eventos/${route.params.id}`)
+    if (!r.ok) throw new Error()
+    evento.value = await r.json()
+  } catch (e) {
+    console.error(e)
+    mostrarNotificacion('No se pudo cargar el evento', 'error')
+  }
 }
+
 const cargarParticipantes = async () => {
   cargando.value = true
-  try { const r = await fetch(`${API}/eventos/${route.params.id}/participantes`); if(!r.ok) throw new Error(); participantes.value = await r.json() }
-  catch (e) { console.error(e); participantes.value = []; mostrarNotificacion('Error cargando participantes', 'error') }
-  finally { cargando.value = false }
+  try {
+    const r = await fetch(`${API}/eventos/${route.params.id}/participantes`)
+    if (!r.ok) throw new Error()
+    const data = await r.json()
+    // Bug 3 corregido: el back devuelve array plano con campos directos
+    // { control, nombre, carrera, semestre, constancia_emitida }
+    // el template espera p.alumno.no_control, p.alumno.nombre etc
+    // normalizamos aquí para no tocar el template
+    participantes.value = data.map(p => ({
+      id_participacion:  p.control, // usamos control como key única
+      constancia_emitida: p.constancia_emitida,
+      alumno: {
+        no_control: p.control,
+        nombre:     p.nombre,
+        carrera:    p.carrera,
+        semestre:   p.semestre,
+      }
+    }))
+  } catch (e) {
+    console.error(e)
+    participantes.value = []
+    mostrarNotificacion('Error cargando participantes', 'error')
+  } finally {
+    cargando.value = false
+  }
 }
+
 onMounted(async () => { await cargarEvento(); await cargarParticipantes() })
 
 const buscarAlumnoModal = () => {
@@ -183,13 +223,18 @@ const registrarParticipante = async () => {
   if (!alumnoEncontrado.value) return
   cargando.value = true
   try {
+    // Bug 4 corregido: el back espera no_control, no id_alumno
     const r = await fetch(`${API}/eventos/${route.params.id}/participantes`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id_alumno: alumnoEncontrado.value.id_alumno })
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ no_control: alumnoEncontrado.value.control })
     })
     if (!r.ok) throw new Error((await r.json()).message || 'Error')
-    mostrarModalRegistro.value = false; busquedaModal.value = ''; alumnoEncontrado.value = null
-    await cargarParticipantes(); mostrarNotificacion('Registrado correctamente')
+    mostrarModalRegistro.value = false
+    busquedaModal.value        = ''
+    alumnoEncontrado.value     = null
+    await cargarParticipantes()
+    mostrarNotificacion('Registrado correctamente')
   } catch (e) { mostrarNotificacion(e.message, 'error') }
   finally { cargando.value = false }
 }
@@ -197,9 +242,13 @@ const registrarParticipante = async () => {
 const emitirConstancia = async (p) => {
   cargando.value = true
   try {
-    const r = await fetch(`${API}/eventos/${route.params.id}/participantes/${p.id_participacion}/constancia`, { method: 'PATCH' })
+    // La ruta espera el número de control, no id_participacion
+    const r = await fetch(`${API}/eventos/${route.params.id}/participantes/${p.alumno.no_control}/constancia`, {
+      method: 'PATCH'
+    })
     if (!r.ok) throw new Error('No se pudo emitir')
-    p.constancia_emitida = true; mostrarNotificacion('Constancia emitida')
+    p.constancia_emitida = true
+    mostrarNotificacion('Constancia emitida')
   } catch (e) { mostrarNotificacion(e.message, 'error') }
   finally { cargando.value = false }
 }
@@ -208,16 +257,27 @@ const eliminarParticipante = async (p) => {
   if (!confirm(`¿Eliminar a ${p.alumno?.nombre}?`)) return
   cargando.value = true
   try {
-    const r = await fetch(`${API}/eventos/${route.params.id}/participantes/${p.id_participacion}`, { method: 'DELETE' })
+    // La ruta espera el número de control, no id_participacion
+    const r = await fetch(`${API}/eventos/${route.params.id}/participantes/${p.alumno.no_control}`, {
+      method: 'DELETE'
+    })
     if (!r.ok) throw new Error('No se pudo eliminar')
-    participantes.value = participantes.value.filter(x => x.id_participacion !== p.id_participacion)
+    participantes.value = participantes.value.filter(x => x.alumno.no_control !== p.alumno.no_control)
     mostrarNotificacion('Participante eliminado')
   } catch (e) { mostrarNotificacion(e.message, 'error') }
   finally { cargando.value = false }
 }
 
-const formatearFecha = (f) => { if(!f) return '—'; const [a,m,d]=f.split('-'); const mes=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']; return `${parseInt(d)} de ${mes[parseInt(m)-1]} de ${a}` }
-const iniciales = (n) => { if(!n) return '?'; return n.split(' ').filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase() }
+const formatearFecha = (f) => {
+  if (!f) return '—'
+  const [a, m, d] = f.split('-')
+  const mes = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
+  return `${parseInt(d)} de ${mes[parseInt(m) - 1]} de ${a}`
+}
+const iniciales = (n) => {
+  if (!n) return '?'
+  return n.split(' ').filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase()
+}
 </script>
 
 <style scoped>
