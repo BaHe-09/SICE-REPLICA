@@ -198,8 +198,6 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
-const API = `${import.meta.env.VITE_API_URL}/api`
-
 const router = useRouter()
 
 const cargando = ref(false)
@@ -214,7 +212,7 @@ const kpis = ref({
 const solicitudesPendientes = ref([])
 const sesionesRecientes = ref([])
 
-//const API_BASE = 'http://127.0.0.1:8000/api/comite'
+const API_BASE = 'http://127.0.0.1:8000/api/comite'
 
 // ── Carga inicial ─────────────────────────────────────────────
 const cargarDatos = async () => {
@@ -222,7 +220,7 @@ const cargarDatos = async () => {
   errorCarga.value = false
 
   try {
-    const res = await fetch(`${API}/dashboard`)
+    const res = await fetch(`${API_BASE}/dashboard`)
     if (!res.ok) {
       throw new Error('Error en la respuesta del servidor')
     }
