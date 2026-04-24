@@ -86,61 +86,118 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
+
 const router = useRouter()
-const route = useRoute()
-const API = `${import.meta.env.VITE_API_URL}/api`
+const route  = useRoute()
+
+// Bug 1 corregido: VITE_API_URL undefined, igual que EventosView
+const API = 'http://localhost:8000/api'
 
 const modoEdicion = computed(() => !!route.params.id)
-const cargando = ref(false)
+const cargando    = ref(false)
 const tiposEvento = ref([])
+
 const toast = ref({ visible: false, mensaje: '', tipo: 'exito' })
 let timerNotif = null
-const mostrarNotificacion = (m, t = 'exito') => { clearTimeout(timerNotif); toast.value = { visible: true, mensaje: m, tipo: t }; timerNotif = setTimeout(() => toast.value.visible = false, 3500) }
+const mostrarNotificacion = (m, t = 'exito') => {
+  clearTimeout(timerNotif)
+  toast.value = { visible: true, mensaje: m, tipo: t }
+  timerNotif = setTimeout(() => toast.value.visible = false, 3500)
+}
+
 const fechaMinima = computed(() => new Date().toISOString().split('T')[0])
 
-const form = ref({ nombre_evento: '', id_tipo_evento: '', fecha: '', descripcion: '' })
-const errores = ref({ nombre_evento: '', id_tipo_evento: '', fecha: '', descripcion: '' })
+const form    = ref({ nombre_evento: '', id_tipo_evento: '', fecha: '', descripcion: '' })
+const errores = ref({ nombre_evento: '', id_tipo_evento: '', fecha: '' })
 
-const cargarTipos = async () => { try { const r = await fetch(`${API}/tipo-evento`); if(!r.ok) throw new Error(); tiposEvento.value = await r.json() } catch { mostrarNotificacion('No se pudieron cargar los tipos de evento.', 'error') } }
+// Bug 2 corregido: era /tipo-evento, la ruta correcta es /tipos-evento
+// Bug 3 corregido: el back devuelve id_tipo_evento y nombre_tipo (ya lo tienen
+//                  gracias al fix en tiposEvento() del controlador)
+const cargarTipos = async () => {
+  try {
+    const r = await fetch(`${API}/tipos-evento`)
+    if (!r.ok) throw new Error()
+    tiposEvento.value = await r.json()
+  } catch {
+    mostrarNotificacion('No se pudieron cargar los tipos de evento.', 'error')
+  }
+}
+
 const cargarEvento = async () => {
   cargando.value = true
   try {
     const r = await fetch(`${API}/eventos/${route.params.id}`)
     if (!r.ok) throw new Error()
     const d = await r.json()
-    form.value = { nombre_evento: d.nombre_evento, id_tipo_evento: d.id_tipo_evento, fecha: d.fecha, descripcion: d.descripcion || '' }
-  } catch (e) { console.error(e); mostrarNotificacion('No se pudo cargar el evento', 'error') }
-  finally { cargando.value = false }
+    // d.id_tipo_evento y d.nombre_evento ya vienen correctos del back
+    form.value = {
+      nombre_evento:  d.nombre_evento,
+      id_tipo_evento: d.id_tipo_evento,
+      fecha:          d.fecha,
+      descripcion:    d.descripcion || ''
+    }
+  } catch (e) {
+    console.error(e)
+    mostrarNotificacion('No se pudo cargar el evento', 'error')
+  } finally {
+    cargando.value = false
+  }
 }
-onMounted(() => { cargarTipos(); if (modoEdicion.value) cargarEvento() })
+
+onMounted(() => {
+  cargarTipos()
+  if (modoEdicion.value) cargarEvento()
+})
 
 const validarCampo = (c) => {
   errores.value[c] = ''
-  if (c === 'nombre_evento' && !form.value.nombre_evento.trim()) errores.value.nombre_evento = 'Requerido'
-  if (c === 'id_tipo_evento' && !form.value.id_tipo_evento) errores.value.id_tipo_evento = 'Selecciona un tipo'
+  if (c === 'nombre_evento' && !form.value.nombre_evento.trim())
+    errores.value.nombre_evento = 'Requerido'
+  if (c === 'id_tipo_evento' && !form.value.id_tipo_evento)
+    errores.value.id_tipo_evento = 'Selecciona un tipo'
   if (c === 'fecha') {
-    if (!form.value.fecha) errores.value.fecha = 'Requerida'
-    else if (form.value.fecha < fechaMinima.value) errores.value.fecha = 'Fecha no puede ser pasada'
+    if (!form.value.fecha)
+      errores.value.fecha = 'Requerida'
+    else if (form.value.fecha < fechaMinima.value)
+      errores.value.fecha = 'La fecha no puede ser pasada'
   }
 }
-const validarTodo = () => { ['nombre_evento','id_tipo_evento','fecha'].forEach(validarCampo); return !Object.values(errores.value).some(Boolean) }
+
+const validarTodo = () => {
+  ['nombre_evento', 'id_tipo_evento', 'fecha'].forEach(validarCampo)
+  return !Object.values(errores.value).some(Boolean)
+}
 
 const guardar = async () => {
   if (!validarTodo()) return mostrarNotificacion('Revisa los campos marcados', 'error')
   cargando.value = true
   try {
-    const url = modoEdicion.value ? `${API}/eventos/${route.params.id}` : `${API}/eventos`
+    const url    = modoEdicion.value ? `${API}/eventos/${route.params.id}` : `${API}/eventos`
     const method = modoEdicion.value ? 'PUT' : 'POST'
-    const payload = { ...form.value, nombre_evento: form.value.nombre_evento.trim(), descripcion: form.value.descripcion.trim() }
-    const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+
+    // El back espera: nombre, tipo_evento_id, fecha, descripcion
+    const payload = {
+      nombre:         form.value.nombre_evento.trim(),
+      tipo_evento_id: Number(form.value.id_tipo_evento),
+      fecha:          form.value.fecha,
+      descripcion:    form.value.descripcion.trim() || null,
+    }
+
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload)
+    })
     if (!res.ok) throw new Error((await res.json()).message || 'Error del servidor')
     mostrarNotificacion(modoEdicion.value ? 'Evento actualizado' : 'Evento creado')
     setTimeout(() => router.push('/eventos'), 800)
-  } catch (e) { mostrarNotificacion(e.message, 'error') }
-  finally { cargando.value = false }
+  } catch (e) {
+    mostrarNotificacion(e.message, 'error')
+  } finally {
+    cargando.value = false
+  }
 }
 </script>
-
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 .formulario-evento-page { width: 100%; font-family: 'Montserrat', sans-serif; padding-bottom: 2rem; }
