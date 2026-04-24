@@ -44,18 +44,25 @@ class EventoController extends Controller
                 ->orderBy('e.fecha', 'asc');
 
             $eventos = $query->get()->map(function ($evento) {
-                $hoy = now()->toDateString();
+                $hoy        = now()->toDateString();
+                $tipoMapped = $this->mapearTipo($evento->nombre_tipo);
 
                 return [
-                    'id'             => (int) $evento->id_evento,
-                    'nombre'         => $evento->nombre_evento,
-                    'tipo'           => $this->mapearTipo($evento->nombre_tipo),
-                    'tipo_evento_id' => (int) $evento->id_tipo_evento,
-                    'fecha'          => $evento->fecha,
-                    'descripcion'    => $evento->descripcion,
-                    'participantes'  => (int) $evento->participantes,
-                    'cupo_maximo'    => null,
-                    'activo'         => $evento->fecha >= $hoy,
+                    'id'            => (int) $evento->id_evento,
+                    'id_evento'     => (int) $evento->id_evento,
+                    'nombre'        => $evento->nombre_evento,
+                    'nombre_evento' => $evento->nombre_evento,
+                    'tipo'          => $tipoMapped,
+                    'tipo_evento_id'=> (int) $evento->id_tipo_evento,
+                    'tipo_evento'   => [
+                        'id_tipo_evento' => (int) $evento->id_tipo_evento,
+                        'nombre_tipo'    => $tipoMapped,
+                    ],
+                    'fecha'         => $evento->fecha,
+                    'descripcion'   => $evento->descripcion,
+                    'participantes' => (int) $evento->participantes,
+                    'cupo_maximo'   => null,
+                    'activo'        => $evento->fecha >= $hoy,
                 ];
             });
 
@@ -96,7 +103,14 @@ class EventoController extends Controller
                 )
                 ->get();
 
-            $tiposUnicos = $tipos->unique('nombre')->values();
+            $tiposUnicos = $tipos->unique('nombre')->values()->map(function ($t) {
+                return [
+                    'id'             => $t->id,
+                    'id_tipo_evento' => $t->id,
+                    'nombre'         => $t->nombre,
+                    'nombre_tipo'    => $t->nombre,
+                ];
+            });
 
             return response()->json($tiposUnicos, 200);
 
@@ -107,7 +121,6 @@ class EventoController extends Controller
             ], 500);
         }
     }
-
     /**
      * GET /api/eventos/{id}
      */
@@ -143,11 +156,19 @@ class EventoController extends Controller
                 ], 404);
             }
 
+            $tipoMapped = $this->mapearTipo($evento->nombre_tipo);
+
             return response()->json([
                 'id'             => (int) $evento->id_evento,
+                'id_evento'      => (int) $evento->id_evento,
                 'nombre'         => $evento->nombre_evento,
-                'tipo'           => $this->mapearTipo($evento->nombre_tipo),
+                'nombre_evento'  => $evento->nombre_evento,
+                'tipo'           => $tipoMapped,
                 'tipo_evento_id' => (int) $evento->id_tipo_evento,
+                'tipo_evento'    => [
+                    'id_tipo_evento' => (int) $evento->id_tipo_evento,
+                    'nombre_tipo'    => $tipoMapped,
+                ],
                 'fecha'          => $evento->fecha,
                 'descripcion'    => $evento->descripcion,
                 'participantes'  => (int) $evento->participantes,

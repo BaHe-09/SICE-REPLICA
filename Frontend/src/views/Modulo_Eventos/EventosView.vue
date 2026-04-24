@@ -146,7 +146,7 @@ import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 const router = useRouter()
-const API = `${import.meta.env.VITE_API_URL}/api`
+const API = 'http://localhost:8000/api'
 
 const cargando      = ref(false)
 const busquedaNombre = ref('')
@@ -183,11 +183,15 @@ const hoy = new Date().toISOString().split('T')[0]
 // Bug 2 corregido: el back devuelve "id" y "nombre", no "id_tipo_evento"
 // Bug 3 corregido: el back devuelve "nombre" y "tipo" en cada evento,
 //                  no "nombre_evento" ni "tipo_evento.nombre_tipo"
-const eventosProximos = computed(() =>
-  eventos.value
+const eventosProximos = computed(() => {
+  console.log('hoy:', hoy)
+  console.log('eventos:', eventos.value)
+  return eventos.value
     .filter(e => e.fecha >= hoy)
     .sort((a, b) => a.fecha.localeCompare(b.fecha))
-)
+})
+
+console.log('API URL:', API)
 
 const eventosFiltrados = computed(() =>
   eventos.value
