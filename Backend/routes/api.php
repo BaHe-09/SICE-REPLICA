@@ -181,6 +181,9 @@ Route::get('/bitacora', [BitacoraController::class, 'index']);
 Route::get('/eventos', [EventoController::class, 'index']);
 Route::get('/tipos-evento', [EventoController::class, 'tiposEvento']);
 Route::get('/eventos/{id}', [EventoController::class, 'show']);
+Route::post('/eventos', [EventoController::class, 'store']);
+Route::put('/eventos/{id}', [EventoController::class, 'update']);
+
 Route::get('/eventos/{id}/participantes', [EventoController::class, 'participantes']);
 Route::post('/eventos/{id}/participantes', [EventoController::class, 'registrarParticipante']);
 Route::patch('/eventos/{id}/participantes/{control}/constancia', [EventoController::class, 'emitirConstancia']);

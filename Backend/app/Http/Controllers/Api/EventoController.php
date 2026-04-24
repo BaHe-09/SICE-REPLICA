@@ -24,6 +24,7 @@ class EventoController extends Controller
                 ->select(
                     'e.id_evento',
                     'e.nombre_evento',
+                    'e.id_tipo_evento',
                     't.nombre_tipo',
                     'e.fecha',
                     'e.descripcion',
@@ -35,25 +36,26 @@ class EventoController extends Controller
                 ->groupBy(
                     'e.id_evento',
                     'e.nombre_evento',
+                    'e.id_tipo_evento',
                     't.nombre_tipo',
                     'e.fecha',
                     'e.descripcion'
                 )
                 ->orderBy('e.fecha', 'asc');
 
-            $eventos = $query->get()->map(function ($evento) use ($tipo) {
+            $eventos = $query->get()->map(function ($evento) {
                 $hoy = now()->toDateString();
 
                 return [
-                    'id'            => (int) $evento->id_evento,
-                    'nombre'        => $evento->nombre_evento,
-                    'tipo'          => $this->mapearTipo($evento->nombre_tipo),
-                    'fecha'         => $evento->fecha,
-                    'lugar'         => 'Por definir',
-                    'descripcion'   => $evento->descripcion,
-                    'participantes' => (int) $evento->participantes,
-                    'cupo_maximo'   => null,
-                    'activo'        => $evento->fecha >= $hoy,
+                    'id'             => (int) $evento->id_evento,
+                    'nombre'         => $evento->nombre_evento,
+                    'tipo'           => $this->mapearTipo($evento->nombre_tipo),
+                    'tipo_evento_id' => (int) $evento->id_tipo_evento,
+                    'fecha'          => $evento->fecha,
+                    'descripcion'    => $evento->descripcion,
+                    'participantes'  => (int) $evento->participantes,
+                    'cupo_maximo'    => null,
+                    'activo'         => $evento->fecha >= $hoy,
                 ];
             });
 
@@ -118,6 +120,7 @@ class EventoController extends Controller
                 ->select(
                     'e.id_evento',
                     'e.nombre_evento',
+                    'e.id_tipo_evento',
                     't.nombre_tipo',
                     'e.fecha',
                     'e.descripcion',
@@ -127,6 +130,7 @@ class EventoController extends Controller
                 ->groupBy(
                     'e.id_evento',
                     'e.nombre_evento',
+                    'e.id_tipo_evento',
                     't.nombre_tipo',
                     'e.fecha',
                     'e.descripcion'
@@ -140,14 +144,14 @@ class EventoController extends Controller
             }
 
             return response()->json([
-                'id'            => (int) $evento->id_evento,
-                'nombre'        => $evento->nombre_evento,
-                'tipo'          => $this->mapearTipo($evento->nombre_tipo),
-                'fecha'         => $evento->fecha,
-                'lugar'         => 'Por definir',
-                'descripcion'   => $evento->descripcion,
-                'participantes' => (int) $evento->participantes,
-                'cupo_maximo'   => null,
+                'id'             => (int) $evento->id_evento,
+                'nombre'         => $evento->nombre_evento,
+                'tipo'           => $this->mapearTipo($evento->nombre_tipo),
+                'tipo_evento_id' => (int) $evento->id_tipo_evento,
+                'fecha'          => $evento->fecha,
+                'descripcion'    => $evento->descripcion,
+                'participantes'  => (int) $evento->participantes,
+                'cupo_maximo'    => null,
             ], 200);
 
         } catch (\Throwable $e) {
@@ -159,63 +163,125 @@ class EventoController extends Controller
     }
 
     /**
-     * GET /api/eventos/{id}/participantes
+     * POST /api/eventos
      */
-    public function participantes($id)
+    public function store(Request $request)
     {
         try {
-            $existeEvento = DB::table('evento')
-                ->where('id_evento', $id)
-                ->exists();
+            $request->validate([
+                'nombre'         => 'required|string|max:200',
+                'tipo_evento_id' => 'required|integer|exists:tipo_evento,id_tipo_evento',
+                'fecha'          => 'required|date',
+                'descripcion'    => 'nullable|string',
+                'cupo_maximo'    => 'nullable|integer|min:1',
+            ]);
 
-            if (!$existeEvento) {
-                return response()->json([
-                    'message' => 'Evento no encontrado'
-                ], 404);
-            }
+            $idEvento = DB::table('evento')->insertGetId([
+                'nombre_evento'   => trim($request->nombre),
+                'id_tipo_evento'  => (int) $request->tipo_evento_id,
+                'fecha'           => $request->fecha,
+                'descripcion'     => $request->descripcion ? trim($request->descripcion) : null,
+            ]);
 
-            $participantes = DB::table('participacion_evento as pe')
-                ->join('alumno as a', 'pe.id_alumno', '=', 'a.id_alumno')
-                ->join('persona as p', 'a.id_persona', '=', 'p.id_persona')
-                ->join('carrera as c', 'a.id_carrera', '=', 'c.id_carrera')
-                ->select(
-                    'a.numero_control',
-                    'p.nombre',
-                    'p.apellido_paterno',
-                    'p.apellido_materno',
-                    'c.nombre as carrera',
-                    'a.semestre_actual',
-                    'pe.constancia_emitida'
-                )
-                ->where('pe.id_evento', $id)
-                ->orderBy('a.numero_control')
-                ->get()
-                ->map(function ($row) {
-                    $nombreCompleto = trim(
-                        ($row->nombre ?? '') . ' ' .
-                        ($row->apellido_paterno ?? '') . ' ' .
-                        ($row->apellido_materno ?? '')
-                    );
+            return response()->json([
+                'message'   => 'Evento registrado correctamente',
+                'id_evento' => $idEvento,
+            ], 201);
 
-                    return [
-                        'control'            => $row->numero_control,
-                        'nombre'             => $nombreCompleto,
-                        'carrera'            => $row->carrera,
-                        'semestre'           => (int) $row->semestre_actual,
-                        'constancia_emitida' => (bool) $row->constancia_emitida,
-                    ];
-                });
-
-            return response()->json($participantes, 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Datos inválidos',
+                'errors'  => $e->errors()
+            ], 422);
 
         } catch (\Throwable $e) {
             return response()->json([
-                'message' => 'Error al obtener participantes',
+                'message' => 'Error al registrar el evento',
                 'error'   => $e->getMessage()
             ], 500);
         }
     }
 
+    /**
+     * PUT /api/eventos/{id}
+     */
+    public function update(Request $request, $id)
+    {
+        try {
+            $request->validate([
+                'nombre'         => 'required|string|max:200',
+                'tipo_evento_id' => 'required|integer|exists:tipo_evento,id_tipo_evento',
+                'fecha'          => 'required|date',
+                'descripcion'    => 'nullable|string',
+                'cupo_maximo'    => 'nullable|integer|min:1',
+            ]);
+
+            $evento = DB::table('evento')
+                ->where('id_evento', $id)
+                ->first();
+
+            if (!$evento) {
+                return response()->json([
+                    'message' => 'Evento no encontrado'
+                ], 404);
+            }
+
+            DB::table('evento')
+                ->where('id_evento', $id)
+                ->update([
+                    'nombre_evento'  => trim($request->nombre),
+                    'id_tipo_evento' => (int) $request->tipo_evento_id,
+                    'fecha'          => $request->fecha,
+                    'descripcion'    => $request->descripcion ? trim($request->descripcion) : null,
+                ]);
+
+            return response()->json([
+                'message' => 'Evento actualizado correctamente'
+            ], 200);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Datos inválidos',
+                'errors'  => $e->errors()
+            ], 422);
+
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Error al actualizar el evento',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * GET /api/eventos/{id}/participantes
+     */
+    public function participantes($id)
+    {
+        try {
+            $participantes = DB::table('participacion_evento as pe')
+                ->join('alumno as a', 'pe.id_alumno', '=', 'a.id_alumno')
+                ->join('persona as p', 'a.id_persona', '=', 'p.id_persona')
+                ->leftJoin('carrera as c', 'a.id_carrera', '=', 'c.id_carrera')
+                ->select(
+                    'a.numero_control as control',
+                    DB::raw("CONCAT(p.nombre, ' ', p.apellido_paterno, ' ', p.apellido_materno) as nombre"),
+                    'c.nombre as carrera',
+                    'a.semestre_actual as semestre',
+                    'pe.constancia_emitida'
+                )
+                ->where('pe.id_evento', $id)
+                ->get();
+
+            return response()->json($participantes);
+
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Error al obtener participantes',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
     /**
      * POST /api/eventos/{id}/participantes
      */
@@ -367,7 +433,7 @@ class EventoController extends Controller
     }
 
     /**
-     * GET /api/alumnos/buscar?no_control=...
+     * GET /api/alumnos/buscar-control?no_control=...
      */
     public function buscarAlumno(Request $request)
     {

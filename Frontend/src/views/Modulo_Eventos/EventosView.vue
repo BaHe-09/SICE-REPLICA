@@ -144,28 +144,27 @@ Filtrar:
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
+
 const router = useRouter()
 const API = `${import.meta.env.VITE_API_URL}/api`
 
-const cargando = ref(false)
+const cargando      = ref(false)
 const busquedaNombre = ref('')
-const filtroTipo = ref('')
-const tiposEvento = ref([])
-const eventos = ref([])
+const filtroTipo    = ref('')
+const tiposEvento   = ref([])
+const eventos       = ref([])
 
-const mostrarNotificacion = (mensaje, tipo = 'exito') => {
-  // Reutiliza sistema de toast global o localStorage si es necesario
-  console.log(`[${tipo}] ${mensaje}`)
-}
-
+// ── Carga de tipos ────────────────────────────────────────────
+// Bug 1 corregido: era /tipo-evento, la ruta en api.php es /tipos-evento
 const cargarTipos = async () => {
   try {
-    const res = await fetch(`${API}/tipo-evento`)
+    const res = await fetch(`${API}/tipos-evento`)
     if (!res.ok) throw new Error()
     tiposEvento.value = await res.json()
   } catch { tiposEvento.value = [] }
 }
 
+// ── Carga de eventos ──────────────────────────────────────────
 const cargarEventos = async () => {
   cargando.value = true
   try {
@@ -178,26 +177,43 @@ const cargarEventos = async () => {
 
 onMounted(() => { cargarTipos(); cargarEventos() })
 
+// ── Computed ──────────────────────────────────────────────────
 const hoy = new Date().toISOString().split('T')[0]
+
+// Bug 2 corregido: el back devuelve "id" y "nombre", no "id_tipo_evento"
+// Bug 3 corregido: el back devuelve "nombre" y "tipo" en cada evento,
+//                  no "nombre_evento" ni "tipo_evento.nombre_tipo"
 const eventosProximos = computed(() =>
-  eventos.value.filter(e => e.fecha >= hoy).sort((a,b) => a.fecha.localeCompare(b.fecha))
-)
-const eventosFiltrados = computed(() =>
   eventos.value
-  .filter(e => e.fecha < hoy)
-  .filter(e => {
-    const matchNombre = !busquedaNombre.value || e.nombre_evento.toLowerCase().includes(busquedaNombre.value.toLowerCase())
-    const matchTipo = !filtroTipo.value || e.id_tipo_evento === Number(filtroTipo.value)
-    return matchNombre && matchTipo
-  })
+    .filter(e => e.fecha >= hoy)
+    .sort((a, b) => a.fecha.localeCompare(b.fecha))
 )
 
+const eventosFiltrados = computed(() =>
+  eventos.value
+    .filter(e => e.fecha < hoy)
+    .filter(e => {
+      const matchNombre = !busquedaNombre.value ||
+        e.nombre.toLowerCase().includes(busquedaNombre.value.toLowerCase())
+      const matchTipo = !filtroTipo.value ||
+        String(e.tipo_evento_id) === String(filtroTipo.value)
+      return matchNombre && matchTipo
+    })
+)
+
+// ── Filtrar en el backend ─────────────────────────────────────
+// Bug 4 corregido: el parámetro que acepta el back es "tipo" (string),
+//                  no "id_tipo_evento" (número)
 const filtrar = async () => {
   cargando.value = true
   try {
     const params = new URLSearchParams()
     if (busquedaNombre.value) params.append('nombre', busquedaNombre.value)
-    if (filtroTipo.value) params.append('id_tipo_evento', filtroTipo.value)
+    // Busca el nombre del tipo para mandarlo como string al back
+    if (filtroTipo.value) {
+      const tipoObj = tiposEvento.value.find(t => String(t.id) === String(filtroTipo.value))
+      if (tipoObj) params.append('tipo', tipoObj.nombre)
+    }
     const res = await fetch(`${API}/eventos?${params}`)
     if (!res.ok) throw new Error()
     eventos.value = await res.json()
@@ -205,13 +221,18 @@ const filtrar = async () => {
   finally { cargando.value = false }
 }
 
+// ── Helpers ───────────────────────────────────────────────────
 const formatearFecha = (f) => {
   if (!f) return '—'
   const [a, m, d] = f.split('-')
-  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
+  const meses = ['enero','febrero','marzo','abril','mayo','junio',
+                 'julio','agosto','septiembre','octubre','noviembre','diciembre']
   return `${parseInt(d)} de ${meses[parseInt(m) - 1]} de ${a}`
 }
-const colorTipo = (t) => ({'Académico':'#1B396A','Cultural':'#F59E0B','Deportivo':'#16A34A','Institucional':'#2563EB'}[t] || '#6B7280')
+
+// Bug 5 corregido: el back devuelve el tipo ya mapeado como string en evento.tipo,
+//                  no como objeto evento.tipo_evento.nombre_tipo
+const colorTipo      = (t) => ({'Académico':'#1B396A','Cultural':'#F59E0B','Deportivo':'#16A34A','Institucional':'#2563EB'}[t] || '#6B7280')
 const colorFondoTipo = (t) => ({'Académico':'#DBEAFE','Cultural':'#FEF3C7','Deportivo':'#DCFCE7','Institucional':'#EDE9FE'}[t] || '#F3F4F6')
 const estiloBadgeTipo = (t) => ({ background: colorFondoTipo(t), color: colorTipo(t) })
 </script>
