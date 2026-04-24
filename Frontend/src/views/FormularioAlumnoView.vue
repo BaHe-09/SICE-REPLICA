@@ -263,18 +263,20 @@ import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
-const API = `${import.meta.env.VITE_API_URL}/api`
-
 const router = useRouter()
 
+// ── URL base del backend (variable de entorno) ──────────────────────
+const API_URL = import.meta.env.VITE_API_URL
+
+// ── Constantes de fecha ──────────────────────────────────────────────
 const anioActual  = new Date().getFullYear()
-const prefijoAnio = String(anioActual).slice(-2)  
+const prefijoAnio = String(anioActual).slice(-2)
 const hoyISO      = new Date().toISOString().split('T')[0]
 
-
+// ── Sufijo del número de control ─────────────────────────────────────
 const sufijoCodigo = ref('')
 
-
+// ── Formulario ────────────────────────────────────────────────────────
 const form = reactive({
   nombre:          '',
   apellidoPaterno: '',
@@ -292,16 +294,14 @@ const tocados      = reactive({})
 const notification = reactive({ message: '', type: '' })
 const isLoading    = ref(false)
 
-
+// ── Máscara del número de control ────────────────────────────────────
 const aplicarMascaraControl = () => {
-
   sufijoCodigo.value = sufijoCodigo.value.replace(/\D/g, '').slice(0, 6)
-
   form.noControl = prefijoAnio + sufijoCodigo.value
   validarCampo('noControl')
 }
 
-
+// ── Validaciones en tiempo real ───────────────────────────────────────
 const validarCampo = (campo) => {
   tocados[campo] = true
 
@@ -365,9 +365,7 @@ const validarCampo = (campo) => {
   }
 }
 
-
 const campoValido = (campo) => tocados[campo] && !errors[campo]
-
 
 const validarFormulario = () => {
   const camposRequeridos = ['nombre', 'apellidoPaterno', 'genero', 'noControl', 'carrera', 'semestre', 'fechaIngreso']
@@ -375,7 +373,7 @@ const validarFormulario = () => {
   return Object.keys(errors).length === 0
 }
 
-
+// ── Helpers de mapeo ──────────────────────────────────────────────────
 const getIdCarrera = (nombreCarrera) => {
   const mapa = {
     'Contador Publico': 1,
@@ -388,14 +386,11 @@ const getIdCarrera = (nombreCarrera) => {
 }
 
 const getEstatus = (estatus) => {
-  return {
-    'Activo': 1,
-    'Baja Temporal': 0,
-    'Baja Definitiva': 0
-  }[estatus]
+  return { 'Activo': 1, 'Baja Temporal': 0, 'Baja Definitiva': 0 }[estatus]
 }
 
-
+// ── Guardar alumno ────────────────────────────────────────────────────
+// Endpoint: POST /api/alumnos
 const guardarAlumno = async () => {
   if (!validarFormulario()) {
     showNotification('Corrige los errores marcados antes de continuar', 'error')
@@ -405,49 +400,82 @@ const guardarAlumno = async () => {
   isLoading.value = true
 
   const payload = {
-    numero_control:  form.noControl,
-    nombre:          form.nombre.trim(),
+    numero_control:   form.noControl,
+    nombre:           form.nombre.trim(),
     apellido_paterno: form.apellidoPaterno.trim(),
     apellido_materno: form.apellidoMaterno.trim() || null,
-    genero:          form.genero,
-    id_carrera:      getIdCarrera(form.carrera),
-    semestre_actual: parseInt(form.semestre),
-    estatus:         getEstatus(form.estatus),
-    fecha_ingreso:   form.fechaIngreso
+    genero:           form.genero,
+    id_carrera:       getIdCarrera(form.carrera),
+    semestre_actual:  parseInt(form.semestre),
+    estatus:          getEstatus(form.estatus),
+    fecha_ingreso:    form.fechaIngreso
   }
 
   try {
-  
-    console.log('Formulario completo:', form)
-    console.log('Carrera seleccionada:', form.carrera)
-    console.log('ID carrera:', getIdCarrera(form.carrera))
-    console.log('Payload enviado:', payload)
+    console.log('📤 Payload enviado:', payload)
 
-    const response = await fetch(`${API}/alumnos`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify(payload)
+    const response = await fetch(`${API_URL}/api/alumnos`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body:    JSON.stringify(payload)
     })
 
     const data = await response.json()
-    console.log('Respuesta backend:', data)
+    console.log('📥 Respuesta backend:', data)
 
     if (response.ok) {
       showNotification('Alumno registrado correctamente', 'success')
       setTimeout(() => router.push('/alumnos'), 1500)
     } else {
-      throw new Error(JSON.stringify(data))
-    }
+      // ── Punto 22 del checklist: mostrar error de número de control duplicado ──
+      // El backend devuelve el mensaje en data.message, data.error o data.errors
+      const mensajeBackend = extraerMensajeError(data, form.noControl)
+      showNotification(mensajeBackend, 'error')
+      console.error('❌ Error backend:', data)
 
+      // Si el error es de número de control duplicado, marcar el campo visualmente
+      if (esDuplicadoControl(data)) {
+        errors.noControl = `El número de control ${form.noControl} ya está registrado`
+        tocados.noControl = true
+      }
+    }
   } catch (error) {
-    console.error('ERROR REAL:', error)
+    console.error('❌ Error de conexión:', error)
     showNotification('Ocurrió un error al guardar el registro. Verifica la conexión con el servidor.', 'error')
   } finally {
     isLoading.value = false
   }
+}
+
+// Extrae el mensaje de error más útil de la respuesta del backend
+// Soporta los formatos más comunes de Laravel: message, error, errors
+const extraerMensajeError = (data, noControl) => {
+  // Laravel validation errors (422)
+  if (data.errors) {
+    const primerError = Object.values(data.errors)[0]
+    const mensaje = Array.isArray(primerError) ? primerError[0] : primerError
+    // Personalizar el mensaje de duplicado para que sea claro para el usuario
+    if (mensaje && (mensaje.toLowerCase().includes('unique') || mensaje.toLowerCase().includes('ya') || mensaje.toLowerCase().includes('taken'))) {
+      return `El número de control ${noControl} ya está registrado en el sistema.`
+    }
+    return mensaje || 'Error de validación en el formulario.'
+  }
+  // Mensaje directo del backend
+  if (data.message) {
+    if (data.message.toLowerCase().includes('unique') || data.message.toLowerCase().includes('duplicate')) {
+      return `El número de control ${noControl} ya está registrado en el sistema.`
+    }
+    return data.message
+  }
+  if (data.error) return data.error
+  return 'Ocurrió un error al guardar el registro.'
+}
+
+// Detecta si el error es específicamente de número de control duplicado
+const esDuplicadoControl = (data) => {
+  const texto = JSON.stringify(data).toLowerCase()
+  return texto.includes('unique') || texto.includes('duplicate') ||
+         texto.includes('numero_control') || texto.includes('ya está')
 }
 
 const cancelar = () => router.push('/alumnos')

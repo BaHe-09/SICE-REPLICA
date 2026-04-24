@@ -9,6 +9,18 @@
       </div>
       <h1 class="page-title">Gestión de Grupos</h1>
 
+      <transition name="notif-fade">
+        <div v-if="notificacion.visible" class="notificacion-ui" :class="notificacion.tipo">
+          <svg v-if="notificacion.tipo === 'exito'" xmlns="http://www.w3.org/2000/svg" class="notif-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <svg v-else xmlns="http://www.w3.org/2000/svg" class="notif-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {{ notificacion.mensaje }}
+        </div>
+      </transition>
+
       <div class="filtros-card">
         <div class="filtros-label">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
@@ -261,21 +273,31 @@ const API = `${import.meta.env.VITE_API_URL}/api`
 
 const router = useRouter()
 
-const busquedaControl = ref('')
+const busquedaControl         = ref('')
 const busquedaControlAplicada = ref('')
-const busquedaGrupo = ref('')
-const filtroCarrera = ref('')
-const filtroSemestre = ref('')
-const filasPorPagina = ref(10)
-const currentPage = ref(1)
-const cargando = ref(false)
-const mensajeCarga = ref('')
-const errorCarga = ref('')
+const busquedaGrupo           = ref('')
+const filtroCarrera           = ref('')
+const filtroSemestre          = ref('')
+const filasPorPagina          = ref(10)
+const currentPage             = ref(1)
+const cargando                = ref(false)
+const mensajeCarga            = ref('')
+const errorCarga              = ref('')
 
-const filaActiva = ref(-1)
-const inputControlRef = ref(null)
+const filaActiva       = ref(-1)
+const inputControlRef  = ref(null)
 const inputBusquedaRef = ref(null)
-const paginaRef = ref(null)
+const paginaRef        = ref(null)
+
+// ── Notificación UI ─────────────────────────────────────────────────
+const notificacion = ref({ visible: false, mensaje: '', tipo: 'exito' })
+let timerNotif = null
+
+const mostrarNotificacion = (mensaje, tipo = 'exito') => {
+  if (timerNotif) clearTimeout(timerNotif)
+  notificacion.value = { visible: true, mensaje, tipo }
+  timerNotif = setTimeout(() => { notificacion.value.visible = false }, 3500)
+}
 
 const simularCarga = (mensaje, fn, ms = 600) => {
   cargando.value = true
@@ -287,13 +309,11 @@ const simularCarga = (mensaje, fn, ms = 600) => {
   }, ms)
 }
 
-// ── Navegación por teclado ──────────────────────────────────────
+// ── Navegación por teclado ────────────────────────────────────────
 const manejarTeclado = (e) => {
-  // Ignorar si el foco está en un input, select o textarea
   const tag = document.activeElement?.tagName
   const enCampo = ['INPUT', 'SELECT', 'TEXTAREA'].includes(tag)
 
-  // Atajos globales (funcionan siempre)
   if (e.key === 'Escape') {
     if (showModal.value) cerrarModal()
     return
@@ -301,44 +321,20 @@ const manejarTeclado = (e) => {
 
   if (e.ctrlKey) {
     switch (e.key.toLowerCase()) {
-      case 'm':
-        e.preventDefault()
-        nuevoGrupo()
-        break
-      case 'f':
-        e.preventDefault()
-        nextTick(() => inputControlRef.value?.focus())
-        break
-      case 'b':
-        e.preventDefault()
-        nextTick(() => inputBusquedaRef.value?.focus())
-        break
-      case 'l':
-        e.preventDefault()
-        limpiarFiltros()
-        break
+      case 'm': e.preventDefault(); nuevoGrupo(); break
+      case 'f': e.preventDefault(); nextTick(() => inputControlRef.value?.focus()); break
+      case 'b': e.preventDefault(); nextTick(() => inputBusquedaRef.value?.focus()); break
+      case 'l': e.preventDefault(); limpiarFiltros(); break
     }
     return
   }
 
-  // Navegación con flechas en la tabla (solo si no está en un campo)
   if (!enCampo && !showModal.value) {
     const total = paginatedGrupos.value.length
-    if (e.key === 'ArrowDown') {
-      e.preventDefault()
-      filaActiva.value = Math.min(filaActiva.value + 1, total - 1)
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault()
-      filaActiva.value = Math.max(filaActiva.value - 1, 0)
-    } else if (e.key === 'ArrowRight') {
-      e.preventDefault()
-      nextPage()
-      filaActiva.value = 0
-    } else if (e.key === 'ArrowLeft') {
-      e.preventDefault()
-      prevPage()
-      filaActiva.value = 0
-    }
+    if (e.key === 'ArrowDown')      { e.preventDefault(); filaActiva.value = Math.min(filaActiva.value + 1, total - 1) }
+    else if (e.key === 'ArrowUp')   { e.preventDefault(); filaActiva.value = Math.max(filaActiva.value - 1, 0) }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); nextPage(); filaActiva.value = 0 }
+    else if (e.key === 'ArrowLeft')  { e.preventDefault(); prevPage(); filaActiva.value = 0 }
   }
 }
 
@@ -351,12 +347,9 @@ onUnmounted(() => {
   window.removeEventListener('keydown', manejarTeclado)
 })
 
-// ── Datos ────────────────────────────────────────────────────────
+// ── Datos ─────────────────────────────────────────────────────────
 const grupos = ref([])
 
-
-
-// Normalizar grupo desde la respuesta del backend
 const normalizarGrupo = (g) => ({
   id:        g.id_grupo || g.id,
   materia:   g.materia || '',
@@ -374,12 +367,13 @@ const normalizarGrupo = (g) => ({
   alumnos: []
 })
 
+// Endpoint: GET /api/grupos
 const cargarGrupos = async () => {
   cargando.value = true
   errorCarga.value = ''
   mensajeCarga.value = 'Cargando grupos...'
   try {
-    const response = await fetch(`${API}/grupos`) // [1]
+    const response = await fetch(`${API}/grupos`)
     if (!response.ok) throw new Error('Error del servidor')
     const data = await response.json()
     grupos.value = data.map(normalizarGrupo)
@@ -393,25 +387,24 @@ const cargarGrupos = async () => {
   }
 }
 
+// ── Filtrado y paginación ─────────────────────────────────────────
 const gruposFiltrados = computed(() => {
   return grupos.value.filter(g => {
-    // Prioridad: número de control del alumno inscrito
-    const coincideControl = !busquedaControlAplicada.value ||
+    const coincideControl   = !busquedaControlAplicada.value ||
       g.alumnos.some(a => a.noControl === busquedaControlAplicada.value.trim())
-    // Secundario: materia o docente
-    const coincideBusqueda = !busquedaGrupo.value ||
+    const coincideBusqueda  = !busquedaGrupo.value ||
       g.materia.toLowerCase().includes(busquedaGrupo.value.toLowerCase()) ||
       g.docente.toLowerCase().includes(busquedaGrupo.value.toLowerCase())
-    const coincideCarrera = !filtroCarrera.value || g.carrera === filtroCarrera.value
-    const coincideSemestre = !filtroSemestre.value || g.semestre === parseInt(filtroSemestre.value)
+    const coincideCarrera   = !filtroCarrera.value  || g.carrera === filtroCarrera.value
+    const coincideSemestre  = !filtroSemestre.value || g.semestre === parseInt(filtroSemestre.value)
     return coincideControl && coincideBusqueda && coincideCarrera && coincideSemestre
   })
 })
 
-const totalPages = computed(() => Math.ceil(gruposFiltrados.value.length / filasPorPagina.value) || 1)
-const startIndex = computed(() => (currentPage.value - 1) * filasPorPagina.value)
+const totalPages     = computed(() => Math.ceil(gruposFiltrados.value.length / filasPorPagina.value) || 1)
+const startIndex     = computed(() => (currentPage.value - 1) * filasPorPagina.value)
 const paginatedGrupos = computed(() => gruposFiltrados.value.slice(startIndex.value, startIndex.value + filasPorPagina.value))
-const visiblePages = computed(() => {
+const visiblePages   = computed(() => {
   const pages = []
   for (let i = 1; i <= totalPages.value; i++) pages.push(i)
   return pages
@@ -421,58 +414,40 @@ const aplicarFiltros = () => {
   simularCarga('Aplicando filtros...', () => {
     busquedaControlAplicada.value = busquedaControl.value
     currentPage.value = 1
-    filaActiva.value = -1
+    filaActiva.value  = -1
   })
 }
 const limpiarFiltros = () => {
   simularCarga('Limpiando filtros...', () => {
-    busquedaControl.value = ''
+    busquedaControl.value         = ''
     busquedaControlAplicada.value = ''
-    busquedaGrupo.value = ''
-    filtroCarrera.value = ''
-    filtroSemestre.value = ''
-    currentPage.value = 1
-    filaActiva.value = -1
+    busquedaGrupo.value           = ''
+    filtroCarrera.value           = ''
+    filtroSemestre.value          = ''
+    currentPage.value             = 1
+    filaActiva.value              = -1
   })
 }
 
-const prevPage = () => {
-  if (currentPage.value > 1) {
-    currentPage.value--
-    filaActiva.value = -1
-  }
-}
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++
-    filaActiva.value = -1
-  }
-}
-const goToPage = (page) => { currentPage.value = page }
+const prevPage  = () => { if (currentPage.value > 1) { currentPage.value--; filaActiva.value = -1 } }
+const nextPage  = () => { if (currentPage.value < totalPages.value) { currentPage.value++; filaActiva.value = -1 } }
+const goToPage  = (page) => { currentPage.value = page }
 
-const showModal = ref(false)
+// ── Modales ───────────────────────────────────────────────────────
+const showModal  = ref(false)
 const grupoEditar = ref({})
 
 const nuevoGrupo = () => {
   grupoEditar.value = {
-    id: null,
-    materia: '',
-    docente: '',
-    aula: '',
-    capacidad: 30,
-    inscritos: 0,
-    carrera: '',
-    semestre: 5,
+    id: null, materia: '', docente: '', aula: '',
+    capacidad: 30, inscritos: 0, carrera: '', semestre: 5,
     horario: { dia: '', horaInicio: '', horaFin: '' }
   }
   showModal.value = true
 }
 
 const editarGrupo = (grupo) => {
-  grupoEditar.value = {
-    ...grupo,
-    horario: { ...grupo.horario }
-  }
+  grupoEditar.value = { ...grupo, horario: { ...grupo.horario } }
   showModal.value = true
 }
 
@@ -481,6 +456,7 @@ const cerrarModal = () => {
   grupoEditar.value = {}
 }
 
+// Endpoint: POST /api/grupos  |  PUT /api/grupos/{id}
 const guardarGrupo = async () => {
   const esEdicion = !!grupoEditar.value.id
   cargando.value = true
@@ -499,69 +475,96 @@ const guardarGrupo = async () => {
     }
     const url    = esEdicion ? `${API}/grupos/${grupoEditar.value.id}` : `${API}/grupos`
     const method = esEdicion ? 'PUT' : 'POST'
+
     const response = await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify(payload)
     })
-    if (!response.ok) throw new Error('Error del servidor')
-    console.log(`✅ Grupo ${esEdicion ? 'actualizado' : 'creado'} correctamente`)
-    await cargarGrupos()
-    cerrarModal()
+
+    // ── Punto 70: mostrar resultado visible al usuario ──
+    if (response.ok) {
+      await cargarGrupos()
+      cerrarModal()
+      mostrarNotificacion(
+        esEdicion ? 'Grupo actualizado correctamente.' : 'Grupo creado correctamente.',
+        'exito'
+      )
+    } else {
+      const data = await response.json().catch(() => ({}))
+      const mensajeError = data.message || data.error || 'Error al guardar el grupo.'
+      mostrarNotificacion(mensajeError, 'error')
+      console.error('❌ Error guardando grupo:', data)
+    }
   } catch (error) {
     console.error('❌ Error guardando grupo:', error)
+    mostrarNotificacion('Ocurrió un error de conexión al guardar el grupo.', 'error')
   } finally {
-    cargando.value = false
+    cargando.value    = false
     mensajeCarga.value = ''
   }
 }
 
 const showModalEliminar = ref(false)
-const grupoAEliminar = ref(null)
+const grupoAEliminar    = ref(null)
 
-// Eliminar desde la tabla
 const eliminarGrupo = (grupo) => {
-  grupoAEliminar.value = grupo
+  grupoAEliminar.value    = grupo
   showModalEliminar.value = true
 }
 
-// Eliminar desde el modal de edición
 const eliminarGrupoDesdeModal = () => {
-  grupoAEliminar.value = { ...grupoEditar.value }
+  grupoAEliminar.value    = { ...grupoEditar.value }
   cerrarModal()
   showModalEliminar.value = true
 }
 
 const cancelarEliminar = () => {
   showModalEliminar.value = false
-  grupoAEliminar.value = null
+  grupoAEliminar.value    = null
 }
 
+// Endpoint: DELETE /api/grupos/{id}
 const confirmarEliminar = async () => {
-  cargando.value = true
+  cargando.value     = true
   mensajeCarga.value = 'Eliminando grupo...'
   try {
     const response = await fetch(`${API}/grupos/${grupoAEliminar.value.id}`, {
-      method: 'DELETE',
+      method:  'DELETE',
       headers: { 'Accept': 'application/json' }
     })
-    if (!response.ok) throw new Error('Error del servidor')
-    console.log('✅ Grupo eliminado correctamente')
-    await cargarGrupos()
-    showModalEliminar.value = false
-    grupoAEliminar.value = null
+
+    // DELETE puede devolver 204 sin body
+    let data = {}
+    if (response.status !== 204) {
+      data = await response.json().catch(() => ({}))
+    }
+
+    // ── Punto 70: mostrar resultado visible al usuario ──
+    if (response.ok) {
+      await cargarGrupos()
+      showModalEliminar.value = false
+      grupoAEliminar.value    = null
+      mostrarNotificacion('Grupo eliminado correctamente.', 'exito')
+    } else {
+      const mensajeError = data.message || data.error || 'No se pudo eliminar el grupo.'
+      mostrarNotificacion(mensajeError, 'error')
+      console.error('❌ Error eliminando grupo:', data)
+    }
   } catch (error) {
     console.error('❌ Error eliminando grupo:', error)
+    mostrarNotificacion('Ocurrió un error de conexión al eliminar el grupo.', 'error')
   } finally {
-    cargando.value = false
+    cargando.value     = false
     mensajeCarga.value = ''
   }
 }
 
-const verDetalle = (grupo) => {}
-const irAEvaluaciones = (grupo) => router.push(`/evaluaciones/${grupo.id}`)
+const verDetalle        = (grupo) => {}
+const irAEvaluaciones   = (grupo) => router.push(`/evaluaciones/${grupo.id}`)
 const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
 </script>
+
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
@@ -814,5 +817,21 @@ const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
   color: #DC2626; border-radius: 8px;
   padding: 10px 16px; margin-bottom: 1rem;
   font-size: 0.9rem; font-weight: 500;
+
+
+
+/* ── Notificación UI ── */
+.notificacion-ui {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 18px; border-radius: 10px;
+  font-size: 0.93rem; font-weight: 500;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.notificacion-ui.exito { background: #DCFCE7; color: #16A34A; border: 1px solid #86EFAC; }
+.notificacion-ui.error { background: #FEE2E2; color: #DC2626; border: 1px solid #FCA5A5; }
+.notif-icono { width: 20px; height: 20px; flex-shrink: 0; }
+.notif-fade-enter-active, .notif-fade-leave-active { transition: all 0.35s ease; }
+.notif-fade-enter-from, .notif-fade-leave-to { opacity: 0; transform: translateY(-8px); }
 }
 </style>

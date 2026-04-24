@@ -65,6 +65,8 @@
           <option value="Activo">Activo</option>
           <option value="Baja Temporal">Baja Temporal</option>
           <option value="Baja Definitiva">Baja Definitiva</option>
+          <option value="Titulado">Titulado</option>
+          <option value="Egresado">Egresado</option>
         </select>
 
         <button class="btn-limpiar" @click="resetFilters">
@@ -244,6 +246,8 @@
                 <option value="Activo">Activo</option>
                 <option value="Baja Temporal">Baja Temporal</option>
                 <option value="Baja Definitiva">Baja Definitiva</option>
+                <option value="Titulado">Titulado</option>
+                <option value="Egresado">Egresado</option>
               </select>
             </div>
           </div>
@@ -275,23 +279,26 @@ import MainLayout from '@/layouts/MainLayout.vue'
 
 const router = useRouter()
 
+// ── URL base del backend (variable de entorno) ──────────────────────
+const API_URL = import.meta.env.VITE_API_URL
 
-const alumnos         = ref([])
-const cargando        = ref(false)
+// ── Estado principal ────────────────────────────────────────────────
+const alumnos          = ref([])
+const cargando         = ref(false)
 const cargandoBusqueda = ref(false)
-const guardando       = ref(false)
-const filaActiva      = ref(-1)
-const tablaRef        = ref(null)
+const guardando        = ref(false)
+const filaActiva       = ref(-1)
+const tablaRef         = ref(null)
 
+// ── Filtros y paginación ────────────────────────────────────────────
+const busquedaAlumno = ref('')
+const filtroCarrera  = ref('')
+const filtroSemestre = ref('')
+const filtroEstatus  = ref('')
+const filasPorPagina = ref(10)
+const currentPage    = ref(1)
 
-const busquedaAlumno  = ref('')
-const filtroCarrera   = ref('')
-const filtroSemestre  = ref('')
-const filtroEstatus   = ref('')
-const filasPorPagina  = ref(10)
-const currentPage     = ref(1)
-
-
+// ── Notificación UI ─────────────────────────────────────────────────
 const notificacion = ref({ visible: false, mensaje: '', tipo: 'exito' })
 let timerNotif = null
 
@@ -301,30 +308,15 @@ const mostrarNotificacion = (mensaje, tipo = 'exito') => {
   timerNotif = setTimeout(() => { notificacion.value.visible = false }, 3500)
 }
 
-
+// ── Props ────────────────────────────────────────────────────────────
 const props = defineProps({
   busquedaGlobal: { type: String, default: '' }
 })
 
+// ── Helpers ──────────────────────────────────────────────────────────
 const normalize = (text) => {
   if (!text) return ''
   return text.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-}
-
-const estatusToNumber = (estatus) => {
-  const map = { 'Activo': 1, 'Baja Temporal': 2, 'Baja Definitiva': 3 }
-  return map[estatus] || 1
-}
-
-const getIdCarrera = (nombreCarrera) => {
-  const mapa = {
-    'Contador Publico': 1,
-    'Ingenieria Civil': 2,
-    'Ingenieria en Gestion empresarial': 3,
-    'Ingenieria en Sistemas Computacionales': 4,
-    'Ingenieria Industrial': 5,
-  }
-  return mapa[nombreCarrera] || null
 }
 
 const claseEstatus = (estatus) => {
@@ -332,11 +324,29 @@ const claseEstatus = (estatus) => {
   return estatus.toLowerCase().replace(/\s/g, '-')
 }
 
+// Resuelve el id_carrera desde cualquier estructura que devuelva el backend
+// Soporta: { id_carrera: 4 }, { carrera: { id_carrera: 4 } }, { carrera: 'Nombre' }
+const resolverIdCarrera = (alumno) => {
+  if (alumno.id_carrera) return alumno.id_carrera
+  if (alumno.carrera?.id_carrera) return alumno.carrera.id_carrera
+  // Fallback: mapear por nombre si el backend no devuelve id directo
+  const mapa = {
+    'Contador Publico': 1,
+    'Ingenieria Civil': 2,
+    'Ingenieria en Gestion empresarial': 3,
+    'Ingenieria en Sistemas Computacionales': 4,
+    'Ingenieria Industrial': 5,
+  }
+  const nombre = alumno.carrera?.nombre_carrera || alumno.carrera || ''
+  return mapa[nombre] || null
+}
 
+// ── Carga de alumnos ─────────────────────────────────────────────────
+// Endpoint: GET /api/alumnos-full
 const cargarAlumnosDesdeBD = async () => {
   cargando.value = true
   try {
-    const response = await fetch('http://localhost:8000/api/alumnos-full')
+    const response = await fetch(`${API_URL}/api/alumnos-full`)
     if (!response.ok) throw new Error('Error del servidor')
     const data = await response.json()
     alumnos.value = data
@@ -351,7 +361,7 @@ const cargarAlumnosDesdeBD = async () => {
 
 onMounted(() => { cargarAlumnosDesdeBD() })
 
-
+// Debounce de búsqueda
 let timerBusqueda = null
 watch(busquedaAlumno, () => {
   cargandoBusqueda.value = true
@@ -362,7 +372,7 @@ watch(busquedaAlumno, () => {
   }, 350)
 })
 
-
+// ── Modal Ver ────────────────────────────────────────────────────────
 const showViewModal = ref(false)
 const alumnoVer     = ref({})
 
@@ -376,61 +386,61 @@ const abrirModalVer = (alumno) => {
   }
   showViewModal.value = true
 }
-
 const cerrarModalVer = () => { showViewModal.value = false }
 
-const showModal     = ref(false)
-const alumnoEditar  = ref({})
+// ── Modal Editar ─────────────────────────────────────────────────────
+const showModal    = ref(false)
+const alumnoEditar = ref({})
 
 const abrirModalEditar = (alumno) => {
-  console.log('🟡 Alumno clickeado para editar:', alumno)
+  console.log('🟡 Alumno para editar:', alumno)
 
   alumnoEditar.value = {
-    id_alumno: alumno.id_alumno || alumno.id,
-    noControl: alumno.numero_control || alumno.noControl || '',
-    nombre: alumno.nombre || alumno.persona?.nombre_completo || alumno.persona?.nombre || '',
-
-    
-    id_carrera: alumno.id_carrera,
-
-
-    carrera: alumno.carrera?.nombre_carrera || alumno.carrera || '',
-
-    semestre: alumno.semestre_actual || alumno.semestre || 1,
-    estatus: alumno.estatus || 'Activo'
+    id_alumno:  alumno.id_alumno || alumno.id,
+    noControl:  alumno.numero_control || alumno.noControl || '',
+    nombre:     alumno.nombre || alumno.persona?.nombre_completo || alumno.persona?.nombre || '',
+    id_carrera: resolverIdCarrera(alumno),
+    carrera:    alumno.carrera?.nombre_carrera || alumno.carrera || '',
+    semestre:   alumno.semestre_actual || alumno.semestre || 1,
+    estatus:    alumno.estatus || 'Activo'
   }
 
-  console.log('🟢 Datos preparados para editar:', alumnoEditar.value)
+  console.log('🟢 Datos preparados:', alumnoEditar.value)
   showModal.value = true
 }
 
 const cerrarModal = () => { showModal.value = false }
 
-
+// ── Guardar cambios (edición) ─────────────────────────────────────────
+// Endpoint: PUT /api/alumnos/{id}
 const guardarCambios = async () => {
   const id = alumnoEditar.value.id_alumno
   if (!id) {
     mostrarNotificacion('No se encontró el identificador del alumno.', 'error')
-    console.error(alumnoEditar.value)
     return
   }
 
-
+  // Validar que id_carrera esté resuelto antes de enviar
+  const idCarrera = alumnoEditar.value.id_carrera || resolverIdCarrera(alumnoEditar.value)
+  if (!idCarrera) {
+    mostrarNotificacion('No se pudo determinar la carrera. Selecciónala nuevamente.', 'error')
+    return
+  }
 
   const payload = {
-    nombre: alumnoEditar.value.nombre,
-    id_carrera: alumnoEditar.value.id_carrera,
+    nombre:          alumnoEditar.value.nombre,
+    id_carrera:      idCarrera,
     semestre_actual: parseInt(alumnoEditar.value.semestre),
-    estatus: alumnoEditar.value.estatus
+    estatus:         alumnoEditar.value.estatus
   }
 
   guardando.value = true
   try {
-    console.log('🔵 Enviando update:', payload)
-    const response = await fetch(`http://localhost:8000/api/alumnos/${id}`, {
-      method: 'PUT',
+    console.log('🔵 Enviando PUT:', payload)
+    const response = await fetch(`${API_URL}/api/alumnos/${id}`, {
+      method:  'PUT',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify(payload)
+      body:    JSON.stringify(payload)
     })
     const data = await response.json()
     console.log('🟢 Respuesta backend:', data)
@@ -440,54 +450,71 @@ const guardarCambios = async () => {
       cerrarModal()
       mostrarNotificacion('Alumno actualizado correctamente.', 'exito')
     } else {
-      console.error('❌ ERROR DELETE DETALLE:', data.detalle)
-      throw new Error(data.error)
+      // Mostrar el mensaje de error del backend directamente al usuario
+      const mensajeError = data.message || data.error || 'Error al actualizar el alumno.'
+      mostrarNotificacion(mensajeError, 'error')
+      console.error('❌ Error backend:', data)
     }
   } catch (error) {
     console.error('❌ ERROR:', error)
-    mostrarNotificacion('Ocurrió un error al actualizar el alumno.', 'error')
+    mostrarNotificacion('Ocurrió un error de conexión al actualizar el alumno.', 'error')
   } finally {
     guardando.value = false
   }
 }
 
-
+// ── Eliminar alumno ───────────────────────────────────────────────────
+// Endpoint: DELETE /api/alumnos/{id}
 const eliminarAlumno = async () => {
   const id = alumnoEditar.value.id_alumno
   if (!id) {
     mostrarNotificacion('No se encontró el identificador del alumno.', 'error')
     return
   }
-  if (!confirm('¿Confirma que desea eliminar este alumno? Esta acción no se puede deshacer.')) return
+
+  // Usar ventana de confirmación nativa — funciona en todos los entornos
+  // Si el equipo decide usar un modal propio en el futuro, reemplazar este bloque
+  const confirmado = window.confirm(
+    `¿Confirma que desea eliminar al alumno "${alumnoEditar.value.nombre}"?\n\nEsta acción no se puede deshacer.`
+  )
+  if (!confirmado) return
 
   guardando.value = true
   try {
-    const response = await fetch(`http://localhost:8000/api/alumnos/${id}`, {
-      method: 'DELETE',
+    const response = await fetch(`${API_URL}/api/alumnos/${id}`, {
+      method:  'DELETE',
       headers: { 'Accept': 'application/json' }
     })
-    const data = await response.json()
-    console.log('🗑️ Respuesta delete:', data)
+
+    // DELETE puede devolver 204 sin body — hay que manejarlo
+    let data = {}
+    if (response.status !== 204) {
+      data = await response.json().catch(() => ({}))
+    }
+
+    console.log('🗑️ Respuesta DELETE:', response.status, data)
 
     if (response.ok) {
       await cargarAlumnosDesdeBD()
       cerrarModal()
       mostrarNotificacion('Alumno eliminado correctamente.', 'exito')
     } else {
-      throw new Error(JSON.stringify(data))
+      const mensajeError = data.message || data.error || 'No se pudo eliminar el alumno.'
+      mostrarNotificacion(mensajeError, 'error')
+      console.error('❌ Error DELETE:', data)
     }
   } catch (error) {
-    console.error(error)
-    mostrarNotificacion('Ocurrió un error al eliminar el alumno.', 'error')
+    console.error('❌ ERROR DELETE:', error)
+    mostrarNotificacion('Ocurrió un error de conexión al eliminar el alumno.', 'error')
   } finally {
     guardando.value = false
   }
 }
 
-
+// ── Filtrado ──────────────────────────────────────────────────────────
 const alumnosFiltrados = computed(() => {
   return alumnos.value.filter(alumno => {
-    const nombre = alumno.nombre || alumno.persona?.nombre_completo || ''
+    const nombre    = alumno.nombre || alumno.persona?.nombre_completo || ''
     const noControl = (alumno.numero_control || alumno.noControl || '').toString()
 
     const coincideGlobal = !props.busquedaGlobal ||
@@ -511,18 +538,16 @@ const alumnosFiltrados = computed(() => {
   })
 })
 
+// ── Paginación ────────────────────────────────────────────────────────
 const totalPages = computed(() =>
   Math.ceil(alumnosFiltrados.value.length / filasPorPagina.value) || 1
 )
-
 const paginatedAlumnos = computed(() => {
   const start = (currentPage.value - 1) * filasPorPagina.value
   return alumnosFiltrados.value.slice(start, start + filasPorPagina.value)
 })
-
 const visiblePages = computed(() => {
-  const total = totalPages.value
-  const current = currentPage.value
+  const total = totalPages.value, current = currentPage.value
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
   const pages = new Set([1, total, current, current - 1, current + 1].filter(p => p >= 1 && p <= total))
   return [...pages].sort((a, b) => a - b)
@@ -544,26 +569,15 @@ const resetFilters = () => {
 const aplicarBusqueda = () => { currentPage.value = 1 }
 const nuevoAlumno     = () => router.push('/formulario-alumno')
 
+// ── Navegación por teclado ────────────────────────────────────────────
 const navegarTeclado = (e) => {
   const total = paginatedAlumnos.value.length
   if (total === 0) return
-
-  if (e.key === 'ArrowDown') {
-    e.preventDefault()
-    filaActiva.value = Math.min(filaActiva.value + 1, total - 1)
-  } else if (e.key === 'ArrowUp') {
-    e.preventDefault()
-    filaActiva.value = Math.max(filaActiva.value - 1, 0)
-  } else if (e.key === 'Enter' && filaActiva.value >= 0) {
-    e.preventDefault()
-    abrirModalVer(paginatedAlumnos.value[filaActiva.value])
-  } else if (e.key === 'PageDown') {
-    e.preventDefault()
-    nextPage()
-  } else if (e.key === 'PageUp') {
-    e.preventDefault()
-    prevPage()
-  }
+  if (e.key === 'ArrowDown')      { e.preventDefault(); filaActiva.value = Math.min(filaActiva.value + 1, total - 1) }
+  else if (e.key === 'ArrowUp')   { e.preventDefault(); filaActiva.value = Math.max(filaActiva.value - 1, 0) }
+  else if (e.key === 'Enter' && filaActiva.value >= 0) { e.preventDefault(); abrirModalVer(paginatedAlumnos.value[filaActiva.value]) }
+  else if (e.key === 'PageDown')  { e.preventDefault(); nextPage() }
+  else if (e.key === 'PageUp')    { e.preventDefault(); prevPage() }
 }
 </script>
 
@@ -809,6 +823,8 @@ const navegarTeclado = (e) => {
 .estatus-badge.activo        { background: #DCFCE7; color: #16A34A; }
 .estatus-badge.baja-temporal { background: #FEF3C7; color: #F59E0B; }
 .estatus-badge.baja-definitiva { background: #FEE2E2; color: #DC2626; }
+.estatus-badge.titulado  { background: #EDE9FE; color: #7C3AED; }
+.estatus-badge.egresado  { background: #DBEAFE; color: #1B396A; }
 
 /* Acciones */
 .celda-acciones { display: flex; gap: 7px; align-items: center; }

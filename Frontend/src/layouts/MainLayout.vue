@@ -139,7 +139,7 @@
           <router-link to="/evaluaciones"        class="elemento-menu elemento-submenu" active-class="activo">Evaluaciones</router-link>
           <router-link to="/calificaciones"      class="elemento-menu elemento-submenu" active-class="activo">Calificaciones</router-link>
           <router-link to="/inscripcion"         class="elemento-menu elemento-submenu" active-class="activo">Inscripción</router-link>
-          <router-link to="/gestion-grupos"      class="elemento-menu elemento-submenu" active-class="activo">Grupos</router-link>
+          <router-link to="/gestion-grupos" class="elemento-menu elemento-submenu" active-class="activo">Grupos y Horarios</router-link>
           <!-- Inscripciones Detalladas: sub-submenú colapsable -->
           <div class="elemento-menu elemento-submenu elemento-padre" @click.stop="toggleInscripcionesDetalladas">
             <span style="flex:1">Inscripciones Detalladas</span>

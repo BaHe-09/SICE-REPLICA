@@ -1,6 +1,7 @@
 import axios from 'axios'
 
-const API = 'http://localhost:8000/api'
+// ── URL base del backend (variable de entorno) ──────────────────────
+const API = `${import.meta.env.VITE_API_URL}/api`
 
 export const getCalificacionesGrupo = async (filtros = {}) => {
   const params = {}
@@ -19,16 +20,16 @@ export const guardarCalificaciones = async (alumnos) => {
       { id_evaluacion: alumno.id_evaluacion_parcial_2, valor: alumno.p2 },
       { id_evaluacion: alumno.id_evaluacion_proyecto,  valor: alumno.proy },
     ]
-  for (const p of parciales) {
-    console.log('Parcial:', p, 'id_inscripcion:', alumno.id_inscripcion)
-    if (p.id_evaluacion && alumno.id_inscripcion && p.valor !== null && p.valor !== '') {
-      peticiones.push({
-        id_inscripcion: alumno.id_inscripcion,
-        id_evaluacion:  p.id_evaluacion,
-        calificacion:   Number(p.valor),
-      })
+    for (const p of parciales) {
+      console.log('Parcial:', p, 'id_inscripcion:', alumno.id_inscripcion)
+      if (p.id_evaluacion && alumno.id_inscripcion && p.valor !== null && p.valor !== '') {
+        peticiones.push({
+          id_inscripcion: alumno.id_inscripcion,
+          id_evaluacion:  p.id_evaluacion,
+          calificacion:   Number(p.valor),
+        })
+      }
     }
-  }
   }
 
   if (peticiones.length === 0) {

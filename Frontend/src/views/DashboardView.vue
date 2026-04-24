@@ -131,9 +131,12 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
-const router  = useRouter()
+const router   = useRouter()
 const cargando = ref(true)
 const error    = ref(null)
+
+// ── URL base del backend (variable de entorno) ──────────────────────
+const API_URL = import.meta.env.VITE_API_URL
 
 const fechaHoy = computed(() => {
   return new Date().toLocaleDateString('es-MX', {
@@ -191,9 +194,11 @@ const maxSemestre = computed(() =>
 const calcularPorcentajeSemestre = (cantidad) =>
   Math.round((cantidad / maxSemestre.value) * 100)
 
+// ── Carga de datos del dashboard ──────────────────────────────────────
+// Endpoint: GET /api/dashboard
 onMounted(async () => {
   try {
-    const res = await fetch('http://localhost:8000/api/dashboard')
+    const res = await fetch(`${API_URL}/api/dashboard`)
     if (!res.ok) throw new Error('Error en API')
     const data = await res.json()
 
@@ -206,8 +211,8 @@ onMounted(async () => {
 
     const total = data.carreras?.reduce((acc, c) => acc + c.total, 0) || 1
     carreraData.value = (data.carreras || []).map(c => ({
-      carrera:     c.nombre,
-      porcentaje:  Math.round((c.total / total) * 100)
+      carrera:    c.nombre,
+      porcentaje: Math.round((c.total / total) * 100)
     }))
 
     semestreData.value = (data.semestres || []).map(s => ({
