@@ -288,3 +288,17 @@ Route::prefix('form')->group(function () {
     Route::put('/inscripciones/{id}', [InscripcionController::class, 'update']);
     Route::delete('/inscripciones/{id}', [InscripcionController::class, 'destroy']);
 });
+
+// HISTORIAL DE INSCRIPCIÓN
+
+use App\Http\Controllers\HistorialInscripcionController;
+
+Route::prefix('form')->group(function () {
+
+    Route::get('historial/alumno/{numero_control}', [HistorialInscripcionController::class, 'buscarPorControl']);
+    
+    Route::get('inscripciones/historial/{id_alumno}/exportar', [HistorialInscripcionController::class, 'exportar']);
+
+    Route::get('inscripciones/historial/{id_alumno}', [HistorialInscripcionController::class, 'historial']);
+
+});
