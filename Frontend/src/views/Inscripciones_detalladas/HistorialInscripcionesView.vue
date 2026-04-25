@@ -141,7 +141,7 @@ const buscarAlumno = async () => {
   const q=(busquedaInput.value||'').trim(); if(!q) return
   buscando.value=true; alumnoSeleccionado.value=null; periodos.value=[]; abiertos.value=[]
   try {
-    const rA=await fetch(`${API}/alumnos/control/${encodeURIComponent(q)}`)
+    const rA = await fetch(`${API}/historial/alumno/${encodeURIComponent(q)}`)${encodeURIComponent(q)}`)
     if(!rA.ok) throw new Error()
     const alumno=await rA.json()
     alumnoSeleccionado.value=alumno
