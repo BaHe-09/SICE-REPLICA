@@ -15,7 +15,7 @@
         {{ notification.message }}
       </div>
 
-      <!-- Barra de pasos: ocupa todo el ancho disponible -->
+      <!-- Barra de pasos -->
       <div class="pasos-barra">
         <div class="paso" :class="{ activo: paso >= 1, completado: paso > 1 }">
           <div class="paso-circulo">
@@ -39,7 +39,7 @@
         </div>
       </div>
 
-      <!-- Card de contenido: centrada con max-width cómodo -->
+      <!-- Card de contenido -->
       <div class="content-card">
 
         <!-- ── PASO 1 ── -->
@@ -77,11 +77,19 @@
                   @keyup.enter="buscarAlumno" @input="limpiarAlumno" />
               </div>
             </div>
+
+            <!-- ── CORRECCIÓN: Periodo cargado desde API ── -->
             <div class="campo-grupo campo-periodo">
               <label>Periodo</label>
               <select v-model="periodo" class="select-periodo">
-                <option value="Ago/Dic 2024">Ago/Dic 2024</option>
-                <option value="Ene/Jun 2025">Ene/Jun 2025</option>
+                <option :value="null" disabled>Seleccionar periodo</option>
+                <option
+                  v-for="p in periodos"
+                  :key="p.id"
+                  :value="p.id"
+                >
+                  {{ p.nombre }}
+                </option>
               </select>
             </div>
           </div>
@@ -255,7 +263,10 @@
             <div class="confirmacion-flecha">·</div>
             <div class="confirmacion-bloque">
               <p class="bloque-titulo">Periodo</p>
-              <p class="bloque-valor">{{ periodo }}</p>
+              <!-- ── CORRECCIÓN: mostrar nombre del periodo, no el ID ── -->
+              <p class="bloque-valor">
+                {{ periodos.find(p => p.id === periodo)?.nombre ?? '—' }}
+              </p>
               <p class="bloque-sub">Lugares: {{ grupoSeleccionado?.capacidad - grupoSeleccionado?.inscritos }} disponibles</p>
             </div>
           </div>
@@ -286,13 +297,18 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
+// ── CORRECCIÓN: importar useCatalogos ──
+import { useCatalogos } from '@/composables/useCatalogos'
 
 const API = `${import.meta.env.VITE_API_URL}/api`
-
 const API_BASE = `${API}/inscripcion`
 
+// ── CORRECCIÓN: obtener periodos y su función de carga ──
+const { periodos, cargarPeriodos } = useCatalogos()
+
 const paso = ref(1)
-const periodo = ref('Ene/Jun 2025')
+// ── CORRECCIÓN: periodo guarda el ID (null por defecto hasta cargar catálogo) ──
+const periodo = ref(null)
 const cargando = ref(false)
 const mensajeCarga = ref('')
 const filaActiva = ref(-1)
@@ -395,7 +411,12 @@ const confirmarInscripcion = async () => {
   cargando.value = true
   mensajeCarga.value = 'Registrando inscripción...'
   try {
-    const payload = { id_alumno: alumnoSeleccionado.value.id_alumno, id_grupo: grupoSeleccionado.value.id }
+    // ── CORRECCIÓN: payload lleva id_periodo con el ID real del backend ──
+    const payload = {
+      id_alumno:  alumnoSeleccionado.value.id_alumno,
+      id_grupo:   grupoSeleccionado.value.id,
+      id_periodo: periodo.value
+    }
     const response = await fetch(`${API_BASE}/registrar`, {
       method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify(payload)
@@ -408,6 +429,7 @@ const confirmarInscripcion = async () => {
     alumnoSeleccionado.value = null; grupoSeleccionado.value = null
     resultadosBusqueda.value = []; busquedaControl.value = ''; busquedaNombre.value = ''
     busquedaGrupo.value = ''; currentPage.value = 1; filaActiva.value = -1
+    // No reseteamos periodo para que el usuario no tenga que seleccionarlo de nuevo
   } catch (error) {
     showNotification(error.message || 'No se pudo registrar la inscripción.', 'error')
   } finally { cargando.value = false; mensajeCarga.value = '' }
@@ -440,6 +462,8 @@ const manejarTeclado = (e) => {
 
 onMounted(() => {
   cargarGruposDisponibles()
+  // ── CORRECCIÓN: cargar periodos desde la API al montar ──
+  cargarPeriodos()
   window.addEventListener('keydown', manejarTeclado)
   nextTick(() => paginaRef.value?.focus())
 })
@@ -452,7 +476,6 @@ onUnmounted(() => { window.removeEventListener('keydown', manejarTeclado) })
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
 .inscripcion-page {
-  /* Ocupa TODO el ancho disponible del área de contenido */
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
@@ -480,13 +503,12 @@ onUnmounted(() => { window.removeEventListener('keydown', manejarTeclado) })
 .toast.error { background: #DC2626; }
 @keyframes slideInToast { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-/* Barra de pasos: ancho completo */
+/* Barra de pasos */
 .pasos-barra {
   display: flex; align-items: center;
   margin-bottom: 1.5rem;
   background: #FFFFFF; border-radius: 12px; padding: 1.2rem 2rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1px solid #E5E7EB;
-  /* Sin max-width: se adapta al contenedor */
   width: 100%; box-sizing: border-box;
 }
 .paso { display: flex; align-items: center; gap: 10px; }
@@ -502,14 +524,13 @@ onUnmounted(() => { window.removeEventListener('keydown', manejarTeclado) })
 .paso-linea { flex: 1; height: 2px; background: #E5E7EB; margin: 0 1rem; transition: background 0.3s; }
 .paso-linea.completado { background: #16A34A; }
 
-/* Card de contenido: centrada con max-width cómodo para no expandirse demasiado */
+/* Card de contenido */
 .content-card {
   background: #FFFFFF;
   border-radius: 16px;
   box-shadow: 0 8px 25px rgba(0,0,0,0.08);
   padding: 2.5rem;
   border: 1px solid #E5E7EB;
-  /* Centrada con un max-width razonable para el formulario de inscripción */
   max-width: 860px;
   margin: 0 auto;
   box-sizing: border-box;

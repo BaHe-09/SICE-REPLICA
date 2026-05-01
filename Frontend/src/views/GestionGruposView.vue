@@ -60,13 +60,16 @@
           />
         </div>
 
+        <!-- ── CORRECCIÓN: carreras cargadas desde API ── -->
         <select v-model="filtroCarrera" class="filtro-select" @change="aplicarFiltros">
           <option value="">Carrera</option>
-          <option value="Ingeniería en Sistemas Computacionales">Ingeniería en Sistemas Computacionales</option>
-          <option value="Ingeniería Industrial">Ingeniería Industrial</option>
-          <option value="Ingeniería Civil">Ingeniería Civil</option>
-          <option value="Ingeniería en Gestión Empresarial">Ingeniería en Gestión Empresarial</option>
-          <option value="Contador Público">Contador Público</option>
+          <option
+            v-for="c in carreras"
+            :key="c.id"
+            :value="c.id"
+          >
+            {{ c.nombre }}
+          </option>
         </select>
 
         <select v-model="filtroSemestre" class="filtro-select" @change="aplicarFiltros">
@@ -79,7 +82,6 @@
         <button class="btn-nuevo" @click="nuevoGrupo">+ Nuevo Grupo</button>
       </div>
 
-      <!-- Indicador de búsqueda por número de control activa -->
       <div v-if="errorCarga" class="error-carga">
         {{ errorCarga }}
       </div>
@@ -174,13 +176,16 @@
               </div>
               <div class="form-group">
                 <label>Carrera <span class="obligatorio">*</span></label>
-                <select v-model="grupoEditar.carrera" class="modal-select">
-                  <option value="">Seleccionar</option>
-                  <option value="Ingeniería en Sistemas Computacionales">Ingeniería en Sistemas Computacionales</option>
-                  <option value="Ingeniería Industrial">Ingeniería Industrial</option>
-                  <option value="Ingeniería Civil">Ingeniería Civil</option>
-                  <option value="Ingeniería en Gestión Empresarial">Ingeniería en Gestión Empresarial</option>
-                  <option value="Contador Público">Contador Público</option>
+                <!-- ── CORRECCIÓN: carreras cargadas desde API ── -->
+                <select v-model="grupoEditar.id_carrera" class="modal-select">
+                  <option :value="null">Seleccionar</option>
+                  <option
+                    v-for="c in carreras"
+                    :key="c.id"
+                    :value="c.id"
+                  >
+                    {{ c.nombre }}
+                  </option>
                 </select>
               </div>
             </div>
@@ -268,14 +273,20 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
+// ── CORRECCIÓN: importar useCatalogos ──
+import { useCatalogos } from '@/composables/useCatalogos'
 
 const API = `${import.meta.env.VITE_API_URL}/api`
 
 const router = useRouter()
 
+// ── CORRECCIÓN: obtener carreras y su función de carga ──
+const { carreras, cargarCarreras } = useCatalogos()
+
 const busquedaControl         = ref('')
 const busquedaControlAplicada = ref('')
 const busquedaGrupo           = ref('')
+// ── CORRECCIÓN: filtroCarrera ahora guarda un ID (número) en vez de un string de nombre ──
 const filtroCarrera           = ref('')
 const filtroSemestre          = ref('')
 const filasPorPagina          = ref(10)
@@ -289,7 +300,7 @@ const inputControlRef  = ref(null)
 const inputBusquedaRef = ref(null)
 const paginaRef        = ref(null)
 
-// ── Notificación UI ─────────────────────────────────────────────────
+// ── Notificación UI ──────────────────────────────────────────────────
 const notificacion = ref({ visible: false, mensaje: '', tipo: 'exito' })
 let timerNotif = null
 
@@ -309,7 +320,7 @@ const simularCarga = (mensaje, fn, ms = 600) => {
   }, ms)
 }
 
-// ── Navegación por teclado ────────────────────────────────────────
+// ── Navegación por teclado ──────────────────────────────────────────
 const manejarTeclado = (e) => {
   const tag = document.activeElement?.tagName
   const enCampo = ['INPUT', 'SELECT', 'TEXTAREA'].includes(tag)
@@ -331,8 +342,8 @@ const manejarTeclado = (e) => {
 
   if (!enCampo && !showModal.value) {
     const total = paginatedGrupos.value.length
-    if (e.key === 'ArrowDown')      { e.preventDefault(); filaActiva.value = Math.min(filaActiva.value + 1, total - 1) }
-    else if (e.key === 'ArrowUp')   { e.preventDefault(); filaActiva.value = Math.max(filaActiva.value - 1, 0) }
+    if (e.key === 'ArrowDown')       { e.preventDefault(); filaActiva.value = Math.min(filaActiva.value + 1, total - 1) }
+    else if (e.key === 'ArrowUp')    { e.preventDefault(); filaActiva.value = Math.max(filaActiva.value - 1, 0) }
     else if (e.key === 'ArrowRight') { e.preventDefault(); nextPage(); filaActiva.value = 0 }
     else if (e.key === 'ArrowLeft')  { e.preventDefault(); prevPage(); filaActiva.value = 0 }
   }
@@ -340,6 +351,8 @@ const manejarTeclado = (e) => {
 
 onMounted(() => {
   cargarGrupos()
+  // ── CORRECCIÓN: cargar carreras desde la API al montar ──
+  cargarCarreras()
   window.addEventListener('keydown', manejarTeclado)
   nextTick(() => paginaRef.value?.focus())
 })
@@ -347,18 +360,20 @@ onUnmounted(() => {
   window.removeEventListener('keydown', manejarTeclado)
 })
 
-// ── Datos ─────────────────────────────────────────────────────────
+// ── Datos ──────────────────────────────────────────────────────────
 const grupos = ref([])
 
 const normalizarGrupo = (g) => ({
-  id:        g.id_grupo || g.id,
-  materia:   g.materia || '',
-  docente:   g.docente || '',
-  aula:      g.aula || '',
-  capacidad: g.capacidad || 30,
-  inscritos: g.inscritos ?? 0,
-  carrera:   g.carrera || '',
-  semestre:  g.semestre || 0,
+  id:         g.id_grupo || g.id,
+  materia:    g.materia || '',
+  docente:    g.docente || '',
+  aula:       g.aula || '',
+  capacidad:  g.capacidad || 30,
+  inscritos:  g.inscritos ?? 0,
+  carrera:    g.carrera || '',
+  // ── CORRECCIÓN: mapear id_carrera desde el backend ──
+  id_carrera: g.id_carrera ?? null,
+  semestre:   g.semestre || 0,
   horario: {
     dia:        g.dia || g.horario?.dia || '',
     horaInicio: g.hora_inicio || g.horario?.horaInicio || '',
@@ -387,24 +402,25 @@ const cargarGrupos = async () => {
   }
 }
 
-// ── Filtrado y paginación ─────────────────────────────────────────
+// ── Filtrado y paginación ──────────────────────────────────────────
 const gruposFiltrados = computed(() => {
   return grupos.value.filter(g => {
-    const coincideControl   = !busquedaControlAplicada.value ||
+    const coincideControl  = !busquedaControlAplicada.value ||
       g.alumnos.some(a => a.noControl === busquedaControlAplicada.value.trim())
-    const coincideBusqueda  = !busquedaGrupo.value ||
+    const coincideBusqueda = !busquedaGrupo.value ||
       g.materia.toLowerCase().includes(busquedaGrupo.value.toLowerCase()) ||
       g.docente.toLowerCase().includes(busquedaGrupo.value.toLowerCase())
-    const coincideCarrera   = !filtroCarrera.value  || g.carrera === filtroCarrera.value
-    const coincideSemestre  = !filtroSemestre.value || g.semestre === parseInt(filtroSemestre.value)
+    // ── CORRECCIÓN: comparar por id_carrera (ID numérico) en vez del nombre ──
+    const coincideCarrera  = !filtroCarrera.value || g.id_carrera === filtroCarrera.value
+    const coincideSemestre = !filtroSemestre.value || g.semestre === parseInt(filtroSemestre.value)
     return coincideControl && coincideBusqueda && coincideCarrera && coincideSemestre
   })
 })
 
-const totalPages     = computed(() => Math.ceil(gruposFiltrados.value.length / filasPorPagina.value) || 1)
-const startIndex     = computed(() => (currentPage.value - 1) * filasPorPagina.value)
+const totalPages      = computed(() => Math.ceil(gruposFiltrados.value.length / filasPorPagina.value) || 1)
+const startIndex      = computed(() => (currentPage.value - 1) * filasPorPagina.value)
 const paginatedGrupos = computed(() => gruposFiltrados.value.slice(startIndex.value, startIndex.value + filasPorPagina.value))
-const visiblePages   = computed(() => {
+const visiblePages    = computed(() => {
   const pages = []
   for (let i = 1; i <= totalPages.value; i++) pages.push(i)
   return pages
@@ -433,21 +449,29 @@ const prevPage  = () => { if (currentPage.value > 1) { currentPage.value--; fila
 const nextPage  = () => { if (currentPage.value < totalPages.value) { currentPage.value++; filaActiva.value = -1 } }
 const goToPage  = (page) => { currentPage.value = page }
 
-// ── Modales ───────────────────────────────────────────────────────
-const showModal  = ref(false)
+// ── Modales ────────────────────────────────────────────────────────
+const showModal   = ref(false)
 const grupoEditar = ref({})
 
 const nuevoGrupo = () => {
   grupoEditar.value = {
     id: null, materia: '', docente: '', aula: '',
-    capacidad: 30, inscritos: 0, carrera: '', semestre: 5,
+    capacidad: 30, inscritos: 0,
+    // ── CORRECCIÓN: id_carrera en lugar de carrera como string ──
+    id_carrera: null,
+    semestre: 5,
     horario: { dia: '', horaInicio: '', horaFin: '' }
   }
   showModal.value = true
 }
 
 const editarGrupo = (grupo) => {
-  grupoEditar.value = { ...grupo, horario: { ...grupo.horario } }
+  grupoEditar.value = {
+    ...grupo,
+    // ── CORRECCIÓN: preservar id_carrera al editar ──
+    id_carrera: grupo.id_carrera,
+    horario: { ...grupo.horario }
+  }
   showModal.value = true
 }
 
@@ -462,11 +486,12 @@ const guardarGrupo = async () => {
   cargando.value = true
   mensajeCarga.value = esEdicion ? 'Guardando cambios...' : 'Creando grupo...'
   try {
+    // ── CORRECCIÓN: payload usa id_carrera (ID real del backend) ──
     const payload = {
       nombre_materia: grupoEditar.value.materia,
       nombre_docente: grupoEditar.value.docente,
       aula:           grupoEditar.value.aula,
-      carrera:        grupoEditar.value.carrera,
+      id_carrera:     grupoEditar.value.id_carrera,
       semestre:       grupoEditar.value.semestre,
       capacidad:      grupoEditar.value.capacidad,
       dia:            grupoEditar.value.horario.dia,
@@ -482,7 +507,6 @@ const guardarGrupo = async () => {
       body: JSON.stringify(payload)
     })
 
-    // ── Punto 70: mostrar resultado visible al usuario ──
     if (response.ok) {
       await cargarGrupos()
       cerrarModal()
@@ -500,7 +524,7 @@ const guardarGrupo = async () => {
     console.error('❌ Error guardando grupo:', error)
     mostrarNotificacion('Ocurrió un error de conexión al guardar el grupo.', 'error')
   } finally {
-    cargando.value    = false
+    cargando.value     = false
     mensajeCarga.value = ''
   }
 }
@@ -534,13 +558,11 @@ const confirmarEliminar = async () => {
       headers: { 'Accept': 'application/json' }
     })
 
-    // DELETE puede devolver 204 sin body
     let data = {}
     if (response.status !== 204) {
       data = await response.json().catch(() => ({}))
     }
 
-    // ── Punto 70: mostrar resultado visible al usuario ──
     if (response.ok) {
       await cargarGrupos()
       showModalEliminar.value = false
@@ -564,7 +586,6 @@ const verDetalle        = (grupo) => {}
 const irAEvaluaciones   = (grupo) => router.push(`/evaluaciones/${grupo.id}`)
 const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
 </script>
-
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
@@ -717,7 +738,6 @@ const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
 .btn-eliminar { background: #DC2626; color: white; border: none; }
 .btn-guardar { background: #1B396A; color: white; border: none; }
 
-
 .control-aviso {
   background: #EFF6FF;
   border: 1px solid #BFDBFE;
@@ -770,30 +790,7 @@ const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-
 /* ── Navegación por teclado ── */
-.atajos-barra {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 20px;
-  margin-bottom: 1.4rem;
-  font-size: 0.8rem;
-  color: #6B7280;
-  align-items: center;
-}
-.atajos-barra kbd {
-  display: inline-block;
-  background: #F5F5F5;
-  border: 1px solid #D1D5DB;
-  border-bottom-width: 2px;
-  border-radius: 4px;
-  padding: 1px 6px;
-  font-size: 0.78rem;
-  font-family: monospace;
-  color: #1A1A1A;
-  margin-right: 3px;
-}
-
 .fila-activa {
   background: #EFF6FF !important;
   outline: 2px solid #1B396A;
@@ -817,8 +814,7 @@ const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
   color: #DC2626; border-radius: 8px;
   padding: 10px 16px; margin-bottom: 1rem;
   font-size: 0.9rem; font-weight: 500;
-
-
+}
 
 /* ── Notificación UI ── */
 .notificacion-ui {
@@ -833,5 +829,6 @@ const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
 .notif-icono { width: 20px; height: 20px; flex-shrink: 0; }
 .notif-fade-enter-active, .notif-fade-leave-active { transition: all 0.35s ease; }
 .notif-fade-enter-from, .notif-fade-leave-to { opacity: 0; transform: translateY(-8px); }
-}
+
+.text-center { text-align: center; }
 </style>
