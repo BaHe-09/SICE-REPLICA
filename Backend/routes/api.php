@@ -354,6 +354,15 @@ Route::get('/tramites',      [TramiteController::class, 'index']);
 Route::post('/tramites',     [TramiteController::class, 'store']);
 Route::put('/tramites/{id}', [TramiteController::class, 'update']);
 
+// ====================== ADEUDOS ======================
+
+use App\Http\Controllers\Api\AdeudoController;
+
+Route::get('/adeudos',                       [AdeudoController::class, 'index']);
+Route::post('/adeudos',                      [AdeudoController::class, 'store']);
+Route::put('/adeudos/{id}/marcar-pagado',    [AdeudoController::class, 'marcarPagado']);
+Route::delete('/adeudos/{id}',               [AdeudoController::class, 'destroy']);
+
 // HISTORIAL DE INSCRIPCIÓN
 
 use App\Http\Controllers\HistorialInscripcionController;

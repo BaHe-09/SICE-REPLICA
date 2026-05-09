@@ -182,6 +182,32 @@ class InscripcionController extends Controller
                 }
             }
 
+            // Validar carga académica máxima (máx. 7 materias por periodo)
+            $cargaActual = DB::table('inscripcion as i')
+                ->join('grupo as g', 'i.id_grupo', '=', 'g.id_grupo')
+                ->where('i.id_alumno', $request->id_alumno)
+                ->where('g.id_periodo', $grupo->id_periodo)
+                ->whereIn('i.estatus', ['Activo', 'activo', 'inscrito'])
+                ->count();
+
+            if ($cargaActual >= 7) {
+                return response()->json([
+                    'error' => 'El alumno ya alcanzó el límite máximo de materias por periodo (7)'
+                ], 422);
+            }
+
+            // Validar adeudos pendientes
+            $tieneAdeudos = DB::table('adeudo')
+                ->where('id_alumno', $request->id_alumno)
+                ->where('pagado', false)
+                ->exists();
+
+            if ($tieneAdeudos) {
+                return response()->json([
+                    'error' => 'El alumno tiene adeudos pendientes y no puede inscribirse'
+                ], 422);
+            }
+
             // Validar que no tenga ya aprobada la materia
             $yaAprobada = DB::table('inscripcion as i')
                 ->join('grupo as g', 'i.id_grupo', '=', 'g.id_grupo')
