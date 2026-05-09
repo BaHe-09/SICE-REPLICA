@@ -685,9 +685,35 @@ const establecerRol = (rol) => {
   text-transform: uppercase; letter-spacing: 0.08em; color: #6B7280;
 }
 
-.menu-lateral::-webkit-scrollbar { width: 4px; }
-.menu-lateral::-webkit-scrollbar-track { background: transparent; }
-.menu-lateral::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
+/* ══ Barra de scroll — Navy Slim Minimal ══ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #1a3a5f #f1f5f9;
+}
+
+*::-webkit-scrollbar {
+  width: 0px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #1a3a5f;
+  border-radius: 4px;
+  transition: background 200ms ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #193d94;
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background: #2c5282;
+}
 
 /* ══ Área de contenido ══ */
 .area-contenido {
