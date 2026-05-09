@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\BitacoraService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Evaluacion;
@@ -79,6 +80,20 @@ class ServiciosEscolaresController extends Controller
         'fecha_registro' => 'nullable|date'
     ]);
 
+    // Verificar que el acta del grupo no esté cerrada
+    $actaCerrada = DB::table('inscripcion as i')
+        ->join('grupo as g', 'i.id_grupo', '=', 'g.id_grupo')
+        ->where('i.id_inscripcion', $request->id_inscripcion)
+        ->value('g.acta_cerrada');
+
+    if ($actaCerrada) {
+        return response()->json(['mensaje' => 'No se puede modificar: el acta está cerrada'], 403);
+    }
+
+    $anterior = Calificacion::where('id_inscripcion', $request->id_inscripcion)
+        ->where('id_evaluacion', $request->id_evaluacion)
+        ->first();
+
     $calificacion = Calificacion::updateOrCreate(
         [
             'id_inscripcion' => $request->id_inscripcion,
@@ -87,6 +102,14 @@ class ServiciosEscolaresController extends Controller
         [
             'calificacion'   => $request->calificacion,
         ]
+    );
+
+    BitacoraService::registrar(
+        $anterior ? 'UPDATE' : 'INSERT',
+        'calificacion',
+        $calificacion->id_calificacion ?? $request->id_inscripcion,
+        $anterior ? ['calificacion' => $anterior->calificacion] : [],
+        ['calificacion' => $request->calificacion]
     );
 
     return response()->json([
@@ -102,7 +125,24 @@ class ServiciosEscolaresController extends Controller
         ]);
 
         $calificacion = Calificacion::findOrFail($id);
+
+        // Verificar que el acta no esté cerrada
+        $actaCerrada = DB::table('inscripcion as i')
+            ->join('grupo as g', 'i.id_grupo', '=', 'g.id_grupo')
+            ->where('i.id_inscripcion', $calificacion->id_inscripcion)
+            ->value('g.acta_cerrada');
+
+        if ($actaCerrada) {
+            return response()->json(['mensaje' => 'No se puede modificar: el acta está cerrada'], 403);
+        }
+
+        $anterior = $calificacion->calificacion;
         $calificacion->update($request->all());
+
+        BitacoraService::registrar('UPDATE', 'calificacion', $id,
+            ['calificacion' => $anterior],
+            ['calificacion' => $request->calificacion]
+        );
 
         return response()->json([
             'mensaje' => 'Calificación actualizada',
@@ -112,6 +152,24 @@ class ServiciosEscolaresController extends Controller
 
     public function eliminarCalificacion($id)
     {
+        $calificacion = Calificacion::find($id);
+
+        if ($calificacion) {
+            // Verificar acta cerrada
+            $actaCerrada = DB::table('inscripcion as i')
+                ->join('grupo as g', 'i.id_grupo', '=', 'g.id_grupo')
+                ->where('i.id_inscripcion', $calificacion->id_inscripcion)
+                ->value('g.acta_cerrada');
+
+            if ($actaCerrada) {
+                return response()->json(['mensaje' => 'No se puede eliminar: el acta está cerrada'], 403);
+            }
+
+            BitacoraService::registrar('DELETE', 'calificacion', $id,
+                ['calificacion' => $calificacion->calificacion]
+            );
+        }
+
         Calificacion::destroy($id);
         return response()->json(['mensaje' => 'Calificación eliminada'], 200);
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\BitacoraService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -188,7 +189,62 @@ class GrupoController extends Controller
             }
 
             DB::table('grupo')->where('id_grupo', $id)->delete();
+            BitacoraService::registrar('DELETE', 'grupo', $id, (array) $grupo);
             return response()->json(['success' => true, 'message' => 'Grupo eliminado']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * POST /api/grupos/{id}/cerrar-acta
+     * Cierra el acta del grupo — bloquea edición de calificaciones
+     */
+    public function cerrarActa(int $id)
+    {
+        try {
+            $grupo = DB::table('grupo')->where('id_grupo', $id)->first();
+            if (!$grupo) {
+                return response()->json(['success' => false, 'error' => 'Grupo no encontrado'], 404);
+            }
+
+            if ($grupo->acta_cerrada) {
+                return response()->json(['success' => false, 'error' => 'El acta ya está cerrada'], 409);
+            }
+
+            DB::table('grupo')->where('id_grupo', $id)->update([
+                'acta_cerrada'      => true,
+                'fecha_cierre_acta' => now(),
+            ]);
+
+            BitacoraService::registrar('UPDATE', 'grupo', $id, ['acta_cerrada' => false], ['acta_cerrada' => true]);
+
+            return response()->json(['success' => true, 'message' => 'Acta cerrada correctamente']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * POST /api/grupos/{id}/abrir-acta
+     * Reabre el acta (solo admin)
+     */
+    public function abrirActa(int $id)
+    {
+        try {
+            $grupo = DB::table('grupo')->where('id_grupo', $id)->first();
+            if (!$grupo) {
+                return response()->json(['success' => false, 'error' => 'Grupo no encontrado'], 404);
+            }
+
+            DB::table('grupo')->where('id_grupo', $id)->update([
+                'acta_cerrada'      => false,
+                'fecha_cierre_acta' => null,
+            ]);
+
+            BitacoraService::registrar('UPDATE', 'grupo', $id, ['acta_cerrada' => true], ['acta_cerrada' => false]);
+
+            return response()->json(['success' => true, 'message' => 'Acta reabierta']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
