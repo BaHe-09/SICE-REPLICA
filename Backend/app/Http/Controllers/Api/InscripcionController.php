@@ -131,6 +131,72 @@ class InscripcionController extends Controller
                 ], 409);
             }
 
+            // Validar prerrequisitos
+            $idMateria = DB::table('grupo')->where('id_grupo', $request->id_grupo)->value('id_materia');
+            $prerrequisitos = DB::table('prerrequisito')
+                ->where('id_materia', $idMateria)
+                ->pluck('id_materia_prerrequisito');
+
+            if ($prerrequisitos->isNotEmpty()) {
+                foreach ($prerrequisitos as $idPre) {
+                    $aprobado = DB::table('inscripcion as i')
+                        ->join('grupo as g', 'i.id_grupo', '=', 'g.id_grupo')
+                        ->join('calificacion as cal', 'cal.id_inscripcion', '=', 'i.id_inscripcion')
+                        ->where('i.id_alumno', $request->id_alumno)
+                        ->where('g.id_materia', $idPre)
+                        ->where('cal.calificacion_final', '>=', 70)
+                        ->exists();
+
+                    if (!$aprobado) {
+                        $nombrePre = DB::table('materia')->where('id_materia', $idPre)->value('nombre');
+                        return response()->json([
+                            'error' => "No cumple el prerrequisito: {$nombrePre}"
+                        ], 422);
+                    }
+                }
+            }
+
+            // Validar traslape de horario
+            if ($grupo->dia && $grupo->hora_inicio && $grupo->hora_fin) {
+                $traslape = DB::table('inscripcion as i')
+                    ->join('grupo as g', 'i.id_grupo', '=', 'g.id_grupo')
+                    ->where('i.id_alumno', $request->id_alumno)
+                    ->where('i.estatus', 'Activo')
+                    ->where('g.id_periodo', $grupo->id_periodo)
+                    ->where('g.dia', $grupo->dia)
+                    ->where('g.id_grupo', '!=', $request->id_grupo)
+                    ->where(function ($q) use ($grupo) {
+                        $q->whereBetween('g.hora_inicio', [$grupo->hora_inicio, $grupo->hora_fin])
+                          ->orWhereBetween('g.hora_fin', [$grupo->hora_inicio, $grupo->hora_fin])
+                          ->orWhere(function ($q2) use ($grupo) {
+                              $q2->where('g.hora_inicio', '<=', $grupo->hora_inicio)
+                                 ->where('g.hora_fin', '>=', $grupo->hora_fin);
+                          });
+                    })
+                    ->exists();
+
+                if ($traslape) {
+                    return response()->json([
+                        'error' => 'El alumno ya tiene una clase en ese horario'
+                    ], 409);
+                }
+            }
+
+            // Validar que no tenga ya aprobada la materia
+            $yaAprobada = DB::table('inscripcion as i')
+                ->join('grupo as g', 'i.id_grupo', '=', 'g.id_grupo')
+                ->join('calificacion as cal', 'cal.id_inscripcion', '=', 'i.id_inscripcion')
+                ->where('i.id_alumno', $request->id_alumno)
+                ->where('g.id_materia', $idMateria)
+                ->where('cal.calificacion_final', '>=', 70)
+                ->exists();
+
+            if ($yaAprobada) {
+                return response()->json([
+                    'error' => 'El alumno ya tiene esta materia aprobada'
+                ], 409);
+            }
+
             $inscripcion = Inscripcion::create([
                 'id_alumno' => $request->id_alumno,
                 'id_grupo' => $request->id_grupo,

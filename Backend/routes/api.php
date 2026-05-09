@@ -299,6 +299,16 @@ Route::prefix('form')->group(function () {
     Route::delete('/inscripciones/{id}', [InscripcionController::class, 'destroy']);
 });
 
+// ====================== REPORTES ======================
+
+use App\Http\Controllers\Api\ReporteController;
+
+Route::get('/reportes/resumen',       [ReporteController::class, 'resumen']);
+Route::get('/reportes/alumnos',       [ReporteController::class, 'alumnos']);
+Route::get('/reportes/calificaciones',[ReporteController::class, 'calificaciones']);
+Route::get('/reportes/inscripciones', [ReporteController::class, 'inscripciones']);
+Route::get('/reportes/grupos',        [ReporteController::class, 'grupos']);
+
 // ====================== CATÁLOGOS SIMPLES ======================
 
 use App\Http\Controllers\Api\CatalogosController;
