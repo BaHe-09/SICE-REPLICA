@@ -289,6 +289,49 @@ Route::prefix('form')->group(function () {
     Route::delete('/inscripciones/{id}', [InscripcionController::class, 'destroy']);
 });
 
+// ====================== CATÁLOGOS SIMPLES ======================
+
+use App\Http\Controllers\Api\CatalogosController;
+
+Route::get('/generos',       [CatalogosController::class, 'generos']);
+Route::get('/estatus-alumno',[CatalogosController::class, 'estatusAlumno']);
+Route::get('/turnos',        [CatalogosController::class, 'turnos']);
+
+// ====================== KARDEX ======================
+
+use App\Http\Controllers\Api\KardexController;
+
+Route::get('/kardex/{id_alumno}', [KardexController::class, 'show']);
+
+// ====================== SEGUIMIENTO ACADÉMICO ======================
+
+use App\Http\Controllers\Api\SeguimientoController;
+
+Route::get('/seguimiento/{id_alumno}', [SeguimientoController::class, 'show']);
+
+// ====================== ADMISIÓN ======================
+
+use App\Http\Controllers\Api\AdmisionController;
+
+Route::get('/admision',                        [AdmisionController::class, 'index']);
+Route::post('/admision/{id}/cambiar-estatus',  [AdmisionController::class, 'cambiarEstatus']);
+
+// ====================== EGRESO ======================
+
+use App\Http\Controllers\Api\EgresoController;
+
+Route::get('/egresos',            [EgresoController::class, 'index']);
+Route::post('/egresos',           [EgresoController::class, 'store']);
+Route::put('/egresos/{id}/titular', [EgresoController::class, 'titular']);
+
+// ====================== TRÁMITES ======================
+
+use App\Http\Controllers\Api\TramiteController;
+
+Route::get('/tramites',      [TramiteController::class, 'index']);
+Route::post('/tramites',     [TramiteController::class, 'store']);
+Route::put('/tramites/{id}', [TramiteController::class, 'update']);
+
 // HISTORIAL DE INSCRIPCIÓN
 
 use App\Http\Controllers\HistorialInscripcionController;

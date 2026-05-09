@@ -48,6 +48,10 @@ class BitacoraController extends Controller
                 $query->whereDate('bitacora.fecha_hora', '<=', $request->fecha_hasta);
             }
 
+            if ($request->filled('limit')) {
+                $query->limit((int) $request->limit);
+            }
+
             $bitacora = $query->get();
 
             // Formato que espera tu Vue
