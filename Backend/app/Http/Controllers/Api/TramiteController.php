@@ -16,12 +16,13 @@ class TramiteController extends Controller
     {
         try {
             $query = DB::table('solicitud_comite as sc')
-                ->join('alumno as a', 'sc.id_alumno', '=', 'a.id_alumno')
-                ->join('persona as p', 'a.id_persona', '=', 'p.id_persona')
+                ->join('persona as p', 'sc.id_persona', '=', 'p.id_persona')
+                ->leftJoin('alumno as a', 'a.id_persona', '=', 'p.id_persona')
                 ->leftJoin('tipo_solicitud as ts', 'sc.id_tipo_solicitud', '=', 'ts.id_tipo_solicitud')
                 ->select(
                     'sc.id_solicitud',
-                    'a.numero_control',
+                    'sc.id_persona',
+                    DB::raw("COALESCE(a.numero_control, 'N/A') as numero_control"),
                     DB::raw("CONCAT(p.nombre,' ',p.apellido_paterno,' ',COALESCE(p.apellido_materno,'')) as nombre_alumno"),
                     'ts.nombre as tipo_tramite',
                     'sc.fecha_solicitud',
@@ -38,6 +39,7 @@ class TramiteController extends Controller
                 $q = $request->q;
                 $query->where(function ($w) use ($q) {
                     $w->where('p.nombre', 'LIKE', "%$q%")
+                      ->orWhere('p.apellido_paterno', 'LIKE', "%$q%")
                       ->orWhere('a.numero_control', 'LIKE', "%$q%");
                 });
             }
@@ -56,7 +58,7 @@ class TramiteController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'id_alumno'         => 'required|integer|exists:alumno,id_alumno',
+                'id_persona'        => 'required|integer|exists:persona,id_persona',
                 'id_tipo_solicitud' => 'required|integer|exists:tipo_solicitud,id_tipo_solicitud',
                 'descripcion'       => 'nullable|string',
             ]);
@@ -66,7 +68,7 @@ class TramiteController extends Controller
             }
 
             $id = DB::table('solicitud_comite')->insertGetId([
-                'id_alumno'         => $request->id_alumno,
+                'id_persona'        => $request->id_persona,
                 'id_tipo_solicitud' => $request->id_tipo_solicitud,
                 'descripcion'       => $request->descripcion,
                 'fecha_solicitud'   => now()->format('Y-m-d'),
