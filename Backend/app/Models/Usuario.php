@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
 
-class Usuario extends Model
+class Usuario extends Authenticatable
 {
+    use HasApiTokens;
+
     protected $table = 'usuario';
     protected $primaryKey = 'id_usuario';
 
@@ -16,7 +19,15 @@ class Usuario extends Model
         'estatus'
     ];
 
+    protected $hidden = ['password_hash'];
+
     public $timestamps = false;
+
+    // Sanctum usa getAuthPassword() para verificar la contraseña
+    public function getAuthPassword(): string
+    {
+        return $this->password_hash;
+    }
 
     public function persona()
     {

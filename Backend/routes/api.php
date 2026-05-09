@@ -14,7 +14,17 @@ use App\Http\Controllers\Api\InscripcionController;
 use App\Http\Controllers\Api\EventoController;
 use App\Http\Controllers\Api\ComiteAcademicoController;
 use App\Http\Controllers\Docentes\AsignacionDocenteController;
-use App\Http\Controllers\Docentes\CargaDocenteController; 
+use App\Http\Controllers\Docentes\CargaDocenteController;
+
+// ====================== AUTENTICACIÓN ======================
+
+use App\Http\Controllers\Auth\AuthController;
+
+Route::post('/login', [AuthController::class, 'login']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/me',      [AuthController::class, 'me']);
+});
 
 // DASHBOARD
 Route::get('/dashboard', [DashboardController::class, 'index']);
