@@ -3,6 +3,7 @@
     <div class="alumnos-page">
 
 
+      
       <div class="page-header">
         <h1 class="page-title">Lista de Alumnos</h1>
         <span class="page-subtitle">{{ alumnosFiltrados.length }} registro(s) encontrado(s)</span>
@@ -30,7 +31,7 @@
       <div class="filters-bar">
 
 
-        <div class="search-group">
+        <div class="search-group search-group-compacto">
           <svg xmlns="http://www.w3.org/2000/svg" class="search-icon-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
@@ -125,18 +126,16 @@
                 </span>
               </td>
               <td class="celda-acciones">
-                <button class="btn-accion ver" @click.stop="abrirModalVer(alumno)" title="Ver detalles">
+                <button class="btn-icono ver" @click.stop="abrirModalVer(alumno)" title="Ver detalles">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
-                  Ver
                 </button>
-                <button class="btn-accion editar" @click.stop="abrirModalEditar(alumno)" title="Editar registro">
+                <button class="btn-icono editar" @click.stop="abrirModalEditar(alumno)" title="Editar registro">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
-                  Editar
                 </button>
               </td>
             </tr>
@@ -674,6 +673,12 @@ const navegarTeclado = (e) => {
   flex-wrap: wrap;
 }
 
+/* SE1 — buscador más compacto */
+.search-group-compacto {
+  flex: 0 0 240px;
+  min-width: 180px;
+}
+
 .search-group {
   position: relative;
   flex: 0 0 300px;
@@ -719,13 +724,14 @@ const navegarTeclado = (e) => {
   animation: girar 0.7s linear infinite;
 }
 
+/* SE1 — filtros más compactos */
 .filter-select {
-  padding: 10px 12px;
+  padding: 8px 10px;
   border: 1px solid var(--borde);
   border-radius: 8px;
-  font-size: 0.92rem;
-  flex: 1 1 160px;
-  min-width: 140px;
+  font-size: 0.88rem;
+  flex: 1 1 130px;
+  min-width: 120px;
   background: #FFFFFF;
   color: var(--texto);
   font-family: 'Montserrat', sans-serif;
@@ -734,18 +740,19 @@ const navegarTeclado = (e) => {
 }
 .filter-select:focus { border-color: #1B396A; }
 
+/* SE1 — botones de la barra más compactos */
 .btn-limpiar {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   background: #FFFFFF;
   color: var(--texto);
   border: 1px solid var(--borde);
-  padding: 10px 16px;
+  padding: 8px 12px;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   white-space: nowrap;
   font-family: 'Montserrat', sans-serif;
   transition: background 0.15s;
@@ -757,13 +764,13 @@ const navegarTeclado = (e) => {
   background: #1B396A;
   color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 8px 16px;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   transition: background 0.2s;
   margin-left: auto;
 }
@@ -777,6 +784,7 @@ const navegarTeclado = (e) => {
   border: 1px solid var(--borde);
 }
 
+/* SE2 — filas más compactas */
 .alumnos-table {
   width: 100%;
   border-collapse: collapse;
@@ -784,20 +792,20 @@ const navegarTeclado = (e) => {
 }
 .alumnos-table th {
   background: var(--fondo);
-  padding: 12px 16px;
+  padding: 9px 14px;
   text-align: left;
   font-weight: 600;
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   color: var(--texto);
   border-bottom: 1px solid var(--borde);
   font-family: 'Montserrat', sans-serif;
   white-space: nowrap;
 }
 .alumnos-table td {
-  padding: 11px 16px;
+  padding: 7px 14px;
   border-bottom: 1px solid var(--borde);
   color: var(--texto);
-  font-size: 0.93rem;
+  font-size: 0.9rem;
   font-family: 'Montserrat', sans-serif;
 }
 .alumnos-table tbody tr {
@@ -826,8 +834,36 @@ const navegarTeclado = (e) => {
 .estatus-badge.titulado  { background: #EDE9FE; color: #7C3AED; }
 .estatus-badge.egresado  { background: #DBEAFE; color: #1B396A; }
 
-/* Acciones */
+/* SE3 — botones solo icono */
+.btn-icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid var(--borde);
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+.btn-icono svg { width: 15px; height: 15px; }
+.btn-icono.ver {
+  background: #FFFFFF;
+  color: var(--texto);
+}
+.btn-icono.ver svg { stroke: var(--gris); }
+.btn-icono.ver:hover { background: var(--fondo); }
+.btn-icono.editar {
+  background: #1B396A;
+  border-color: #1B396A;
+}
+.btn-icono.editar svg { stroke: white; }
+.btn-icono.editar:hover { background: #1D4ED8; border-color: #1D4ED8; }
+
+/* Acciones (mantengo la versión original por compatibilidad) */
 .celda-acciones { display: flex; gap: 7px; align-items: center; }
+
 .btn-accion {
   display: flex;
   align-items: center;
@@ -1019,7 +1055,6 @@ const navegarTeclado = (e) => {
   border-top: 1px solid var(--borde);
 }
 
-
 .btn-secundario {
   padding: 10px 22px;
   border-radius: 8px;
@@ -1074,7 +1109,6 @@ const navegarTeclado = (e) => {
   animation: girar 0.7s linear infinite;
   flex-shrink: 0;
 }
-
 
 .detalle-fila {
   display: flex;

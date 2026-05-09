@@ -125,11 +125,39 @@
                 </span>
               </td>
               <td class="actions">
-                <button class="btn-accion ver" @click="verDetalle(grupo)">Ver</button>
-                <button class="btn-accion editar" @click="editarGrupo(grupo)">Editar</button>
-                <button class="btn-accion evaluaciones" @click="irAEvaluaciones(grupo)">Evaluaciones</button>
-                <button class="btn-accion calificaciones" @click="irACalificaciones(grupo)">Calificaciones</button>
-                <button class="btn-accion eliminar" @click="eliminarGrupo(grupo)">Eliminar</button>
+                <!-- Ver -->
+                <button class="btn-icono ver" @click="verDetalle(grupo)" title="Ver detalles">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                </button>
+                <!-- Editar -->
+                <button class="btn-icono editar" @click="editarGrupo(grupo)" title="Editar grupo">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+                <!-- Evaluaciones — mantiene texto porque es acción de navegación específica -->
+                <button class="btn-accion evaluaciones" @click="irAEvaluaciones(grupo)" title="Evaluaciones">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
+                  Evaluaciones
+                </button>
+                <!-- Calificaciones — mantiene texto porque es acción de navegación específica -->
+                <button class="btn-accion calificaciones" @click="irACalificaciones(grupo)" title="Calificaciones">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  Calificaciones
+                </button>
+                <!-- Eliminar -->
+                <button class="btn-icono eliminar" @click="eliminarGrupo(grupo)" title="Eliminar grupo">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
               </td>
             </tr>
           </tbody>
@@ -671,9 +699,28 @@ const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
 .btn-nuevo:hover { background: #1D4ED8; }
 
 .table-container { background: #FFFFFF; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 25px rgba(0,0,0,0.07); border: 1px solid #E5E7EB; }
-.grupos-table { width: 100%; border-collapse: collapse; }
-.grupos-table th { background: #F5F5F5; padding: 16px; text-align: left; font-weight: 600; color: #1A1A1A; border-bottom: 1px solid #E5E7EB; }
-.grupos-table td { padding: 16px; border-bottom: 1px solid #E5E7EB; color: #1A1A1A; }
+
+/* SE5 — filas más compactas */
+.grupos-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.grupos-table th {
+  background: #F5F5F5;
+  padding: 9px 14px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #1A1A1A;
+  border-bottom: 1px solid #E5E7EB;
+  white-space: nowrap;
+}
+.grupos-table td {
+  padding: 7px 14px;
+  border-bottom: 1px solid #E5E7EB;
+  color: #1A1A1A;
+  font-size: 0.9rem;
+}
 
 .horario-badge {
   display: inline-block;
@@ -695,13 +742,53 @@ const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
 .inscritos-badge { padding: 5px 14px; border-radius: 20px; font-size: 0.88rem; font-weight: 500; }
 .inscritos-badge.lleno { background: #FEF3C7; color: #F59E0B; }
 
-.actions { display: flex; gap: 8px; }
-.btn-accion { padding: 7px 16px; border-radius: 6px; font-size: 0.92rem; cursor: pointer; font-weight: 600; border: none; }
-.btn-accion.ver { background: #F5F5F5; color: #1A1A1A; border: 1px solid #E5E7EB; }
-.btn-accion.editar { background: #1B396A; color: white; }
+/* SE6 — botones solo icono */
+.btn-icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 1px solid #E5E7EB;
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+  background: none;
+}
+.btn-icono svg { width: 15px; height: 15px; }
+.btn-icono.ver { background: #F5F5F5; }
+.btn-icono.ver svg { stroke: #6B7280; }
+.btn-icono.ver:hover { background: #E5E7EB; }
+.btn-icono.editar { background: #1B396A; border-color: #1B396A; }
+.btn-icono.editar svg { stroke: white; }
+.btn-icono.editar:hover { background: #1D4ED8; border-color: #1D4ED8; }
+.btn-icono.eliminar { background: #FEE2E2; border-color: #FECACA; }
+.btn-icono.eliminar svg { stroke: #DC2626; }
+.btn-icono.eliminar:hover { background: #DC2626; border-color: #DC2626; }
+.btn-icono.eliminar:hover svg { stroke: white; }
+
+/* SE6 — botones con texto (Evaluaciones y Calificaciones) */
+.btn-accion {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  font-weight: 600;
+  border: none;
+  white-space: nowrap;
+  font-family: inherit;
+}
+.btn-accion svg { width: 14px; height: 14px; flex-shrink: 0; }
 .btn-accion.evaluaciones { background: #1B396A; color: white; }
+.btn-accion.evaluaciones svg { stroke: white; }
+.btn-accion.evaluaciones:hover { background: #1D4ED8; }
 .btn-accion.calificaciones { background: #DBEAFE; color: #1B396A; }
-.btn-accion.eliminar { background: #DC2626; color: white; }
+.btn-accion.calificaciones svg { stroke: #1B396A; }
+.btn-accion.calificaciones:hover { background: #BFDBFE; }
 
 .pagination { margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.95rem; color: #6B7280; }
 .pagination-center button { padding: 6px 12px; border: 1px solid #E5E7EB; background: #FFFFFF; border-radius: 6px; cursor: pointer; }

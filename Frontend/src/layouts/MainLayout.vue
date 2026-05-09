@@ -111,6 +111,13 @@
       </div>
     </header>
 
+    <!-- Franja de hover para expandir sidebar colapsado -->
+    <div
+      v-if="!isFixed && isCollapsed"
+      class="franja-hover-sidebar"
+      @mouseenter="onSidebarEnter"
+    ></div>
+
     <!-- ══ MENÚ LATERAL ══ -->
     <aside class="menu-lateral" @click.stop>
       <nav class="navegacion" role="navigation" aria-label="Menú principal">
@@ -315,10 +322,22 @@ import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 useKeyboardShortcuts()
 
 import { ref, computed, watch, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 // ── Estado global ─────────────────────────────────────────────────────
 const busquedaGlobal = ref('')
 const isCollapsed    = ref(false)
+
+// ── Fijado del sidebar ────────────────────────────────────────────────
+// isFixed: true = sidebar siempre visible (fijado)
+//          false = sidebar se colapsa al navegar y se muestra solo con hover
+const isFixed       = ref(false)
+const isHovered     = ref(false)
+
+// El sidebar está visible si está fijado O si el usuario está encima con el cursor
+const sidebarVisible = computed(() => isFixed.value || isHovered.value)
 
 // ── Estados de submenús ───────────────────────────────────────────────
 const isServiciosOpen          = ref(true)
@@ -330,8 +349,8 @@ const isRecursosHumanosOpen    = ref(false)
 const isPersonasOpen           = ref(false)
 const isAsignacionDocenteOpen  = ref(false)
 const isKardexOpen             = ref(false)
-const isHistorialAcademicoOpen       = ref(false)
-const isInscripcionesDetalladasOpen  = ref(false)
+const isHistorialAcademicoOpen      = ref(false)
+const isInscripcionesDetalladasOpen = ref(false)
 
 // ── Encabezado ────────────────────────────────────────────────────────
 const mostrarMenuUsuario    = ref(false)
@@ -345,18 +364,27 @@ onMounted(() => {
     const val = localStorage.getItem(key)
     if (val !== null) refVar.value = parse ? JSON.parse(val) : val
   }
-  load('isServiciosOpen',          isServiciosOpen)
-  load('isGestionAcademicaOpen',   isGestionAcademicaOpen)
-  load('isEventosOpen',            isEventosOpen)
-  load('isComiteOpen',             isComiteOpen)
-  load('isSeguridadOpen',          isSeguridadOpen)
-  load('isRecursosHumanosOpen',    isRecursosHumanosOpen)
-  load('isPersonasOpen',           isPersonasOpen)
-  load('isAsignacionDocenteOpen',  isAsignacionDocenteOpen)
-  load('isKardexOpen',             isKardexOpen)
-  load('isHistorialAcademicoOpen', isHistorialAcademicoOpen)
+  load('isServiciosOpen',               isServiciosOpen)
+  load('isGestionAcademicaOpen',        isGestionAcademicaOpen)
+  load('isEventosOpen',                 isEventosOpen)
+  load('isComiteOpen',                  isComiteOpen)
+  load('isSeguridadOpen',               isSeguridadOpen)
+  load('isRecursosHumanosOpen',         isRecursosHumanosOpen)
+  load('isPersonasOpen',                isPersonasOpen)
+  load('isAsignacionDocenteOpen',       isAsignacionDocenteOpen)
+  load('isKardexOpen',                  isKardexOpen)
+  load('isHistorialAcademicoOpen',      isHistorialAcademicoOpen)
   load('isInscripcionesDetalladasOpen', isInscripcionesDetalladasOpen)
-  load('rolActual',                rolActual, false)
+  load('rolActual',                     rolActual, false)
+  load('isFixed',                       isFixed)
+
+  // Si estaba fijado, mostrar sidebar inmediatamente
+  if (isFixed.value) {
+    isCollapsed.value = false
+  } else {
+    // Si no estaba fijado, colapsar al cargar
+    isCollapsed.value = true
+  }
 })
 
 watch(
@@ -364,21 +392,22 @@ watch(
     isServiciosOpen, isGestionAcademicaOpen, isEventosOpen,
     isComiteOpen, isSeguridadOpen, isRecursosHumanosOpen,
     isPersonasOpen, isAsignacionDocenteOpen, isKardexOpen,
-    isHistorialAcademicoOpen, isInscripcionesDetalladasOpen, rolActual
+    isHistorialAcademicoOpen, isInscripcionesDetalladasOpen, rolActual, isFixed
   ],
   () => {
-    localStorage.setItem('isServiciosOpen',          JSON.stringify(isServiciosOpen.value))
-    localStorage.setItem('isGestionAcademicaOpen',   JSON.stringify(isGestionAcademicaOpen.value))
-    localStorage.setItem('isEventosOpen',            JSON.stringify(isEventosOpen.value))
-    localStorage.setItem('isComiteOpen',             JSON.stringify(isComiteOpen.value))
-    localStorage.setItem('isSeguridadOpen',          JSON.stringify(isSeguridadOpen.value))
-    localStorage.setItem('isRecursosHumanosOpen',    JSON.stringify(isRecursosHumanosOpen.value))
-    localStorage.setItem('isPersonasOpen',           JSON.stringify(isPersonasOpen.value))
-    localStorage.setItem('isAsignacionDocenteOpen',  JSON.stringify(isAsignacionDocenteOpen.value))
-    localStorage.setItem('isKardexOpen',             JSON.stringify(isKardexOpen.value))
-    localStorage.setItem('isHistorialAcademicoOpen', JSON.stringify(isHistorialAcademicoOpen.value))
+    localStorage.setItem('isServiciosOpen',               JSON.stringify(isServiciosOpen.value))
+    localStorage.setItem('isGestionAcademicaOpen',        JSON.stringify(isGestionAcademicaOpen.value))
+    localStorage.setItem('isEventosOpen',                 JSON.stringify(isEventosOpen.value))
+    localStorage.setItem('isComiteOpen',                  JSON.stringify(isComiteOpen.value))
+    localStorage.setItem('isSeguridadOpen',               JSON.stringify(isSeguridadOpen.value))
+    localStorage.setItem('isRecursosHumanosOpen',         JSON.stringify(isRecursosHumanosOpen.value))
+    localStorage.setItem('isPersonasOpen',                JSON.stringify(isPersonasOpen.value))
+    localStorage.setItem('isAsignacionDocenteOpen',       JSON.stringify(isAsignacionDocenteOpen.value))
+    localStorage.setItem('isKardexOpen',                  JSON.stringify(isKardexOpen.value))
+    localStorage.setItem('isHistorialAcademicoOpen',      JSON.stringify(isHistorialAcademicoOpen.value))
     localStorage.setItem('isInscripcionesDetalladasOpen', JSON.stringify(isInscripcionesDetalladasOpen.value))
-    localStorage.setItem('rolActual',                rolActual.value)
+    localStorage.setItem('rolActual',                     rolActual.value)
+    localStorage.setItem('isFixed',                       JSON.stringify(isFixed.value))
   },
   { deep: true }
 )
@@ -388,38 +417,83 @@ const nombreRolActual = computed(() =>
   rolActual.value === 'admin' ? 'Administrador' : 'Servicios Escolares'
 )
 
-// ── Toggles ───────────────────────────────────────────────────────────
-const toggleSidebar            = () => { isCollapsed.value = !isCollapsed.value }
-const toggleServicios          = () => { isServiciosOpen.value = !isServiciosOpen.value }
-const toggleGestionAcademica   = () => { isGestionAcademicaOpen.value = !isGestionAcademicaOpen.value }
-const toggleEventos            = () => { isEventosOpen.value = !isEventosOpen.value }
-const toggleComite             = () => { isComiteOpen.value = !isComiteOpen.value }
-const toggleSeguridad          = () => { isSeguridadOpen.value = !isSeguridadOpen.value }
-const toggleRecursosHumanos    = () => { isRecursosHumanosOpen.value = !isRecursosHumanosOpen.value }
-const togglePersonas           = () => { isPersonasOpen.value = !isPersonasOpen.value }
-const toggleAsignacionDocente  = () => { isAsignacionDocenteOpen.value = !isAsignacionDocenteOpen.value }
-const toggleKardex             = () => { isKardexOpen.value = !isKardexOpen.value }
-const toggleHistorialAcademico = () => { isHistorialAcademicoOpen.value = !isHistorialAcademicoOpen.value }
+// ── Toggle sidebar (fijar / desfijar) ─────────────────────────────────
+// El botón de hamburguesa ahora alterna entre fijado y no fijado
+const toggleSidebar = () => {
+  isFixed.value = !isFixed.value
+  if (isFixed.value) {
+    // Al fijar: expandir inmediatamente
+    isCollapsed.value = false
+  } else {
+    // Al desfijar: colapsar si el cursor no está encima
+    if (!isHovered.value) {
+      isCollapsed.value = true
+    }
+  }
+}
+
+// ── Hover del sidebar ─────────────────────────────────────────────────
+// Solo actúa cuando el sidebar NO está fijado
+const onSidebarEnter = () => {
+  if (!isFixed.value) {
+    isHovered.value  = true
+    isCollapsed.value = false
+  }
+}
+
+const onSidebarLeave = () => {
+  if (!isFixed.value) {
+    isHovered.value  = false
+    isCollapsed.value = true
+  }
+}
+
+// ── Auto-colapso al navegar ───────────────────────────────────────────
+// Cuando el usuario hace clic en un link y cambia de ruta,
+// si el sidebar NO está fijado se colapsa automáticamente
+watch(
+  () => router.currentRoute.value.fullPath,
+  () => {
+    if (!isFixed.value) {
+      isHovered.value   = false
+      isCollapsed.value = true
+    }
+    // Siempre cerrar los menús desplegables del header
+    cerrarMenus()
+  }
+)
+
+// ── Toggles de submenús ───────────────────────────────────────────────
+const toggleServicios           = () => { isServiciosOpen.value          = !isServiciosOpen.value }
+const toggleGestionAcademica    = () => { isGestionAcademicaOpen.value   = !isGestionAcademicaOpen.value }
+const toggleEventos             = () => { isEventosOpen.value            = !isEventosOpen.value }
+const toggleComite              = () => { isComiteOpen.value             = !isComiteOpen.value }
+const toggleSeguridad           = () => { isSeguridadOpen.value          = !isSeguridadOpen.value }
+const toggleRecursosHumanos     = () => { isRecursosHumanosOpen.value    = !isRecursosHumanosOpen.value }
+const togglePersonas            = () => { isPersonasOpen.value           = !isPersonasOpen.value }
+const toggleAsignacionDocente   = () => { isAsignacionDocenteOpen.value  = !isAsignacionDocenteOpen.value }
+const toggleKardex              = () => { isKardexOpen.value             = !isKardexOpen.value }
+const toggleHistorialAcademico  = () => { isHistorialAcademicoOpen.value = !isHistorialAcademicoOpen.value }
 const toggleInscripcionesDetalladas = () => { isInscripcionesDetalladasOpen.value = !isInscripcionesDetalladasOpen.value }
 
 const toggleMenuUsuario = () => {
-  mostrarMenuUsuario.value = !mostrarMenuUsuario.value
+  mostrarMenuUsuario.value    = !mostrarMenuUsuario.value
   mostrarNotificaciones.value = false
 }
 const toggleNotificaciones = () => {
   mostrarNotificaciones.value = !mostrarNotificaciones.value
-  mostrarMenuUsuario.value = false
+  mostrarMenuUsuario.value    = false
 }
 const cerrarMenus = () => {
-  mostrarMenuUsuario.value = false
+  mostrarMenuUsuario.value    = false
   mostrarNotificaciones.value = false
 }
 const marcarTodasLeidas = () => {
-  notificaciones.value = []
+  notificaciones.value        = []
   mostrarNotificaciones.value = false
 }
 const establecerRol = (rol) => {
-  rolActual.value = rol
+  rolActual.value          = rol
   mostrarMenuUsuario.value = false
 }
 </script>
@@ -627,4 +701,40 @@ const establecerRol = (rol) => {
   box-sizing: border-box;
 }
 .sistema-layout.sidebar-collapsed .area-contenido { margin-left: 0; }
+
+
+/* ══ Sidebar fijado — indicador visual en el botón ══ */
+.sistema-layout:not(.sidebar-collapsed) .btn-toggle-menu {
+  background: rgba(255,255,255,0.15);
+}
+
+/* Franja lateral izquierda visible cuando sidebar está colapsado */
+.sistema-layout.sidebar-collapsed .menu-lateral {
+  width: 0;
+  padding-top: 0;
+}
+
+/* Franja invisible de 8px para activar expansión por hover */
+.franja-hover-sidebar {
+  position: fixed;
+  top: 74px;
+  left: 0;
+  width: 8px;
+  bottom: 0;
+  z-index: 901;
+  cursor: pointer;
+}
+
+/* Cuando el sidebar está fijo, el área de contenido tiene margin-left normal */
+.sistema-layout:not(.sidebar-collapsed) .area-contenido {
+  margin-left: 260px;
+}
+
+/* Eliminar el pseudo-elemento anterior que no funcionaba */
+.sistema-layout.sidebar-collapsed::before {
+  display: none;
+}
+
+
+
 </style>

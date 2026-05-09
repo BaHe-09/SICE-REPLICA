@@ -13,7 +13,6 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
           </svg>
-          Exportar
         </button>
       </div>
 
@@ -103,11 +102,10 @@
           <!-- Botón limpiar filtros -->
           <div class="filtro-grupo filtro-accion">
             <label class="filtro-label">&nbsp;</label>
-            <button class="btn-limpiar" @click="resetFiltros">
+            <button class="btn-limpiar" @click="resetFiltros" title="Limpiar filtros">
               <svg xmlns="http://www.w3.org/2000/svg" class="reset-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
               </svg>
-              Limpiar
             </button>
           </div>
 
@@ -539,14 +537,20 @@ const navegarTeclado = (e) => {
 .page-title    { color: var(--texto); font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
 .page-subtitle { font-size: 0.88rem; color: var(--gris); font-weight: 500; display: block; margin-top: 3px; }
 
+/* SU6 — botón exportar solo icono */
 .btn-exportar {
-  display: flex; align-items: center; gap: 7px;
-  background: #FFFFFF; color: var(--azul);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: #FFFFFF;
+  color: var(--azul);
   border: 1px solid #BFDBFE;
-  padding: 9px 18px; border-radius: 8px;
-  font-weight: 600; font-size: 0.88rem;
-  cursor: pointer; font-family: 'Montserrat', sans-serif;
-  transition: background 0.15s; flex-shrink: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
 }
 .btn-exportar:hover { background: var(--azul-suave); }
 .exportar-icono { width: 17px; height: 17px; stroke: var(--azul); }
@@ -613,14 +617,18 @@ const navegarTeclado = (e) => {
 .filtro-input::placeholder { color: #9CA3AF; }
 .filtro-fecha { cursor: pointer; }
 
+/* SU6 — botón limpiar solo icono */
 .btn-limpiar {
-  display: flex; align-items: center; gap: 6px;
-  background: #FFFFFF; color: var(--texto);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: #FFFFFF;
+  color: var(--texto);
   border: 1px solid var(--borde);
-  padding: 9px 16px; border-radius: 8px;
-  font-weight: 600; cursor: pointer;
-  font-size: 0.9rem; white-space: nowrap;
-  font-family: 'Montserrat', sans-serif;
+  border-radius: 8px;
+  cursor: pointer;
   transition: background 0.15s;
 }
 .btn-limpiar:hover { background: var(--fondo); }

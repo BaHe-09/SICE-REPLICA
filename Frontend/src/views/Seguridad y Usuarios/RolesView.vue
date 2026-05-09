@@ -99,26 +99,23 @@
                 </span>
               </td>
               <td class="celda-acciones">
-                <button class="btn-accion ver" @click.stop="abrirModalVer(rol)" title="Ver detalles">
+                <button class="btn-icono ver" @click.stop="abrirModalVer(rol)" title="Ver detalles">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
-                  Ver
                 </button>
-                <button class="btn-accion editar" @click.stop="abrirModalEditar(rol)" title="Editar rol">
+                <button class="btn-icono editar" @click.stop="abrirModalEditar(rol)" title="Editar rol">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
-                  Editar
                 </button>
-                <button class="btn-accion permisos" @click.stop="abrirModalPermisos(rol)" title="Gestionar permisos">
+                <button class="btn-icono permisos" @click.stop="abrirModalPermisos(rol)" title="Gestionar permisos">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
-                  Permisos
                 </button>
-              </td>
+</td>
             </tr>
           </tbody>
         </table>
@@ -843,28 +840,36 @@ watch(busquedaRol, () => {
 .estatus-badge.activo   { background: #DCFCE7; color: #16A34A; }
 .estatus-badge.inactivo { background: #FEE2E2; color: #DC2626; }
 
-/* Botones de acción */
-.celda-acciones { display: flex; gap: 6px; align-items: center; }
-.btn-accion {
+/* SU1 + SU2 — botones solo icono, celda compacta */
+.celda-acciones {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  width: fit-content;
+}
+.btn-icono {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   border-radius: 6px;
-  font-size: 0.83rem;
   cursor: pointer;
-  font-weight: 600;
-  font-family: 'Montserrat', sans-serif;
-  transition: background 0.15s;
-  white-space: nowrap;
+  border: 1px solid var(--borde);
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+  background: none;
 }
-.btn-accion svg { width: 14px; height: 14px; }
-.btn-accion.ver    { background: #FFFFFF; color: var(--texto); border: 1px solid var(--borde); }
-.btn-accion.ver:hover { background: var(--fondo); }
-.btn-accion.editar { background: #1B396A; color: white; border: 1px solid #1B396A; }
-.btn-accion.editar:hover { background: #1D4ED8; border-color: #1D4ED8; }
-.btn-accion.permisos { background: #DBEAFE; color: #1B396A; border: 1px solid #BFDBFE; }
-.btn-accion.permisos:hover { background: #BFDBFE; }
+.btn-icono svg { width: 15px; height: 15px; }
+.btn-icono.ver { background: #FFFFFF; }
+.btn-icono.ver svg { stroke: var(--gris); }
+.btn-icono.ver:hover { background: var(--fondo); }
+.btn-icono.editar { background: #1B396A; border-color: #1B396A; }
+.btn-icono.editar svg { stroke: white; }
+.btn-icono.editar:hover { background: #1D4ED8; border-color: #1D4ED8; }
+.btn-icono.permisos { background: #DBEAFE; border-color: #BFDBFE; }
+.btn-icono.permisos svg { stroke: #1B396A; }
+.btn-icono.permisos:hover { background: #BFDBFE; border-color: #93C5FD; }
 
 /* Estados vacíos / carga */
 .estado-vacio, .estado-cargando {
