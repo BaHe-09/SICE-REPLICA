@@ -42,7 +42,7 @@ class KardexController extends Controller
                 ->orderByDesc('id_plan')
                 ->first();
 
-            $planNombre = $planRow->nombre ?? 'Plan Vigente';
+            $planNombre = $planRow->nombre_plan ?? 'Plan Vigente';
 
             // Materias del plan de estudios agrupadas por semestre
             $planMaterias = DB::table('plan_materia as pm')
