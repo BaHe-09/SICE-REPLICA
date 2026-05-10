@@ -274,6 +274,23 @@ class EventoController extends Controller
         }
     }
 
+
+    public function destroy($id)
+    {
+        try {
+            $evento = DB::table('evento')->where('id_evento', $id)->first();
+            if (!$evento) {
+                return response()->json(['message' => 'Evento no encontrado'], 404);
+            }
+            DB::table('participacion_evento')->where('id_evento', $id)->delete();
+            DB::table('evento')->where('id_evento', $id)->delete();
+            return response()->json(['message' => 'Evento eliminado correctamente'], 200);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Error al eliminar', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+
     /**
      * GET /api/eventos/{id}/participantes
      */
