@@ -89,14 +89,15 @@ class DatosInicialesSeeder extends Seeder
         }
 
         // ── 7. MÓDULOS ──────────────────────────────────────────────
+        // Incluye 'clave' para que el sistema de permisos funcione en BD nueva
         $modulos = [
-            ['nombre_modulo' => 'Seguridad',           'descripcion' => 'Gestión de usuarios, roles y permisos'],
-            ['nombre_modulo' => 'Personas',            'descripcion' => 'Gestión de datos personales'],
-            ['nombre_modulo' => 'Recursos Humanos',    'descripcion' => 'Gestión de empleados y docentes'],
-            ['nombre_modulo' => 'Gestión Académica',   'descripcion' => 'Carreras, planes, materias y grupos'],
-            ['nombre_modulo' => 'Control Escolar',     'descripcion' => 'Inscripciones y calificaciones'],
-            ['nombre_modulo' => 'Eventos',             'descripcion' => 'Eventos institucionales'],
-            ['nombre_modulo' => 'Comité',              'descripcion' => 'Gestión de solicitudes y resoluciones'],
+            ['nombre_modulo' => 'Seguridad',         'clave' => 'SEGURIDAD',  'descripcion' => 'Gestión de usuarios, roles y permisos'],
+            ['nombre_modulo' => 'Personas',          'clave' => 'PERSONAS',   'descripcion' => 'Gestión de datos personales'],
+            ['nombre_modulo' => 'Recursos Humanos',  'clave' => 'RH',         'descripcion' => 'Gestión de empleados y docentes'],
+            ['nombre_modulo' => 'Gestión Académica', 'clave' => 'ACADEMICO',  'descripcion' => 'Carreras, planes, materias y grupos'],
+            ['nombre_modulo' => 'Control Escolar',   'clave' => 'ESCOLAR',    'descripcion' => 'Inscripciones y calificaciones'],
+            ['nombre_modulo' => 'Eventos',           'clave' => 'EVENTOS',    'descripcion' => 'Eventos institucionales'],
+            ['nombre_modulo' => 'Comité',            'clave' => 'COMITE',     'descripcion' => 'Gestión de solicitudes y resoluciones'],
         ];
         foreach ($modulos as $m) {
             DB::table('modulo')->updateOrInsert(
@@ -107,10 +108,10 @@ class DatosInicialesSeeder extends Seeder
 
         // ── 8. PERMISOS ─────────────────────────────────────────────
         $permisos = [
-            ['nombre_permiso' => 'crear',    'descripcion' => 'Permite crear registros'],
-            ['nombre_permiso' => 'editar',   'descripcion' => 'Permite editar registros'],
-            ['nombre_permiso' => 'eliminar', 'descripcion' => 'Permite eliminar registros'],
-            ['nombre_permiso' => 'ver',      'descripcion' => 'Permite visualizar información'],
+            ['nombre_permiso' => 'crear',    'clave' => 'CREAR',    'descripcion' => 'Permite crear registros'],
+            ['nombre_permiso' => 'editar',   'clave' => 'EDITAR',   'descripcion' => 'Permite editar registros'],
+            ['nombre_permiso' => 'eliminar', 'clave' => 'ELIMINAR', 'descripcion' => 'Permite eliminar registros'],
+            ['nombre_permiso' => 'ver',      'clave' => 'VER',      'descripcion' => 'Permite visualizar información'],
         ];
         foreach ($permisos as $p) {
             DB::table('permiso')->updateOrInsert(
