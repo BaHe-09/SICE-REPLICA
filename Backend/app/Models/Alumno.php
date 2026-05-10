@@ -15,12 +15,12 @@ class Alumno extends Model
         'id_carrera',
         'fecha_ingreso',
         'semestre_actual',
-        'estatus'
+        'estatus',
+        'id_estatus_alumno',   // ID del catálogo estatus_alumno
     ];
 
     public $timestamps = false;
 
-    // ESTO ES LO QUE FALTA: Relación con Persona
     public function persona()
     {
         return $this->belongsTo(Persona::class, 'id_persona', 'id_persona');
@@ -30,5 +30,13 @@ class Alumno extends Model
     public function carrera()
     {
         return $this->belongsTo(Carrera::class, 'id_carrera', 'id_carrera');
+    }
+
+    // Relación con el catálogo EstatusAlumno
+    // Permite obtener el nombre legible (Activo, Egresado, etc.)
+    // en lugar del booleano 0/1 de la columna "estatus"
+    public function estatusAlumno()
+    {
+        return $this->belongsTo(\App\Models\EstatusAlumno::class, 'id_estatus_alumno', 'id_estatus_alumno');
     }
 }
