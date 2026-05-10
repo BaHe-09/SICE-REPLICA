@@ -257,34 +257,35 @@ import MainLayout from '@/layouts/MainLayout.vue'
 const router = useRouter()
 const API = `${import.meta.env.VITE_API_URL}/api`
 
-const cargando      = ref(false)
-const cargandoForm  = ref(false)
-const busquedaNombre = ref('')
-const tiposEvento   = ref([])
-const eventos       = ref([])
+// ── Token de autenticación ────────────────────────────────────
+const token = localStorage.getItem('auth_token')
+const headers = {
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${token}`
+}
+const headersGet = { 'Authorization': `Bearer ${token}` }
 
-// Estado de Paginación
-const paginaActual = ref(1)
+const cargando       = ref(false)
+const cargandoForm   = ref(false)
+const busquedaNombre = ref('')
+const tiposEvento    = ref([])
+const eventos        = ref([])
+
+const paginaActual       = ref(1)
 const registrosPorPagina = 10
 
-// Estado de Filtros Avanzados
 const mostrarFiltrosAvanzados = ref(false)
 const filtrosAvanzados = ref({
-  tipo: '',
-  estatus: '', // Próximo, Finalizado, Cancelado
-  fechaInicio: '',
-  fechaFin: ''
+  tipo: '', estatus: '', fechaInicio: '', fechaFin: ''
 })
 
-// Estado de Modal Evento
 const mostrarModalEvento = ref(false)
-const modoEdicion = ref(false)
-const eventoEditandoId = ref(null)
-const form = ref({ nombre_evento: '', id_tipo_evento: '', fecha: '', descripcion: '' })
+const modoEdicion        = ref(false)
+const eventoEditandoId   = ref(null)
+const form    = ref({ nombre_evento: '', id_tipo_evento: '', fecha: '', descripcion: '' })
 const errores = ref({ nombre_evento: '', id_tipo_evento: '', fecha: '' })
 const fechaMinima = computed(() => new Date().toISOString().split('T')[0])
 
-// Toast
 const toast = ref({ visible: false, mensaje: '', tipo: 'exito' })
 let timerNotif = null
 const mostrarNotificacion = (m, t = 'exito') => {
@@ -296,7 +297,7 @@ const mostrarNotificacion = (m, t = 'exito') => {
 // ── Carga de datos ────────────────────────────────────────────
 const cargarTipos = async () => {
   try {
-    const res = await fetch(`${API}/tipos-evento`)
+    const res = await fetch(`${API}/tipos-evento`, { headers: headersGet })
     if (!res.ok) throw new Error()
     tiposEvento.value = await res.json()
   } catch { tiposEvento.value = [] }
@@ -305,7 +306,7 @@ const cargarTipos = async () => {
 const cargarEventos = async () => {
   cargando.value = true
   try {
-    const res = await fetch(`${API}/eventos`)
+    const res = await fetch(`${API}/eventos`, { headers: headersGet })
     if (!res.ok) throw new Error()
     eventos.value = await res.json()
   } catch (err) { console.error(err) }
@@ -314,76 +315,57 @@ const cargarEventos = async () => {
 
 onMounted(() => { cargarTipos(); cargarEventos() })
 
-// ── Lógica de Filtrado y Paginación ───────────────────────────
+// ── Filtrado y Paginación ─────────────────────────────────────
 const hoy = new Date().toISOString().split('T')[0]
 
 const eventosFiltrados = computed(() => {
   return eventos.value.filter(e => {
-    const matchNombre = !busquedaNombre.value || e.nombre_evento?.toLowerCase().includes(busquedaNombre.value.toLowerCase())
-    const matchTipo = !filtrosAvanzados.value.tipo || String(e.tipo_evento_id) === String(filtrosAvanzados.value.tipo)
-    
-    const esProximo = e.fecha >= hoy
+    const matchNombre  = !busquedaNombre.value || e.nombre_evento?.toLowerCase().includes(busquedaNombre.value.toLowerCase())
+    const matchTipo    = !filtrosAvanzados.value.tipo || String(e.tipo_evento_id) === String(filtrosAvanzados.value.tipo)
+    const esProximo    = e.fecha >= hoy
     const esFinalizado = e.fecha < hoy
-    let matchEstatus = true
-    if (filtrosAvanzados.value.estatus === 'Próximo') matchEstatus = esProximo
+    let matchEstatus   = true
+    if (filtrosAvanzados.value.estatus === 'Próximo')    matchEstatus = esProximo
     if (filtrosAvanzados.value.estatus === 'Finalizado') matchEstatus = esFinalizado
-    // Cancelado se asume manejado por backend o campo adicional; aquí filtramos por fechas si aplica
-    
     let matchFecha = true
     if (filtrosAvanzados.value.fechaInicio && e.fecha < filtrosAvanzados.value.fechaInicio) matchFecha = false
-    if (filtrosAvanzados.value.fechaFin && e.fecha > filtrosAvanzados.value.fechaFin) matchFecha = false
-
+    if (filtrosAvanzados.value.fechaFin    && e.fecha > filtrosAvanzados.value.fechaFin)    matchFecha = false
     return matchNombre && matchTipo && matchEstatus && matchFecha
   })
 })
 
-const eventosProximos = computed(() => eventosFiltrados.value.filter(e => e.fecha >= hoy))
+const eventosProximos  = computed(() => eventosFiltrados.value.filter(e => e.fecha >= hoy))
 const eventosPaginados = computed(() => {
   const inicio = (paginaActual.value - 1) * registrosPorPagina
-  const fin = inicio + registrosPorPagina
-  return eventosFiltrados.value.slice(inicio, fin)
+  return eventosFiltrados.value.slice(inicio, inicio + registrosPorPagina)
 })
 const totalPaginas = computed(() => Math.ceil(eventosFiltrados.value.length / registrosPorPagina))
 
 const reiniciarPagina = () => { paginaActual.value = 1 }
-const cambiarPagina = (p) => {
-  if (p >= 1 && p <= totalPaginas.value) paginaActual.value = p
-}
-const limpiarFiltros = () => {
-  filtrosAvanzados.value = { tipo: '', estatus: '', fechaInicio: '', fechaFin: '' }
-  reiniciarPagina()
-}
+const cambiarPagina   = (p) => { if (p >= 1 && p <= totalPaginas.value) paginaActual.value = p }
+const limpiarFiltros  = () => { filtrosAvanzados.value = { tipo: '', estatus: '', fechaInicio: '', fechaFin: '' }; reiniciarPagina() }
 
 // ── Modal y Formulario ────────────────────────────────────────
 const abrirModalEvento = (evento = null) => {
-  modoEdicion.value = !!evento
+  modoEdicion.value      = !!evento
   eventoEditandoId.value = evento?.id_evento || null
-  if (evento) {
-    form.value = {
-      nombre_evento: evento.nombre_evento,
-      id_tipo_evento: evento.tipo_evento_id,
-      fecha: evento.fecha,
-      descripcion: evento.descripcion || ''
-    }
-  } else {
-    form.value = { nombre_evento: '', id_tipo_evento: '', fecha: '', descripcion: '' }
-  }
-  errores.value = { nombre_evento: '', id_tipo_evento: '', fecha: '' }
+  form.value = evento
+    ? { nombre_evento: evento.nombre_evento, id_tipo_evento: evento.tipo_evento_id, fecha: evento.fecha, descripcion: evento.descripcion || '' }
+    : { nombre_evento: '', id_tipo_evento: '', fecha: '', descripcion: '' }
+  errores.value      = { nombre_evento: '', id_tipo_evento: '', fecha: '' }
   mostrarModalEvento.value = true
 }
-
 const cerrarModalEvento = () => { mostrarModalEvento.value = false }
 
 const validarCampo = (c) => {
   errores.value[c] = ''
-  if (c === 'nombre_evento' && !form.value.nombre_evento.trim()) errores.value.nombre_evento = 'Requerido'
-  if (c === 'id_tipo_evento' && !form.value.id_tipo_evento) errores.value.id_tipo_evento = 'Selecciona un tipo'
+  if (c === 'nombre_evento'  && !form.value.nombre_evento.trim()) errores.value.nombre_evento  = 'Requerido'
+  if (c === 'id_tipo_evento' && !form.value.id_tipo_evento)       errores.value.id_tipo_evento = 'Selecciona un tipo'
   if (c === 'fecha') {
     if (!form.value.fecha) errores.value.fecha = 'Requerida'
     else if (form.value.fecha < fechaMinima.value && !modoEdicion.value) errores.value.fecha = 'La fecha no puede ser pasada'
   }
 }
-
 const validarTodo = () => {
   ['nombre_evento', 'id_tipo_evento', 'fecha'].forEach(validarCampo)
   return !Object.values(errores.value).some(Boolean)
@@ -393,23 +375,19 @@ const guardarEvento = async () => {
   if (!validarTodo()) return mostrarNotificacion('Revisa los campos marcados', 'error')
   cargandoForm.value = true
   try {
-    const url = modoEdicion.value ? `${API}/eventos/${eventoEditandoId.value}` : `${API}/eventos`
+    const url    = modoEdicion.value ? `${API}/eventos/${eventoEditandoId.value}` : `${API}/eventos`
     const method = modoEdicion.value ? 'PUT' : 'POST'
     const payload = {
-      nombre: form.value.nombre_evento.trim(),
+      nombre:         form.value.nombre_evento.trim(),
       tipo_evento_id: Number(form.value.id_tipo_evento),
-      fecha: form.value.fecha,
-      descripcion: form.value.descripcion.trim() || null
+      fecha:          form.value.fecha,
+      descripcion:    form.value.descripcion.trim() || null
     }
-    const res = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
+    const res = await fetch(url, { method, headers, body: JSON.stringify(payload) })
     if (!res.ok) throw new Error((await res.json()).message || 'Error del servidor')
     mostrarNotificacion(modoEdicion.value ? 'Evento actualizado' : 'Evento creado')
     cerrarModalEvento()
-    await cargarEventos() // Refresca lista y paginación
+    await cargarEventos()
   } catch (e) {
     mostrarNotificacion(e.message, 'error')
   } finally {
@@ -421,7 +399,7 @@ const eliminarEvento = async (e) => {
   if (!confirm(`¿Eliminar el evento "${e.nombre_evento}"?`)) return
   cargando.value = true
   try {
-    const res = await fetch(`${API}/eventos/${e.id_evento}`, { method: 'DELETE' })
+    const res = await fetch(`${API}/eventos/${e.id_evento}`, { method: 'DELETE', headers: headersGet })
     if (!res.ok) throw new Error('No se pudo eliminar')
     mostrarNotificacion('Evento eliminado correctamente')
     await cargarEventos()
@@ -436,8 +414,8 @@ const formatearFecha = (f) => {
   const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
   return `${parseInt(d)} de ${meses[parseInt(m) - 1]} de ${a}`
 }
-const colorTipo      = (t) => ({'Académico':'#1B396A','Cultural':'#F59E0B','Deportivo':'#16A34A','Institucional':'#2563EB'}[t] || '#6B7280')
-const colorFondoTipo = (t) => ({'Académico':'#DBEAFE','Cultural':'#FEF3C7','Deportivo':'#DCFCE7','Institucional':'#EDE9FE'}[t] || '#F3F4F6')
+const colorTipo       = (t) => ({'Académico':'#1B396A','Cultural':'#F59E0B','Deportivo':'#16A34A','Institucional':'#2563EB'}[t] || '#6B7280')
+const colorFondoTipo  = (t) => ({'Académico':'#DBEAFE','Cultural':'#FEF3C7','Deportivo':'#DCFCE7','Institucional':'#EDE9FE'}[t] || '#F3F4F6')
 const estiloBadgeTipo = (t) => ({ background: colorFondoTipo(t), color: colorTipo(t) })
 </script>
 

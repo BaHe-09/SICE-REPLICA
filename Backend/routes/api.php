@@ -198,6 +198,8 @@ Route::post('/eventos/{id}/participantes', [EventoController::class, 'registrarP
 Route::patch('/eventos/{id}/participantes/{control}/constancia', [EventoController::class, 'emitirConstancia']);
 Route::delete('/eventos/{id}/participantes/{control}', [EventoController::class, 'eliminarParticipante']);
 
+Route::delete('/eventos/{id}', [EventoController::class, 'destroy']);
+
 
 // ====================== MÓDULO DE RECURSOS HUMANOS ======================
 
