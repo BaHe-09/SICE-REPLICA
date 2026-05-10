@@ -181,6 +181,8 @@ const sesiones  = ref([])
 const formModal = ref({ fecha: '', descripcion: '' })
 const errModal  = ref({ fecha: '', descripcion: '' })
 
+const BASE = `${import.meta.env.VITE_API_URL}/api`
+
 // ── Toast (corregido: era "notificacion") ─────────────────────
 const toast = ref({ visible: false, mensaje: '', tipo: 'exito' })
 let timerNotif = null
@@ -195,7 +197,7 @@ const cargarSesiones = async () => {
   cargando.value   = true
   errorCarga.value = false
   try {
-    const res = await fetch('http://localhost:8000/api/comite/sesiones')
+    const res = await fetch(`${BASE}/comite/sesiones`)
     if (!res.ok) throw new Error('Error en la respuesta del servidor')
     const data = await res.json()
     sesiones.value = Array.isArray(data) ? data : data.data ?? []
@@ -245,7 +247,7 @@ const guardarSesion = async () => {
 
     if (modoEdicion.value && sesionEditando.value) {
       // PUT /api/comite/sesiones/{id}
-      const res = await fetch(`http://localhost:8000/api/comite/sesiones/${sesionEditando.value.id}`, {
+      const res = await fetch(`${BASE}/comite/sesiones/${sesionEditando.value.id}`, {
         method:  'PUT',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify(payload),
@@ -261,7 +263,7 @@ const guardarSesion = async () => {
 
     } else {
       // POST /api/comite/sesiones
-      const res = await fetch('http://localhost:8000/api/comite/sesiones', {
+      const res = await fetch(`${BASE}/comite/sesiones`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify(payload),

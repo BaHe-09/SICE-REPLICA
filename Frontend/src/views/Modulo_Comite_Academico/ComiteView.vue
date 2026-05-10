@@ -212,7 +212,7 @@ const kpis = ref({
 const solicitudesPendientes = ref([])
 const sesionesRecientes = ref([])
 
-const API_BASE = 'http://127.0.0.1:8000/api/comite'
+const API_BASE = `${import.meta.env.VITE_API_URL}/api/comite`
 
 // ── Carga inicial ─────────────────────────────────────────────
 const cargarDatos = async () => {

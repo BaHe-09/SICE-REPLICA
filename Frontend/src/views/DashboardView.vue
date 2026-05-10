@@ -138,7 +138,7 @@ import MainLayout from '@/layouts/MainLayout.vue'
 const router = useRouter()
 const cargando = ref(true)
 const error = ref(null)
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_URL = import.meta.env.VITE_API_URL
 
 const fechaHoy = computed(() => {
   return new Date().toLocaleDateString('es-MX', {
