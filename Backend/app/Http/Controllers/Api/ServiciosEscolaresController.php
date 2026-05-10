@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Evaluacion;
 use App\Models\Calificacion;
+use App\Http\Controllers\Api\AlumnoController;
+use App\Http\Controllers\Api\InscripcionController;
 
 class ServiciosEscolaresController extends Controller
 {
@@ -209,24 +211,23 @@ class ServiciosEscolaresController extends Controller
 
     public function store(Request $request)
     {
-        return response()->json(['mensaje' => 'Alumno registrado']);
+        return app(AlumnoController::class)->store($request);
     }
 
     public function buscarAlumnoInscripcion(Request $request)
     {
-        return response()->json(['mensaje' => 'Alumno encontrado']);
+        return app(InscripcionController::class)->buscarAlumno($request);
     }
 
     // 🔹 GRUPOS / INSCRIPCIÓN
     public function getGruposDisponibles()
     {
-        $grupos = DB::table('grupo')->get();
-        return response()->json($grupos);
+        return app(InscripcionController::class)->gruposDisponibles();
     }
 
     public function inscribirAlumno(Request $request)
     {
-        return response()->json(['mensaje' => 'Alumno inscrito']);
+        return app(InscripcionController::class)->inscribirAlumno($request);
     }
 
     // 🔹 EVALUACIONES
