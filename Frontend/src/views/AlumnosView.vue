@@ -47,13 +47,12 @@
           <span v-if="cargandoBusqueda" class="spinner-busqueda"></span>
         </div>
 
-        <select v-model="filtroCarrera" class="filter-select" @change="currentPage = 1">
+        <!-- Filtro carrera dinámico -->
+        <select v-model="filtroCarreraId" class="filter-select" @change="currentPage = 1">
           <option value="">Carrera</option>
-          <option value="Contador Publico">Contador Público</option>
-          <option value="Ingenieria Civil">Ingeniería Civil</option>
-          <option value="Ingenieria en Gestion empresarial">Ing. en Gestión Empresarial</option>
-          <option value="Ingenieria en Sistemas Computacionales">Ing. en Sistemas Computacionales</option>
-          <option value="Ingenieria Industrial">Ingeniería Industrial</option>
+          <option v-for="c in catalogos.carreras" :key="c.id_carrera" :value="c.id_carrera">
+            {{ c.nombre }}
+          </option>
         </select>
 
         <select v-model="filtroSemestre" class="filter-select" @change="currentPage = 1">
@@ -61,13 +60,12 @@
           <option v-for="n in 8" :key="n" :value="String(n)">{{ n }}° Semestre</option>
         </select>
 
-        <select v-model="filtroEstatus" class="filter-select" @change="currentPage = 1">
+        <!-- Filtro estatus dinámico -->
+        <select v-model="filtroEstatusId" class="filter-select" @change="currentPage = 1">
           <option value="">Estatus</option>
-          <option value="Activo">Activo</option>
-          <option value="Baja Temporal">Baja Temporal</option>
-          <option value="Baja Definitiva">Baja Definitiva</option>
-          <option value="Titulado">Titulado</option>
-          <option value="Egresado">Egresado</option>
+          <option v-for="e in catalogos.estatus_alumno" :key="e.id_estatus_alumno" :value="e.id_estatus_alumno">
+            {{ e.nombre }}
+          </option>
         </select>
 
         <button class="btn-limpiar" @click="resetFilters">
@@ -224,12 +222,12 @@
           </div>
           <div class="form-grupo">
             <label>Carrera</label>
-            <select v-model="alumnoEditar.carrera" class="modal-select">
-              <option value="Contador Publico">Contador Público</option>
-              <option value="Ingenieria Civil">Ingeniería Civil</option>
-              <option value="Ingenieria en Gestion empresarial">Ing. en Gestión Empresarial</option>
-              <option value="Ingenieria en Sistemas Computacionales">Ing. en Sistemas Computacionales</option>
-              <option value="Ingenieria Industrial">Ingeniería Industrial</option>
+            <!-- Dinámico: carga carreras desde /api/alumnos/catalogos igual que el formulario de alta -->
+            <select v-model="alumnoEditar.id_carrera" class="modal-select">
+              <option value="">Seleccionar carrera</option>
+              <option v-for="c in catalogos.carreras" :key="c.id_carrera" :value="c.id_carrera">
+                {{ c.nombre }}
+              </option>
             </select>
           </div>
           <div class="form-grupo-doble">
@@ -241,12 +239,12 @@
             </div>
             <div class="form-grupo">
               <label>Estatus</label>
-              <select v-model="alumnoEditar.estatus" class="modal-select">
-                <option value="Activo">Activo</option>
-                <option value="Baja Temporal">Baja Temporal</option>
-                <option value="Baja Definitiva">Baja Definitiva</option>
-                <option value="Titulado">Titulado</option>
-                <option value="Egresado">Egresado</option>
+              <!-- Dinámico: carga estatus desde /api/alumnos/catalogos -->
+              <select v-model="alumnoEditar.id_estatus_alumno" class="modal-select">
+                <option value="">Seleccionar estatus</option>
+                <option v-for="e in catalogos.estatus_alumno" :key="e.id_estatus_alumno" :value="e.id_estatus_alumno">
+                  {{ e.nombre }}
+                </option>
               </select>
             </div>
           </div>
@@ -289,13 +287,30 @@ const guardando        = ref(false)
 const filaActiva       = ref(-1)
 const tablaRef         = ref(null)
 
+// ── Catálogos dinámicos (carreras, estatus) ─────────────────────────
+const catalogos = ref({ carreras: [], estatus_alumno: [] })
+
+const cargarCatalogos = async () => {
+  try {
+    const res = await fetch(`${API_URL}/api/alumnos/catalogos`)
+    if (!res.ok) throw new Error('Error al cargar catálogos')
+    const data = await res.json()
+    catalogos.value.carreras       = data.carreras       || []
+    catalogos.value.estatus_alumno = data.estatus_alumno || []
+  } catch (e) {
+    console.error('❌ Error catálogos:', e)
+    mostrarNotificacion('No se pudieron cargar los catálogos de carrera/estatus.', 'error')
+  }
+}
+
 // ── Filtros y paginación ────────────────────────────────────────────
 const busquedaAlumno = ref('')
-const filtroCarrera  = ref('')
-const filtroSemestre = ref('')
-const filtroEstatus  = ref('')
-const filasPorPagina = ref(10)
-const currentPage    = ref(1)
+// Filtramos por ID numérico para ser consistentes con los datos del backend
+const filtroCarreraId  = ref('')
+const filtroSemestre   = ref('')
+const filtroEstatusId  = ref('')
+const filasPorPagina   = ref(10)
+const currentPage      = ref(1)
 
 // ── Notificación UI ─────────────────────────────────────────────────
 const notificacion = ref({ visible: false, mensaje: '', tipo: 'exito' })
@@ -323,29 +338,22 @@ const claseEstatus = (estatus) => {
   return estatus.toLowerCase().replace(/\s/g, '-')
 }
 
-// Resuelve el id_carrera desde cualquier estructura que devuelva el backend
-// Soporta: { id_carrera: 4 }, { carrera: { id_carrera: 4 } }, { carrera: 'Nombre' }
+// Resuelve el id_carrera desde el registro del alumno.
+// Primero busca el campo directo, luego el objeto relacionado.
+// No usa mapas hardcodeados — si el backend devuelve la relación correctamente
+// siempre habrá un id_carrera disponible.
 const resolverIdCarrera = (alumno) => {
   if (alumno.id_carrera) return alumno.id_carrera
   if (alumno.carrera?.id_carrera) return alumno.carrera.id_carrera
-  // Fallback: mapear por nombre si el backend no devuelve id directo
-  const mapa = {
-    'Contador Publico': 1,
-    'Ingenieria Civil': 2,
-    'Ingenieria en Gestion empresarial': 3,
-    'Ingenieria en Sistemas Computacionales': 4,
-    'Ingenieria Industrial': 5,
-  }
-  const nombre = alumno.carrera?.nombre_carrera || alumno.carrera || ''
-  return mapa[nombre] || null
+  return null
 }
 
 // ── Carga de alumnos ─────────────────────────────────────────────────
-// Endpoint: GET /api/alumnos-full
+// Endpoint: GET /api/alumnos-crud  (usa AlumnoController@index que devuelve id_estatus_alumno)
 const cargarAlumnosDesdeBD = async () => {
   cargando.value = true
   try {
-    const response = await fetch(`${API_URL}/api/alumnos-full`)
+    const response = await fetch(`${API_URL}/api/alumnos-crud`)
     if (!response.ok) throw new Error('Error del servidor')
     const data = await response.json()
     alumnos.value = data
@@ -358,7 +366,7 @@ const cargarAlumnosDesdeBD = async () => {
   }
 }
 
-onMounted(() => { cargarAlumnosDesdeBD() })
+onMounted(() => { cargarAlumnosDesdeBD(); cargarCatalogos() })
 
 // Debounce de búsqueda
 let timerBusqueda = null
@@ -395,13 +403,18 @@ const abrirModalEditar = (alumno) => {
   console.log('🟡 Alumno para editar:', alumno)
 
   alumnoEditar.value = {
-    id_alumno:  alumno.id_alumno || alumno.id,
-    noControl:  alumno.numero_control || alumno.noControl || '',
-    nombre:     alumno.nombre || alumno.persona?.nombre_completo || alumno.persona?.nombre || '',
-    id_carrera: resolverIdCarrera(alumno),
-    carrera:    alumno.carrera?.nombre_carrera || alumno.carrera || '',
-    semestre:   alumno.semestre_actual || alumno.semestre || 1,
-    estatus:    alumno.estatus || 'Activo'
+    id_alumno:        alumno.id_alumno || alumno.id,
+    noControl:        alumno.numero_control || alumno.noControl || '',
+    nombre:           alumno.nombre || alumno.persona?.nombre_completo || alumno.persona?.nombre || '',
+    id_carrera:       resolverIdCarrera(alumno),
+    semestre:         alumno.semestre_actual || alumno.semestre || 1,
+    // Resolver id_estatus_alumno:
+    // 1° El campo directo del backend (alumnos-crud ya lo incluye)
+    // 2° Buscar por nombre exacto en el catálogo
+    // 3° Si el campo booleano estatus=1 → Activo (id 1), de lo contrario no se asume nada
+    id_estatus_alumno: alumno.id_estatus_alumno ||
+      catalogos.value.estatus_alumno.find(e => e.nombre === alumno.estatus)?.id_estatus_alumno ||
+      (alumno.estatus === true || alumno.estatus === 1 || alumno.estatus === 'Activo' ? 1 : null)
   }
 
   console.log('🟢 Datos preparados:', alumnoEditar.value)
@@ -419,18 +432,26 @@ const guardarCambios = async () => {
     return
   }
 
-  // Validar que id_carrera esté resuelto antes de enviar
-  const idCarrera = alumnoEditar.value.id_carrera || resolverIdCarrera(alumnoEditar.value)
-  if (!idCarrera) {
-    mostrarNotificacion('No se pudo determinar la carrera. Selecciónala nuevamente.', 'error')
+  if (!alumnoEditar.value.id_carrera) {
+    mostrarNotificacion('Selecciona una carrera antes de guardar.', 'error')
+    return
+  }
+  if (!alumnoEditar.value.id_estatus_alumno) {
+    mostrarNotificacion('Selecciona un estatus antes de guardar.', 'error')
     return
   }
 
+  // Resolvemos el nombre del estatus para mandarlo también al backend
+  // (el controller update() espera el texto para el match() de booleano)
+  const nombreEstatus = catalogos.value.estatus_alumno
+    .find(e => e.id_estatus_alumno === alumnoEditar.value.id_estatus_alumno)?.nombre || 'Activo'
+
   const payload = {
-    nombre:          alumnoEditar.value.nombre,
-    id_carrera:      idCarrera,
-    semestre_actual: parseInt(alumnoEditar.value.semestre),
-    estatus:         alumnoEditar.value.estatus
+    nombre:             alumnoEditar.value.nombre,
+    id_carrera:         alumnoEditar.value.id_carrera,
+    semestre_actual:    parseInt(alumnoEditar.value.semestre),
+    estatus:            nombreEstatus,        // texto para el match() del controller
+    id_estatus_alumno:  alumnoEditar.value.id_estatus_alumno  // ID del catálogo
   }
 
   guardando.value = true
@@ -524,14 +545,15 @@ const alumnosFiltrados = computed(() => {
       normalize(nombre).includes(normalize(busquedaAlumno.value)) ||
       noControl.includes(busquedaAlumno.value)
 
-    const coincideCarrera = !filtroCarrera.value ||
-      normalize(alumno.carrera?.nombre_carrera || alumno.carrera || '').includes(normalize(filtroCarrera.value))
+    // Comparamos por ID numérico para no depender del texto del nombre
+    const coincideCarrera = !filtroCarreraId.value ||
+      (alumno.id_carrera || alumno.carrera?.id_carrera) === filtroCarreraId.value
 
     const coincideSemestre = !filtroSemestre.value ||
       String(alumno.semestre_actual || alumno.semestre) === String(filtroSemestre.value)
 
-    const coincideEstatus = !filtroEstatus.value ||
-      normalize(alumno.estatus) === normalize(filtroEstatus.value)
+    const coincideEstatus = !filtroEstatusId.value ||
+      (alumno.id_estatus_alumno) === filtroEstatusId.value
 
     return coincideGlobal && coincideLocal && coincideCarrera && coincideSemestre && coincideEstatus
   })
@@ -557,12 +579,12 @@ const prevPage  = () => { if (currentPage.value > 1) currentPage.value-- }
 const nextPage  = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
 
 const resetFilters = () => {
-  busquedaAlumno.value = ''
-  filtroCarrera.value  = ''
-  filtroSemestre.value = ''
-  filtroEstatus.value  = ''
-  currentPage.value    = 1
-  filaActiva.value     = -1
+  busquedaAlumno.value  = ''
+  filtroCarreraId.value = ''
+  filtroSemestre.value  = ''
+  filtroEstatusId.value = ''
+  currentPage.value     = 1
+  filaActiva.value      = -1
 }
 
 const aplicarBusqueda = () => { currentPage.value = 1 }
