@@ -97,7 +97,10 @@ Route::post('/carreras', [CarreraController::class, 'store']);
 Route::put('/carreras/{id}', [CarreraController::class, 'update']);
 Route::delete('/carreras/{id}', [CarreraController::class, 'destroy']);
 
-Route::get('/departamentos', [DepartamentoController::class, 'index']);
+Route::get('/departamentos',           [DepartamentoController::class, 'index']);
+Route::post('/departamentos',          [DepartamentoController::class, 'store']);
+Route::put('/departamentos/{id}',      [DepartamentoController::class, 'update']);
+Route::delete('/departamentos/{id}',   [DepartamentoController::class, 'destroy']);
 Route::get('/niveles-carrera', [NivelCarreraController::class, 'index']);
 
 // EDIFICIOS Y AULAS
