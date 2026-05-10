@@ -424,15 +424,15 @@ const guardarAlumno = async () => {
   isLoading.value = true
 
   const payload = {
-    numero_control:   form.noControl,
-    nombre:           form.nombre.trim(),
-    apellido_paterno: form.apellidoPaterno.trim(),
-    apellido_materno: form.apellidoMaterno.trim() || null,
-    genero:           form.genero,
-    id_carrera:       form.id_carrera,
-    semestre_actual:  parseInt(form.semestre),
-    estatus:          form.id_estatus_alumno,    // Ahora se usa el ID
-    fecha_ingreso:    form.fechaIngreso
+    numero_control:    form.noControl,
+    nombre:            form.nombre.trim(),
+    apellido_paterno:  form.apellidoPaterno.trim(),
+    apellido_materno:  form.apellidoMaterno.trim() || null,
+    genero:            form.genero,
+    id_carrera:        form.id_carrera,
+    semestre_actual:   parseInt(form.semestre),
+    id_estatus_alumno: form.id_estatus_alumno,
+    fecha_ingreso:     form.fechaIngreso
   }
 
   try {
