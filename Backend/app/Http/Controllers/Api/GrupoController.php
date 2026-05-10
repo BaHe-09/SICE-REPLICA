@@ -14,22 +14,36 @@ class GrupoController extends Controller
     {
         try {
             $grupos = DB::table('grupo as g')
-                ->leftJoin('materia as m', 'g.id_materia', '=', 'm.id_materia')
-                ->leftJoin('docente as d', 'g.id_docente', '=', 'd.id_docente')
-                ->leftJoin('empleado as e', 'd.id_empleado', '=', 'e.id_empleado')
-                ->leftJoin('persona as p', 'e.id_persona', '=', 'p.id_persona')
-                ->leftJoin('aula as a', 'g.id_aula', '=', 'a.id_aula')
-                ->leftJoin('inscripcion as i', 'g.id_grupo', '=', 'i.id_grupo')
+                ->leftJoin('materia as m',   'g.id_materia',  '=', 'm.id_materia')
+                ->leftJoin('docente as d',   'g.id_docente',  '=', 'd.id_docente')
+                ->leftJoin('empleado as e',  'd.id_empleado', '=', 'e.id_empleado')
+                ->leftJoin('persona as p',   'e.id_persona',  '=', 'p.id_persona')
+                ->leftJoin('aula as a',      'g.id_aula',     '=', 'a.id_aula')
+                ->leftJoin('carrera as c',   'g.id_carrera',  '=', 'c.id_carrera')
+                ->leftJoin('inscripcion as i', 'g.id_grupo',  '=', 'i.id_grupo')
                 ->select(
                     'g.id_grupo',
                     'g.clave_grupo',
                     'm.nombre as materia',
+                    'm.id_materia',
                     DB::raw("COALESCE(CONCAT(p.nombre, ' ', p.apellido_paterno), 'Sin docente') as docente"),
                     'a.nombre as aula',
                     'g.capacidad',
-                    DB::raw("COUNT(CASE WHEN i.estatus IN ('activo','inscrito') THEN 1 END) as inscritos")
+                    'g.id_carrera',
+                    'c.nombre as carrera',
+                    'g.semestre',
+                    'g.dia',
+                    'g.hora_inicio',
+                    'g.hora_fin',
+                    'g.id_periodo',
+                    DB::raw("COUNT(CASE WHEN i.estatus IN ('Activo','activo','inscrito') THEN 1 END) as inscritos")
                 )
-                ->groupBy('g.id_grupo', 'g.clave_grupo', 'm.nombre', 'p.nombre', 'p.apellido_paterno', 'a.nombre', 'g.capacidad')
+                ->groupBy(
+                    'g.id_grupo', 'g.clave_grupo', 'm.nombre', 'm.id_materia',
+                    'p.nombre', 'p.apellido_paterno', 'a.nombre', 'g.capacidad',
+                    'g.id_carrera', 'c.nombre', 'g.semestre', 'g.dia',
+                    'g.hora_inicio', 'g.hora_fin', 'g.id_periodo'
+                )
                 ->get();
 
             return response()->json($grupos);
@@ -105,6 +119,13 @@ class GrupoController extends Controller
                 'hora_inicio' => $request->hora_inicio,
                 'hora_fin'    => $request->hora_fin,
                 'estatus'     => 1,
+            ]);
+
+            BitacoraService::registrar('INSERT', 'grupo', $id, [], [
+                'clave_grupo' => $clave_grupo,
+                'id_materia'  => $id_materia,
+                'id_docente'  => $id_docente,
+                'capacidad'   => $request->capacidad,
             ]);
 
             return response()->json(['success' => true, 'message' => 'Grupo creado', 'id' => $id], 201);
@@ -184,6 +205,10 @@ class GrupoController extends Controller
                 'hora_inicio' => $request->has('hora_inicio') ? $request->hora_inicio : $grupo->hora_inicio,
                 'hora_fin'    => $request->has('hora_fin')    ? $request->hora_fin    : $grupo->hora_fin,
             ]);
+
+            BitacoraService::registrar('UPDATE', 'grupo', $id, (array) $grupo, $request->only([
+                'clave_grupo', 'capacidad', 'dia', 'hora_inicio', 'hora_fin',
+            ]));
 
             return response()->json(['success' => true, 'message' => 'Grupo actualizado']);
         } catch (\Exception $e) {
