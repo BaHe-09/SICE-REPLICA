@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Seguridad;
 
-use App\Models\Bitacora;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
@@ -12,19 +11,23 @@ class BitacoraController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Bitacora::with(['usuario', 'modulo'])
+            // Usar DB::table en lugar de Eloquent para evitar conflictos entre
+            // with(['usuario','modulo']) y los leftJoin manuales (ambos alias
+            // colisionaban con los nombres de relación, causando SQL 500).
+            $query = DB::table('bitacora')
+                ->leftJoin('usuario',  'bitacora.id_usuario', '=', 'usuario.id_usuario')
+                ->leftJoin('persona',  'usuario.id_persona',  '=', 'persona.id_persona')
+                ->leftJoin('modulo',   'bitacora.id_modulo',  '=', 'modulo.id_modulo')
                 ->select(
                     'bitacora.id_bitacora',
+                    'bitacora.id_usuario',
+                    'bitacora.id_modulo',
                     'bitacora.fecha_hora',
                     'bitacora.accion',
                     'bitacora.direccion_ip',
-                    DB::raw("CONCAT(persona.nombre, ' ', persona.apellido_paterno) as usuario"),
-                    'modulo.nombre_modulo as modulo',
-                    'bitacora.accion as descripcion'   // puedes ajustar si quieres más detalle
+                    DB::raw("COALESCE(CONCAT(persona.nombre, ' ', persona.apellido_paterno), 'Sistema') as nombre_usuario"),
+                    'modulo.nombre_modulo'
                 )
-                ->leftJoin('usuario', 'bitacora.id_usuario', '=', 'usuario.id_usuario')
-                ->leftJoin('persona', 'usuario.id_persona', '=', 'persona.id_persona')
-                ->leftJoin('modulo', 'bitacora.id_modulo', '=', 'modulo.id_modulo')
                 ->orderBy('bitacora.fecha_hora', 'desc');
 
             // Filtros
@@ -54,15 +57,15 @@ class BitacoraController extends Controller
 
             $bitacora = $query->get();
 
-            // Formato que espera tu Vue
+            // Formato que espera el Vue
             $data = $bitacora->map(function ($item) {
                 return [
                     'id_bitacora' => $item->id_bitacora,
                     'fecha_hora'  => $item->fecha_hora,
-                    'usuario'     => $item->usuario ?? 'Sistema',
+                    'usuario'     => $item->nombre_usuario ?? 'Sistema',
                     'accion'      => $item->accion,
-                    'modulo'      => $item->modulo ?? 'Desconocido',
-                    'descripcion' => $item->descripcion ?? $item->accion,
+                    'modulo'      => $item->nombre_modulo ?? 'Desconocido',
+                    'descripcion' => $item->accion,
                     'ip'          => $item->direccion_ip,
                 ];
             });

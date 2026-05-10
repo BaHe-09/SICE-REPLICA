@@ -27,9 +27,16 @@ export function useCatalogos() {
 
   // ── Helper interno ────────────────────────────────────────────
   async function fetchCatalogo(endpoint, lista) {
-    const res = await fetch(`${API}/${endpoint}`)
-    if (!res.ok) throw new Error(`Error al cargar ${endpoint} (${res.status})`)
-    lista.value = await res.json()
+    // 30 s — mismo margen que axios para Railway cold starts
+    const ctrl = new AbortController()
+    const timer = setTimeout(() => ctrl.abort(), 30_000)
+    try {
+      const res = await fetch(`${API}/${endpoint}`, { signal: ctrl.signal })
+      if (!res.ok) throw new Error(`Error al cargar ${endpoint} (${res.status})`)
+      lista.value = await res.json()
+    } finally {
+      clearTimeout(timer)
+    }
   }
 
   // ── Funciones individuales de carga ───────────────────────────

@@ -3,7 +3,10 @@ import axios from 'axios'
 
 const api = axios.create({
   baseURL: `${import.meta.env.VITE_API_URL}/api`,
-  timeout: 10000,
+  // 30 s — Railway free tier puede tardar 20-40 s en cold start.
+  // Antes estaba en 10 s, lo que causaba timeouts al primer request
+  // después de inactividad.
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json'
   }

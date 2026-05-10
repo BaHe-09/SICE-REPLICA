@@ -62,19 +62,30 @@ class DashboardController extends Controller
     private function alumnosConEstatus(array $estatus)
     {
         $normalizados = array_map(fn ($valor) => mb_strtolower($valor), $estatus);
-        $query = DB::table('alumno as a');
+
+        // Evaluar los schema checks UNA VEZ, fuera de cualquier closure,
+        // para evitar generarlos dentro de la query y para evitar que
+        // un callback vacío produzca SQL inválido: WHERE ()
+        $tieneEstatusCol     = Schema::hasColumn('alumno', 'estatus');
         $tieneCatalogoEstatus = Schema::hasTable('estatus_alumno')
             && Schema::hasColumn('alumno', 'id_estatus_alumno');
+
+        $query = DB::table('alumno as a');
 
         if ($tieneCatalogoEstatus) {
             $query->leftJoin('estatus_alumno as ea', 'a.id_estatus_alumno', '=', 'ea.id_estatus_alumno');
         }
 
-        return $query->where(function ($q) use ($normalizados, $tieneCatalogoEstatus) {
-            if (Schema::hasColumn('alumno', 'estatus')) {
+        // Si no hay ninguna columna de estatus disponible, devolver query sin filtro
+        // (muestra todos los alumnos — peor escenario, pero no crashea)
+        if (!$tieneEstatusCol && !$tieneCatalogoEstatus) {
+            return $query;
+        }
+
+        return $query->where(function ($q) use ($normalizados, $tieneEstatusCol, $tieneCatalogoEstatus) {
+            if ($tieneEstatusCol) {
                 $q->whereIn(DB::raw('LOWER(CAST(a.estatus AS CHAR))'), $normalizados);
             }
-
             if ($tieneCatalogoEstatus) {
                 $q->orWhereIn(DB::raw('LOWER(ea.nombre)'), $normalizados);
             }
