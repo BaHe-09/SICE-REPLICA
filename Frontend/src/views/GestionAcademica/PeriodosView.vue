@@ -18,40 +18,60 @@
           {{ notificacion.mensaje }}
         </div>
       </transition>
+
+      <!-- Barra de herramientas -->
       <div class="filters-bar">
-        <div class="search-group">
-          <svg xmlns="http://www.w3.org/2000/svg" class="search-icon-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-          <input type="text" placeholder="Buscar por nombre del periodo..." v-model="busqueda" class="search-input" @keydown.escape="busqueda = ''">
-        </div>
-        <select v-model="filtroEstatus" class="filter-select">
-          <option value="">Estatus</option>
-          <option value="1">Activo</option>
-          <option value="0">Inactivo</option>
-        </select>
-        <button class="btn-limpiar" @click="limpiarFiltros">
-          <svg xmlns="http://www.w3.org/2000/svg" class="reset-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
-          Limpiar
+        <button class="btn-filtro" @click="panelFiltros = !panelFiltros" :class="{ activo: panelFiltros || busqueda || filtroEstatus }">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/></svg>
+          Filtros
+          <span v-if="filtrosActivos > 0" class="filtro-badge">{{ filtrosActivos }}</span>
         </button>
         <button class="btn-nuevo" @click="abrirModalNuevo">+ Nuevo periodo</button>
       </div>
+
+      <!-- Panel de filtros desplegable -->
+      <transition name="panel-slide">
+        <div v-if="panelFiltros" class="panel-filtros">
+          <div class="panel-filtros-inner">
+            <div class="filtro-grupo">
+              <label class="filtro-label">Buscar por nombre</label>
+              <div class="search-group">
+                <svg xmlns="http://www.w3.org/2000/svg" class="search-icon-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                <input type="text" placeholder="Nombre del periodo..." v-model="busqueda" class="search-input" @keydown.escape="busqueda = ''">
+              </div>
+            </div>
+            <div class="filtro-grupo filtro-grupo-sm">
+              <label class="filtro-label">Estatus</label>
+              <select v-model="filtroEstatus" class="filter-select">
+                <option value="">Todos</option>
+                <option value="1">Activo</option>
+                <option value="0">Inactivo</option>
+              </select>
+            </div>
+            <button class="btn-limpiar-filtros" @click="limpiarFiltros">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+              Limpiar
+            </button>
+          </div>
+        </div>
+      </transition>
+
       <div class="table-container">
         <div v-if="cargando && periodos.length === 0" class="estado-cargando"><div class="spinner-tabla"></div><p>Cargando registros...</p></div>
         <table v-else-if="periodosFiltrados.length > 0" class="data-table">
-          <thead><tr><th>Nombre del Periodo</th><th>Fecha de Inicio</th><th>Fecha de Fin</th><th>Estatus</th><th>Acciones</th></tr></thead>
+          <thead><tr><th>Nombre del Periodo</th><th>Fecha de Inicio</th><th>Fecha de Fin</th><th>Estatus</th><th class="th-centro">Acciones</th></tr></thead>
           <tbody>
-            <tr v-for="(periodo, index) in periodosFiltrados" :key="periodo.id_periodo" :class="{ 'fila-seleccionada': filaActiva === index }" @click="filaActiva = index">
+            <tr v-for="(periodo, index) in paginados" :key="periodo.id_periodo" :class="{ 'fila-seleccionada': filaActiva === index }" @click="filaActiva = index">
               <td class="celda-nombre">{{ periodo.nombre_periodo }}</td>
               <td>{{ formatearFecha(periodo.fecha_inicio) }}</td>
               <td>{{ formatearFecha(periodo.fecha_fin) }}</td>
               <td><span class="estatus-badge" :class="periodo.estatus ? 'activo' : 'inactivo'">{{ periodo.estatus ? 'Activo' : 'Inactivo' }}</span></td>
               <td class="celda-acciones">
-                <button class="btn-accion ver" @click.stop="abrirModalVer(periodo)">
+                <button class="btn-icono ver" @click.stop="abrirModalVer(periodo)" title="Ver detalle">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                  Ver
                 </button>
-                <button class="btn-accion editar" @click.stop="abrirModalEditar(periodo)">
+                <button class="btn-icono editar" @click.stop="abrirModalEditar(periodo)" title="Editar">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                  Editar
                 </button>
               </td>
             </tr>
@@ -62,6 +82,17 @@
           <h3>Sin resultados</h3>
           <p>No se encontraron periodos con los criterios aplicados.</p>
           <button class="btn-limpiar-vacio" @click="limpiarFiltros">Limpiar filtros</button>
+        </div>
+
+        <!-- Paginación -->
+        <div v-if="totalPaginas > 1" class="paginacion">
+          <button class="btn-pag" @click="paginaActual--" :disabled="paginaActual === 1">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <span class="pag-info">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+          <button class="btn-pag" @click="paginaActual++" :disabled="paginaActual === totalPaginas">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
         </div>
       </div>
       <footer class="pie-pagina">© 2026 Tecnológico Nacional de México | Todos los derechos reservados</footer>
@@ -148,24 +179,27 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive } from 'vue'
+import { ref, computed, onMounted, reactive, watch } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 
-// ── Variable de entorno — estandarización del proyecto ───────────
 const API = `${import.meta.env.VITE_API_URL}/api`
 
-const periodos        = ref([])
-const cargando        = ref(false)
-const guardando       = ref(false)
-const filaActiva      = ref(-1)
-const busqueda        = ref('')
-const filtroEstatus   = ref('')
-const showModal       = ref(false)
-const showModalVer    = ref(false)
+const periodos          = ref([])
+const cargando          = ref(false)
+const guardando         = ref(false)
+const filaActiva        = ref(-1)
+const busqueda          = ref('')
+const filtroEstatus     = ref('')
+const panelFiltros      = ref(false)
+const showModal         = ref(false)
+const showModalVer      = ref(false)
 const showModalEliminar = ref(false)
-const periodoVer      = ref({})
-const periodoAEliminar = ref(null)
-const form = reactive({ id_periodo: null, nombre_periodo: '', fecha_inicio: '', fecha_fin: '', estatus: 1 })
+const periodoVer        = ref({})
+const periodoAEliminar  = ref(null)
+const paginaActual      = ref(1)
+const porPagina         = 10
+
+const form   = reactive({ id_periodo: null, nombre_periodo: '', fecha_inicio: '', fecha_fin: '', estatus: 1 })
 const errors = reactive({})
 const notificacion = ref({ visible: false, mensaje: '', tipo: 'exito' })
 let timerNotif = null
@@ -176,12 +210,9 @@ const mostrarNotificacion = (mensaje, tipo = 'exito') => {
   timerNotif = setTimeout(() => { notificacion.value.visible = false }, 3500)
 }
 
+const filtrosActivos = computed(() => (busqueda.value ? 1 : 0) + (filtroEstatus.value ? 1 : 0))
 const periodoActivoExistente = computed(() => periodos.value.some(p => p.estatus && p.id_periodo !== form.id_periodo))
 
-/*
- * GET /api/periodos
- * Respuesta: [{ id_periodo, nombre_periodo, fecha_inicio, fecha_fin, estatus }]
- */
 const cargarPeriodos = async () => {
   cargando.value = true
   try {
@@ -204,12 +235,20 @@ const periodosFiltrados = computed(() =>
   })
 )
 
+const totalPaginas = computed(() => Math.ceil(periodosFiltrados.value.length / porPagina))
+const paginados    = computed(() => {
+  const inicio = (paginaActual.value - 1) * porPagina
+  return periodosFiltrados.value.slice(inicio, inicio + porPagina)
+})
+
+watch([busqueda, filtroEstatus], () => { paginaActual.value = 1 })
+
 const formatearFecha = (fecha) => {
   if (!fecha) return '—'
   return new Date(fecha + 'T00:00:00').toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' })
 }
 
-const limpiarFiltros = () => { busqueda.value = ''; filtroEstatus.value = ''; filaActiva.value = -1 }
+const limpiarFiltros = () => { busqueda.value = ''; filtroEstatus.value = ''; filaActiva.value = -1; paginaActual.value = 1 }
 const resetForm = () => { form.id_periodo = null; form.nombre_periodo = ''; form.fecha_inicio = ''; form.fecha_fin = ''; form.estatus = 1; Object.keys(errors).forEach(k => delete errors[k]) }
 const abrirModalNuevo  = () => { resetForm(); showModal.value = true }
 const abrirModalVer    = (p) => { periodoVer.value = p; showModalVer.value = true }
@@ -226,10 +265,6 @@ const validar = () => {
   return Object.keys(errors).length === 0
 }
 
-/*
- * POST /api/periodos   body: { nombre_periodo, fecha_inicio, fecha_fin, estatus }
- * PUT  /api/periodos/:id  body: mismos campos
- */
 const guardar = async () => {
   if (!validar()) return
   guardando.value = true
@@ -245,9 +280,6 @@ const guardar = async () => {
   finally { guardando.value = false }
 }
 
-/*
- * DELETE /api/periodos/:id
- */
 const confirmarEliminar = async () => {
   if (!periodoAEliminar.value) return
   guardando.value = true
@@ -271,16 +303,56 @@ const confirmarEliminar = async () => {
 @keyframes deslizar{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
 .toast{position:fixed;bottom:2rem;right:2rem;display:flex;align-items:center;gap:10px;padding:12px 20px;border-radius:10px;color:white;font-weight:500;font-size:0.93rem;box-shadow:0 6px 20px rgba(0,0,0,0.18);z-index:3000;max-width:380px}.toast.exito{background:var(--azul)}.toast.error{background:var(--rojo)}.toast-icono{width:20px;height:20px;flex-shrink:0}
 .toast-slide-enter-active,.toast-slide-leave-active{transition:all 0.35s ease}.toast-slide-enter-from,.toast-slide-leave-to{opacity:0;transform:translateX(110%)}
-.filters-bar{display:flex;align-items:center;gap:0.75rem;margin-bottom:1.2rem;flex-wrap:wrap}
-.search-group{position:relative;flex:0 0 300px;min-width:220px}.search-input{width:100%;padding:10px 14px 10px 42px;border:1px solid var(--borde);border-radius:8px;font-size:0.93rem;background:#FFFFFF;color:var(--texto);font-family:'Montserrat',sans-serif;outline:none;transition:border-color 0.2s,box-shadow 0.2s;box-sizing:border-box}.search-input:focus{border-color:var(--azul);box-shadow:0 0 0 3px #DBEAFE}.search-input::placeholder{color:#9CA3AF}.search-icon-svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:18px;height:18px;stroke:var(--gris);pointer-events:none}
-.filter-select{padding:10px 12px;border:1px solid var(--borde);border-radius:8px;font-size:0.92rem;flex:1 1 150px;min-width:130px;background:#FFFFFF;color:var(--texto);font-family:'Montserrat',sans-serif;cursor:pointer;outline:none}.filter-select:focus{border-color:var(--azul)}
-.btn-limpiar{display:flex;align-items:center;gap:6px;background:#FFFFFF;color:var(--texto);border:1px solid var(--borde);padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.92rem;white-space:nowrap;font-family:'Montserrat',sans-serif;transition:background 0.15s}.btn-limpiar:hover{background:var(--fondo)}.reset-icon{width:16px;height:16px;stroke:var(--gris)}
+
+/* Barra de herramientas */
+.filters-bar{display:flex;align-items:center;gap:0.75rem;margin-bottom:0;flex-wrap:wrap}
+.btn-filtro{display:flex;align-items:center;gap:7px;padding:9px 16px;border-radius:8px;border:1.5px solid var(--borde);background:#FFFFFF;color:var(--texto);font-weight:600;font-size:0.88rem;font-family:'Montserrat',sans-serif;cursor:pointer;transition:all 0.2s;position:relative}
+.btn-filtro svg{width:16px;height:16px;stroke:var(--gris)}
+.btn-filtro:hover,.btn-filtro.activo{border-color:var(--azul);color:var(--azul);background:var(--azul-suave)}
+.btn-filtro.activo svg{stroke:var(--azul)}
+.filtro-badge{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--azul);color:white;font-size:0.7rem;font-weight:700}
 .btn-nuevo{background:var(--azul);color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Montserrat',sans-serif;font-size:0.92rem;transition:background 0.2s;margin-left:auto}.btn-nuevo:hover{background:var(--azul-hover)}
-.table-container{background:#FFFFFF;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.05);border:1px solid var(--borde)}
-.data-table{width:100%;border-collapse:collapse}.data-table th{background:var(--fondo);padding:12px 16px;text-align:left;font-weight:600;font-size:0.88rem;color:var(--texto);border-bottom:1px solid var(--borde);font-family:'Montserrat',sans-serif}.data-table td{padding:11px 16px;border-bottom:1px solid var(--borde);color:var(--texto);font-size:0.93rem;font-family:'Montserrat',sans-serif}.data-table tbody tr{transition:background 0.15s;cursor:pointer}.data-table tbody tr:hover{background:#F8FAFC}.data-table tbody tr:last-child td{border-bottom:none}.fila-seleccionada{background:#DBEAFE!important}.celda-nombre{font-weight:600}
+
+/* Panel de filtros desplegable */
+.panel-filtros{background:#FFFFFF;border:1.5px solid var(--borde);border-radius:10px;margin:0.6rem 0 1rem;overflow:hidden}
+.panel-filtros-inner{display:flex;align-items:flex-end;gap:1rem;padding:1rem 1.2rem;flex-wrap:wrap}
+.filtro-grupo{display:flex;flex-direction:column;gap:5px;flex:0 0 280px;min-width:180px}
+.filtro-grupo-sm{flex:0 0 160px;min-width:130px}
+.filtro-label{font-size:0.82rem;font-weight:600;color:var(--gris)}
+.search-group{position:relative;width:100%}.search-input{width:100%;padding:9px 14px 9px 38px;border:1.5px solid var(--borde);border-radius:8px;font-size:0.9rem;background:#FFFFFF;color:var(--texto);font-family:'Montserrat',sans-serif;outline:none;transition:border-color 0.2s,box-shadow 0.2s;box-sizing:border-box}.search-input:focus{border-color:var(--azul);box-shadow:0 0 0 3px #DBEAFE}.search-input::placeholder{color:#9CA3AF}.search-icon-svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:var(--gris);pointer-events:none}
+.filter-select{width:100%;padding:9px 12px;border:1.5px solid var(--borde);border-radius:8px;font-size:0.9rem;background:#FFFFFF;color:var(--texto);font-family:'Montserrat',sans-serif;cursor:pointer;outline:none}.filter-select:focus{border-color:var(--azul)}
+.btn-limpiar-filtros{display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:8px;border:1px solid var(--borde);background:#FFFFFF;color:var(--gris);font-size:0.88rem;font-weight:600;font-family:'Montserrat',sans-serif;cursor:pointer;white-space:nowrap;transition:all 0.15s;align-self:flex-end}
+.btn-limpiar-filtros svg{width:14px;height:14px}.btn-limpiar-filtros:hover{background:#FEF2F2;color:var(--rojo);border-color:#FECACA}
+
+/* Transición panel */
+.panel-slide-enter-active,.panel-slide-leave-active{transition:all 0.25s ease}
+.panel-slide-enter-from,.panel-slide-leave-to{opacity:0;transform:translateY(-8px)}
+
+/* Tabla */
+.table-container{background:#FFFFFF;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.05);border:1px solid var(--borde);margin-top:1.2rem}
+.data-table{width:100%;border-collapse:collapse}.data-table th{background:var(--fondo);padding:12px 16px;text-align:left;font-weight:600;font-size:0.88rem;color:var(--texto);border-bottom:1px solid var(--borde);font-family:'Montserrat',sans-serif}.th-centro{text-align:center}.data-table td{padding:11px 16px;border-bottom:1px solid var(--borde);color:var(--texto);font-size:0.93rem;font-family:'Montserrat',sans-serif}.data-table tbody tr{transition:background 0.15s;cursor:pointer}.data-table tbody tr:hover{background:#F8FAFC}.data-table tbody tr:last-child td{border-bottom:none}.fila-seleccionada{background:#DBEAFE!important}.celda-nombre{font-weight:600}
 .estatus-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:0.83rem;font-weight:600}.estatus-badge.activo{background:#DCFCE7;color:#16A34A}.estatus-badge.inactivo{background:#F3F4F6;color:#6B7280}
-.celda-acciones{display:flex;gap:7px;align-items:center}.btn-accion{display:flex;align-items:center;gap:5px;padding:6px 13px;border-radius:6px;font-size:0.85rem;cursor:pointer;font-weight:600;font-family:'Montserrat',sans-serif;transition:background 0.15s;white-space:nowrap}.btn-accion svg{width:14px;height:14px}.btn-accion.ver{background:#F3F4F6;color:#1A1A1A;border:1px solid #D1D5DB}.btn-accion.ver:hover{background:#E5E7EB;border-color:#9CA3AF}.btn-accion.editar{background:#1B396A;color:#FFFFFF;border:1px solid #1B396A}.btn-accion.editar:hover{background:#1D4ED8;border-color:#1D4ED8}
+
+/* Acciones — solo íconos */
+.celda-acciones{text-align:center}
+.btn-icono{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:7px;cursor:pointer;transition:all 0.15s;position:relative;margin:0 2px}
+.btn-icono svg{width:15px;height:15px}
+.btn-icono.ver{background:#F3F4F6;color:#1A1A1A;border:1px solid #D1D5DB}.btn-icono.ver:hover{background:#E5E7EB}
+.btn-icono.editar{background:#1B396A;color:#FFFFFF;border:1px solid #1B396A}.btn-icono.editar:hover{background:#1D4ED8}
+.btn-icono[title]:hover::after{content:attr(title);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1A1A1A;color:white;font-size:0.72rem;font-weight:600;padding:3px 8px;border-radius:5px;white-space:nowrap;pointer-events:none;font-family:'Montserrat',sans-serif;z-index:10}
+.btn-icono[title]:hover::before{content:'';position:absolute;bottom:calc(100% + 2px);left:50%;transform:translateX(-50%);border:4px solid transparent;border-top-color:#1A1A1A;pointer-events:none;z-index:10}
+
 .estado-vacio,.estado-cargando{text-align:center;padding:3.5rem 2rem;color:var(--gris)}.icono-vacio{width:56px;height:56px;stroke:#9CA3AF;margin-bottom:12px}.estado-vacio h3{font-size:1.2rem;color:var(--texto);margin:0 0 6px}.estado-vacio p{font-size:0.93rem;margin:0 0 1.2rem}.btn-limpiar-vacio{background:#FFFFFF;color:var(--texto);border:1px solid var(--borde);padding:9px 20px;border-radius:8px;font-weight:500;cursor:pointer;font-family:'Montserrat',sans-serif}.spinner-tabla{display:inline-block;width:36px;height:36px;border:3px solid #E5E7EB;border-top-color:var(--azul);border-radius:50%;animation:girar 0.8s linear infinite;margin-bottom:12px}
+
+/* Paginación */
+.paginacion{display:flex;align-items:center;justify-content:center;gap:12px;padding:14px 16px;border-top:1px solid var(--borde);background:#FAFAFA}
+.btn-pag{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:8px;border:1.5px solid var(--borde);background:#FFFFFF;color:var(--texto);cursor:pointer;transition:all 0.15s}
+.btn-pag svg{width:16px;height:16px;stroke:currentColor}
+.btn-pag:hover:not(:disabled){border-color:var(--azul);color:var(--azul);background:var(--azul-suave)}
+.btn-pag:disabled{opacity:0.35;cursor:not-allowed}
+.pag-info{font-size:0.85rem;font-weight:600;color:var(--gris);font-family:'Montserrat',sans-serif}
+
+/* Modales */
 .aviso-amarillo{display:flex;align-items:flex-start;gap:10px;background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;padding:12px 14px;margin-bottom:1.2rem;font-size:0.88rem;color:#92400E;font-weight:500}.aviso-icono{width:18px;height:18px;stroke:#D97706;flex-shrink:0;margin-top:1px}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;z-index:2000}.modal-content{background:#FFFFFF;width:520px;max-width:92%;border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,0.18);overflow:hidden;border:1px solid #E5E7EB}.modal-confirmar{width:440px}.modal-header{background:#1B396A;color:white;padding:1.1rem 1.6rem;display:flex;justify-content:space-between;align-items:center}.modal-header h3{margin:0;font-size:1.2rem;font-weight:700;font-family:'Montserrat',sans-serif}.btn-cerrar-modal{background:none;border:none;color:white;font-size:1.7rem;cursor:pointer;line-height:1;opacity:0.85}.btn-cerrar-modal:hover{opacity:1}
 .modal-body{padding:1.6rem}.form-grupo{margin-bottom:1.2rem}.form-grupo-doble{display:grid;grid-template-columns:1fr 1fr;gap:1rem}.form-grupo label{display:block;margin-bottom:6px;font-weight:600;font-size:0.9rem;color:#1A1A1A;font-family:'Montserrat',sans-serif}.obligatorio{color:#DC2626}.modal-input,.modal-select{width:100%;padding:10px 14px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:0.95rem;background:#FFFFFF;color:#1A1A1A;font-family:'Montserrat',sans-serif;outline:none;transition:border-color 0.2s;box-sizing:border-box}.modal-input:focus,.modal-select:focus{border-color:#1B396A;box-shadow:0 0 0 3px #DBEAFE}.borde-error{border-color:#DC2626!important}.mensaje-error{display:block;color:#DC2626;font-size:0.82rem;margin-top:5px}

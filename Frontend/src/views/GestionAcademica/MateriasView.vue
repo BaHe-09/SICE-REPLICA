@@ -23,23 +23,45 @@
         </div>
       </transition>
 
-      <div class="filters-bar">
+      <!-- Barra de acciones -->
+      <div class="actions-bar">
         <div class="search-group">
           <svg xmlns="http://www.w3.org/2000/svg" class="search-icon-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
           <input type="text" placeholder="Buscar por clave o nombre..." v-model="busqueda" class="search-input" @keydown.escape="busqueda = ''">
         </div>
-        <select v-model="filtroEstatus" class="filter-select">
-          <option value="">Estatus</option>
-          <option value="1">Activo</option>
-          <option value="0">Inactivo</option>
-        </select>
-        <button class="btn-limpiar" @click="limpiarFiltros">
-          <svg xmlns="http://www.w3.org/2000/svg" class="reset-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
-          Limpiar
+        <button class="btn-filtros" @click="mostrarFiltros = !mostrarFiltros" :class="{ activo: filtrosActivos }">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
+          </svg>
+          Filtros
+          <span v-if="filtrosActivos" class="filtros-badge">{{ contadorFiltros }}</span>
         </button>
         <button class="btn-nuevo" @click="abrirModalNuevo">+ Nueva materia</button>
       </div>
 
+      <!-- Panel filtros desplegable -->
+      <transition name="filtros-slide">
+        <div v-if="mostrarFiltros" class="filtros-panel">
+          <div class="filtros-grid">
+            <div class="filtro-item">
+              <label class="filtro-label">Estatus</label>
+              <select v-model="filtroEstatus" class="filter-select">
+                <option value="">Todos</option>
+                <option value="1">Activo</option>
+                <option value="0">Inactivo</option>
+              </select>
+            </div>
+          </div>
+          <div class="filtros-footer">
+            <button class="btn-limpiar" @click="limpiarFiltros">
+              <svg xmlns="http://www.w3.org/2000/svg" class="reset-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+              Limpiar filtros
+            </button>
+          </div>
+        </div>
+      </transition>
+
+      <!-- Tabla compacta -->
       <div class="table-container">
         <div v-if="cargando && materias.length === 0" class="estado-cargando">
           <div class="spinner-tabla"></div><p>Cargando registros...</p>
@@ -49,11 +71,11 @@
             <tr>
               <th>Clave</th>
               <th>Nombre</th>
-              <th>Créditos</th>
-              <th>Horas Teoría</th>
-              <th>Horas Práctica</th>
+              <th class="th-centro">Créd.</th>
+              <th class="th-centro">T</th>
+              <th class="th-centro">P</th>
               <th>Estatus</th>
-              <th>Acciones</th>
+              <th class="th-acciones">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -61,22 +83,19 @@
                 :class="{ 'fila-seleccionada': filaActiva === index }" @click="filaActiva = index">
               <td class="celda-clave">{{ materia.clave }}</td>
               <td class="celda-nombre">{{ materia.nombre }}</td>
-              <td class="celda-centro">{{ materia.creditos }}</td>
-              <td class="celda-centro">{{ materia.horas_teoria }}</td>
-              <td class="celda-centro">{{ materia.horas_practica }}</td>
+              <td class="td-centro">{{ materia.creditos }}</td>
+              <td class="td-centro">{{ materia.horas_teoria }}</td>
+              <td class="td-centro">{{ materia.horas_practica }}</td>
               <td><span class="estatus-badge" :class="materia.estatus ? 'activo' : 'inactivo'">{{ materia.estatus ? 'Activo' : 'Inactivo' }}</span></td>
               <td class="celda-acciones">
-                <button class="btn-accion ver" @click.stop="abrirModalVer(materia)">
+                <button class="btn-icono ver" @click.stop="abrirModalVer(materia)" title="Ver detalles">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                  Ver
                 </button>
-                <button class="btn-accion editar" @click.stop="abrirModalEditar(materia)">
+                <button class="btn-icono editar" @click.stop="abrirModalEditar(materia)" title="Editar">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                  Editar
                 </button>
-                <button class="btn-accion planes" @click.stop="abrirModalPlanes(materia)">
+                <button class="btn-icono planes-btn" @click.stop="abrirModalPlanes(materia)" title="Ver planes">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                  Planes
                 </button>
               </td>
             </tr>
@@ -89,6 +108,8 @@
           <button class="btn-limpiar-vacio" @click="limpiarFiltros">Limpiar filtros</button>
         </div>
       </div>
+
+      <div class="leyenda-cols">T = Horas Teoría &nbsp;·&nbsp; P = Horas Práctica</div>
 
       <div class="paginacion">
         <div class="paginacion-izquierda">Filas por página: <select v-model="filasPorPagina" @change="currentPage = 1" class="select-filas"><option :value="10">10</option><option :value="20">20</option><option :value="50">50</option></select></div>
@@ -193,9 +214,7 @@
               <span class="semestre-badge">{{ pa.semestre }}° Semestre</span>
             </div>
           </div>
-          <div v-else class="planes-vacio">
-            <p>Esta materia no está asociada a ningún plan de estudio aún.</p>
-          </div>
+          <div v-else class="planes-vacio"><p>Esta materia no está asociada a ningún plan de estudio aún.</p></div>
           <div class="planes-agregar">
             <h4>Agregar a un plan</h4>
             <div class="form-grupo-doble">
@@ -251,7 +270,6 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 
-// ── Variable de entorno — estandarización del proyecto ───────────
 const API = `${import.meta.env.VITE_API_URL}/api`
 
 const materias          = ref([])
@@ -261,6 +279,7 @@ const guardando         = ref(false)
 const filaActiva        = ref(-1)
 const currentPage       = ref(1)
 const filasPorPagina    = ref(10)
+const mostrarFiltros    = ref(false)
 const busqueda          = ref('')
 const filtroEstatus     = ref('')
 
@@ -279,16 +298,15 @@ const nuevoPlanForm = reactive({ id_plan: '', semestre: '' })
 const notificacion = ref({ visible: false, mensaje: '', tipo: 'exito' })
 let timerNotif = null
 
+const filtrosActivos  = computed(() => !!filtroEstatus.value)
+const contadorFiltros = computed(() => [filtroEstatus.value].filter(Boolean).length)
+
 const mostrarNotificacion = (mensaje, tipo = 'exito') => {
   if (timerNotif) clearTimeout(timerNotif)
   notificacion.value = { visible: true, mensaje, tipo }
   timerNotif = setTimeout(() => { notificacion.value.visible = false }, 3500)
 }
 
-/*
- * GET /api/materias
- * Respuesta: [{ id_materia, clave, nombre, creditos, horas_teoria, horas_practica, descripcion, estatus }]
- */
 const cargarMaterias = async () => {
   cargando.value = true
   try {
@@ -299,10 +317,6 @@ const cargarMaterias = async () => {
   finally { cargando.value = false }
 }
 
-/*
- * GET /api/planes-estudio
- * Respuesta: [{ id_plan, nombre_plan }]
- */
 const cargarPlanes = async () => {
   try {
     const res = await fetch(`${API}/planes-estudio`)
@@ -336,10 +350,6 @@ const abrirModalVer    = (m) => { materiaVer.value = m; showModalVer.value = tru
 const abrirModalEditar = (m) => { resetForm(); Object.assign(form, { id_materia: m.id_materia, clave: m.clave, nombre: m.nombre, creditos: m.creditos, horas_teoria: m.horas_teoria, horas_practica: m.horas_practica, descripcion: m.descripcion || '', estatus: m.estatus }); showModal.value = true }
 const cerrarModal = () => { showModal.value = false; resetForm() }
 
-/*
- * GET /api/materias/:id/planes
- * Respuesta: [{ id_plan, semestre, plan: { nombre_plan, carrera: { nombre } } }]
- */
 const abrirModalPlanes = async (m) => {
   materiaPlanes.value = m
   nuevoPlanForm.id_plan = ''; nuevoPlanForm.semestre = ''
@@ -362,10 +372,6 @@ const validar = () => {
   return Object.keys(errors).length === 0
 }
 
-/*
- * POST /api/materias   body: { clave, nombre, creditos, horas_teoria, horas_practica, descripcion, estatus }
- * PUT  /api/materias/:id  body: mismos campos
- */
 const guardar = async () => {
   if (!validar()) return
   guardando.value = true
@@ -381,18 +387,11 @@ const guardar = async () => {
   finally { guardando.value = false }
 }
 
-/*
- * POST /api/plan-materia   body: { id_plan, id_materia, semestre }
- */
 const agregarAPlan = async () => {
   if (!nuevoPlanForm.id_plan || !nuevoPlanForm.semestre) return
   guardando.value = true
   try {
-    const res = await fetch(`${API}/plan-materia`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({ id_plan: nuevoPlanForm.id_plan, id_materia: materiaPlanes.value.id_materia, semestre: nuevoPlanForm.semestre })
-    })
+    const res = await fetch(`${API}/plan-materia`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify({ id_plan: nuevoPlanForm.id_plan, id_materia: materiaPlanes.value.id_materia, semestre: nuevoPlanForm.semestre }) })
     if (!res.ok) throw new Error()
     await abrirModalPlanes(materiaPlanes.value)
     mostrarNotificacion('Materia agregada al plan correctamente.')
@@ -400,9 +399,6 @@ const agregarAPlan = async () => {
   finally { guardando.value = false }
 }
 
-/*
- * DELETE /api/materias/:id
- */
 const confirmarEliminar = async () => {
   if (!materiaAEliminar.value) return
   guardando.value = true
@@ -426,18 +422,32 @@ const confirmarEliminar = async () => {
 @keyframes deslizar{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
 .toast{position:fixed;bottom:2rem;right:2rem;display:flex;align-items:center;gap:10px;padding:12px 20px;border-radius:10px;color:white;font-weight:500;font-size:0.93rem;box-shadow:0 6px 20px rgba(0,0,0,0.18);z-index:3000;max-width:380px}.toast.exito{background:var(--azul)}.toast.error{background:var(--rojo)}.toast-icono{width:20px;height:20px;flex-shrink:0}
 .toast-slide-enter-active,.toast-slide-leave-active{transition:all 0.35s ease}.toast-slide-enter-from,.toast-slide-leave-to{opacity:0;transform:translateX(110%)}
-.filters-bar{display:flex;align-items:center;gap:0.75rem;margin-bottom:1.2rem;flex-wrap:wrap}
-.search-group{position:relative;flex:0 0 300px;min-width:220px}.search-input{width:100%;padding:10px 14px 10px 42px;border:1px solid var(--borde);border-radius:8px;font-size:0.93rem;background:#FFFFFF;color:var(--texto);font-family:'Montserrat',sans-serif;outline:none;transition:border-color 0.2s,box-shadow 0.2s;box-sizing:border-box}.search-input:focus{border-color:var(--azul);box-shadow:0 0 0 3px #DBEAFE}.search-input::placeholder{color:#9CA3AF}.search-icon-svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:18px;height:18px;stroke:var(--gris);pointer-events:none}
-.filter-select{padding:10px 12px;border:1px solid var(--borde);border-radius:8px;font-size:0.92rem;flex:1 1 150px;min-width:130px;background:#FFFFFF;color:var(--texto);font-family:'Montserrat',sans-serif;cursor:pointer;outline:none}.filter-select:focus{border-color:var(--azul)}
-.btn-limpiar{display:flex;align-items:center;gap:6px;background:#FFFFFF;color:var(--texto);border:1px solid var(--borde);padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.92rem;white-space:nowrap;font-family:'Montserrat',sans-serif;transition:background 0.15s}.btn-limpiar:hover{background:var(--fondo)}.reset-icon{width:16px;height:16px;stroke:var(--gris)}
+
+.actions-bar{display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;flex-wrap:wrap}
+.search-group{position:relative;flex:1 1 260px;min-width:200px}.search-input{width:100%;padding:10px 14px 10px 42px;border:1px solid var(--borde);border-radius:8px;font-size:0.93rem;background:#FFFFFF;color:var(--texto);font-family:'Montserrat',sans-serif;outline:none;transition:border-color 0.2s,box-shadow 0.2s;box-sizing:border-box}.search-input:focus{border-color:var(--azul);box-shadow:0 0 0 3px #DBEAFE}.search-input::placeholder{color:#9CA3AF}.search-icon-svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:18px;height:18px;stroke:var(--gris);pointer-events:none}
+.btn-filtros{display:flex;align-items:center;gap:7px;background:#FFFFFF;color:var(--texto);border:1px solid var(--borde);padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.92rem;font-family:'Montserrat',sans-serif;transition:background 0.15s,border-color 0.15s;white-space:nowrap;position:relative}.btn-filtros svg{width:16px;height:16px;stroke:var(--gris)}.btn-filtros:hover{background:var(--fondo)}.btn-filtros.activo{border-color:var(--azul);color:var(--azul);background:var(--azul-suave)}.btn-filtros.activo svg{stroke:var(--azul)}.filtros-badge{background:var(--azul);color:white;font-size:0.72rem;font-weight:700;border-radius:10px;padding:1px 6px;margin-left:2px}
 .btn-nuevo{background:var(--azul);color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Montserrat',sans-serif;font-size:0.92rem;transition:background 0.2s;margin-left:auto}.btn-nuevo:hover{background:var(--azul-hover)}
+.filtros-panel{background:#FFFFFF;border:1px solid var(--borde);border-radius:10px;padding:1.2rem 1.4rem 1rem;margin-bottom:1rem;box-shadow:0 4px 12px rgba(0,0,0,0.06)}.filtros-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}.filtro-item{display:flex;flex-direction:column;gap:6px}.filtro-label{font-size:0.82rem;font-weight:600;color:var(--gris);font-family:'Montserrat',sans-serif}.filter-select{padding:9px 12px;border:1px solid var(--borde);border-radius:8px;font-size:0.9rem;background:#FFFFFF;color:var(--texto);font-family:'Montserrat',sans-serif;cursor:pointer;outline:none}.filter-select:focus{border-color:var(--azul)}.filtros-footer{display:flex;justify-content:flex-end;margin-top:0.9rem;padding-top:0.9rem;border-top:1px solid var(--borde)}.btn-limpiar{display:flex;align-items:center;gap:6px;background:transparent;color:var(--gris);border:none;padding:6px 10px;border-radius:6px;font-weight:600;cursor:pointer;font-size:0.88rem;font-family:'Montserrat',sans-serif;transition:color 0.15s}.btn-limpiar:hover{color:var(--rojo)}.reset-icon{width:14px;height:14px}
+.filtros-slide-enter-active,.filtros-slide-leave-active{transition:all 0.25s ease;overflow:hidden}.filtros-slide-enter-from,.filtros-slide-leave-to{opacity:0;transform:translateY(-8px)}
+
 .table-container{background:#FFFFFF;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.05);border:1px solid var(--borde)}
-.data-table{width:100%;border-collapse:collapse;outline:none}.data-table th{background:var(--fondo);padding:12px 16px;text-align:left;font-weight:600;font-size:0.88rem;color:var(--texto);border-bottom:1px solid var(--borde);font-family:'Montserrat',sans-serif;white-space:nowrap}.data-table td{padding:11px 16px;border-bottom:1px solid var(--borde);color:var(--texto);font-size:0.93rem;font-family:'Montserrat',sans-serif}.data-table tbody tr{transition:background 0.15s;cursor:pointer}.data-table tbody tr:hover{background:#F8FAFC}.data-table tbody tr:last-child td{border-bottom:none}.fila-seleccionada{background:#DBEAFE!important}
-.celda-clave{font-weight:700;color:var(--azul);font-size:0.88rem;font-family:monospace}.celda-nombre{font-weight:600}.celda-centro{text-align:center}
-.estatus-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:0.83rem;font-weight:600}.estatus-badge.activo{background:#DCFCE7;color:#16A34A}.estatus-badge.inactivo{background:#F3F4F6;color:#6B7280}
-.celda-acciones{display:flex;gap:7px;align-items:center}.btn-accion{display:flex;align-items:center;gap:5px;padding:6px 13px;border-radius:6px;font-size:0.85rem;cursor:pointer;font-weight:600;font-family:'Montserrat',sans-serif;transition:background 0.15s;white-space:nowrap}.btn-accion svg{width:14px;height:14px}.btn-accion.ver{background:#F3F4F6;color:#1A1A1A;border:1px solid #D1D5DB}.btn-accion.ver:hover{background:#E5E7EB;border-color:#9CA3AF}.btn-accion.editar{background:#1B396A;color:#FFFFFF;border:1px solid #1B396A}.btn-accion.editar:hover{background:#1D4ED8;border-color:#1D4ED8}.btn-accion.planes{background:#DBEAFE;color:var(--azul);border:1px solid #BFDBFE}.btn-accion.planes:hover{background:#BFDBFE}
-.estado-vacio,.estado-cargando{text-align:center;padding:3.5rem 2rem;color:var(--gris)}.icono-vacio{width:56px;height:56px;stroke:#9CA3AF;margin-bottom:12px}.estado-vacio h3{font-size:1.2rem;color:var(--texto);margin:0 0 6px}.estado-vacio p{font-size:0.93rem;margin:0 0 1.2rem}.btn-limpiar-vacio{background:#FFFFFF;color:var(--texto);border:1px solid var(--borde);padding:9px 20px;border-radius:8px;font-weight:500;cursor:pointer;font-family:'Montserrat',sans-serif}.spinner-tabla{display:inline-block;width:36px;height:36px;border:3px solid #E5E7EB;border-top-color:var(--azul);border-radius:50%;animation:girar 0.8s linear infinite;margin-bottom:12px}
+.data-table{width:100%;border-collapse:collapse}.data-table th{background:var(--fondo);padding:9px 12px;text-align:left;font-weight:600;font-size:0.82rem;color:var(--texto);border-bottom:1px solid var(--borde);font-family:'Montserrat',sans-serif;white-space:nowrap}.th-centro,.td-centro{text-align:center}.th-acciones{text-align:center}.data-table td{padding:8px 12px;border-bottom:1px solid var(--borde);color:var(--texto);font-size:0.88rem;font-family:'Montserrat',sans-serif}.data-table tbody tr{transition:background 0.15s;cursor:pointer}.data-table tbody tr:hover{background:#F8FAFC}.data-table tbody tr:last-child td{border-bottom:none}.fila-seleccionada{background:#DBEAFE!important}
+.celda-clave{font-weight:700;color:var(--azul);font-size:0.83rem;font-family:monospace}.celda-nombre{font-weight:600}
+
+.estatus-badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:0.78rem;font-weight:600}.estatus-badge.activo{background:#DCFCE7;color:#16A34A}.estatus-badge.inactivo{background:#F3F4F6;color:#6B7280}
+
+.celda-acciones{display:flex;gap:5px;align-items:center;justify-content:center}
+.btn-icono{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;cursor:pointer;border:1px solid transparent;transition:background 0.15s,border-color 0.15s;flex-shrink:0}.btn-icono svg{width:14px;height:14px}
+.btn-icono.ver{background:#F3F4F6;border-color:#D1D5DB}.btn-icono.ver:hover{background:#E5E7EB}.btn-icono.ver svg{stroke:#374151}
+.btn-icono.editar{background:var(--azul);border-color:var(--azul)}.btn-icono.editar:hover{background:var(--azul-hover);border-color:var(--azul-hover)}.btn-icono.editar svg{stroke:#FFFFFF}
+.btn-icono.planes-btn{background:#DBEAFE;border-color:#BFDBFE}.btn-icono.planes-btn:hover{background:#BFDBFE}.btn-icono.planes-btn svg{stroke:var(--azul)}
+
+.leyenda-cols{font-size:0.78rem;color:#9CA3AF;margin-top:0.5rem;text-align:right;font-family:'Montserrat',sans-serif}
+
+.estado-vacio,.estado-cargando{text-align:center;padding:3rem 2rem;color:var(--gris)}.icono-vacio{width:52px;height:52px;stroke:#9CA3AF;margin-bottom:12px}.estado-vacio h3{font-size:1.1rem;color:var(--texto);margin:0 0 6px}.estado-vacio p{font-size:0.9rem;margin:0 0 1rem}.btn-limpiar-vacio{background:#FFFFFF;color:var(--texto);border:1px solid var(--borde);padding:8px 18px;border-radius:8px;font-weight:500;cursor:pointer;font-family:'Montserrat',sans-serif}.spinner-tabla{display:inline-block;width:32px;height:32px;border:3px solid #E5E7EB;border-top-color:var(--azul);border-radius:50%;animation:girar 0.8s linear infinite;margin-bottom:12px}
+
 .paginacion{margin-top:1.2rem;display:flex;justify-content:space-between;align-items:center;font-size:0.9rem;color:var(--gris);font-family:'Montserrat',sans-serif;flex-wrap:wrap;gap:0.5rem}.paginacion-izquierda,.paginacion-centro,.paginacion-derecha{display:flex;align-items:center;gap:8px}.select-filas{border:1px solid var(--borde);border-radius:6px;padding:4px 8px;font-size:0.9rem;background:#FFFFFF;font-family:'Montserrat',sans-serif}.btn-pag{padding:5px 11px;border:1px solid var(--borde);background:#FFFFFF;border-radius:6px;cursor:pointer;color:var(--texto);font-family:'Montserrat',sans-serif;font-size:0.9rem;transition:background 0.15s}.btn-pag:hover:not(:disabled){background:var(--fondo)}.btn-pag:disabled{opacity:0.4;cursor:not-allowed}.btn-pag.activo{background:var(--azul);color:white;border-color:var(--azul)}
+
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;z-index:2000}.modal-content{background:#FFFFFF;width:520px;max-width:92%;border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,0.18);overflow:hidden;border:1px solid #E5E7EB}.modal-grande{width:620px}.modal-confirmar{width:440px}.modal-header{background:#1B396A;color:white;padding:1.1rem 1.6rem;display:flex;justify-content:space-between;align-items:center}.modal-header h3{margin:0;font-size:1.2rem;font-weight:700;font-family:'Montserrat',sans-serif}.btn-cerrar-modal{background:none;border:none;color:white;font-size:1.7rem;cursor:pointer;line-height:1;opacity:0.85}.btn-cerrar-modal:hover{opacity:1}
 .modal-body{padding:1.6rem;max-height:70vh;overflow-y:auto}.form-grupo{margin-bottom:1.2rem}.form-grupo-doble{display:grid;grid-template-columns:1fr 1fr;gap:1rem}.form-grupo label{display:block;margin-bottom:6px;font-weight:600;font-size:0.9rem;color:#1A1A1A;font-family:'Montserrat',sans-serif}.obligatorio{color:#DC2626}.modal-input,.modal-select,.modal-textarea{width:100%;padding:10px 14px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:0.95rem;background:#FFFFFF;color:#1A1A1A;font-family:'Montserrat',sans-serif;outline:none;transition:border-color 0.2s;box-sizing:border-box}.modal-input:focus,.modal-select:focus,.modal-textarea:focus{border-color:#1B396A;box-shadow:0 0 0 3px #DBEAFE}.modal-textarea{resize:vertical;min-height:80px}.borde-error{border-color:#DC2626!important}.mensaje-error{display:block;color:#DC2626;font-size:0.82rem;margin-top:5px}
 .indicador-estatus{display:inline-flex;align-items:center;margin-top:7px;padding:4px 12px;border-radius:20px;font-size:0.82rem;font-weight:600}.indicador-estatus.activo{background:#DCFCE7;color:#16A34A}.indicador-estatus.inactivo{background:#F3F4F6;color:#6B7280}
@@ -445,6 +455,6 @@ const confirmarEliminar = async () => {
 .modal-footer{padding:1rem 1.6rem;background:#F5F5F5;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #E5E7EB}.btn-secundario{padding:10px 22px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;background:#FFFFFF;color:#1B396A;border:2px solid #1B396A;transition:background 0.15s}.btn-secundario:hover{background:#DBEAFE}.btn-secundario:disabled{opacity:0.5;cursor:not-allowed}.btn-eliminar{padding:10px 22px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;background:#DC2626;color:white;border:2px solid #DC2626;transition:background 0.15s}.btn-eliminar:hover{background:#B91C1C}.btn-eliminar:disabled{opacity:0.5;cursor:not-allowed}.btn-guardar{display:flex;align-items:center;gap:8px;padding:10px 22px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;background:#1B396A;color:#FFFFFF;border:2px solid #1B396A;transition:background 0.15s}.btn-guardar:hover:not(:disabled){background:#1D4ED8}.btn-guardar:disabled{opacity:0.55;cursor:not-allowed}.spinner-btn{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:girar 0.7s linear infinite;flex-shrink:0}
 .detalle-fila{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #E5E7EB;font-size:0.95rem;font-family:'Montserrat',sans-serif}.detalle-fila:last-child{border-bottom:none}.detalle-label{font-weight:600;color:#6B7280}.detalle-valor{font-weight:500;color:#1A1A1A}
 .confirmar-body{display:flex;flex-direction:column;align-items:center;gap:1rem;text-align:center;padding:2rem 1.6rem}.confirmar-icono{width:52px;height:52px;stroke:#F59E0B}.confirmar-body p{color:#1A1A1A;font-size:0.95rem;margin:0;line-height:1.5;font-family:'Montserrat',sans-serif}
-@keyframes girar{to{transform:rotate(360deg)}}
 .pie-pagina{text-align:center;color:#9CA3AF;font-size:0.82rem;padding-top:2rem;border-top:1px solid #E5E7EB;margin-top:1rem}
+@keyframes girar{to{transform:rotate(360deg)}}
 </style>
