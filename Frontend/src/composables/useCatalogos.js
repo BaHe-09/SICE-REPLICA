@@ -31,14 +31,14 @@ export function useCatalogos() {
   }
 
   // ── Funciones de carga ────────────────────────────────────────
-  const cargarCarreras      = () => fetchCatalogo('carreras',        carreras)
-  const cargarEstatus       = () => fetchCatalogo('estatus',         estatus)
-  const cargarGeneros       = () => fetchCatalogo('generos',         generos)
-  const cargarMaterias      = () => fetchCatalogo('materias',        materias)
-  const cargarPeriodos      = () => fetchCatalogo('periodos',        periodos)
-  const cargarGrupos        = () => fetchCatalogo('grupos',          grupos)
-  const cargarTurnos        = () => fetchCatalogo('turnos',          turnos)
-  const cargarTiposSolicitud= () => fetchCatalogo('tipos-solicitud', tiposSolicitud)
+  const cargarCarreras      = () => fetchCatalogo('carreras',                     carreras)
+  const cargarEstatus       = () => fetchCatalogo('estatus-alumno',               estatus)
+  const cargarGeneros       = () => fetchCatalogo('generos',                      generos)
+  const cargarMaterias      = () => fetchCatalogo('materias',                     materias)
+  const cargarPeriodos      = () => fetchCatalogo('periodos',                     periodos)
+  const cargarGrupos        = () => fetchCatalogo('grupos',                       grupos)
+  const cargarTurnos        = () => fetchCatalogo('turnos',                       turnos)
+  const cargarTiposSolicitud= () => fetchCatalogo('comite/tipos-solicitud',       tiposSolicitud)
 
   return {
     // Listas

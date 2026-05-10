@@ -322,6 +322,8 @@ Route::get('/kardex/{id_alumno}', [KardexController::class, 'show']);
 use App\Http\Controllers\Api\SeguimientoController;
 
 Route::get('/seguimiento/{id_alumno}', [SeguimientoController::class, 'show']);
+// Avance curricular por número de control (AvanceCurricularView.vue)
+Route::get('/kardex/{numero_control}/avance-curricular', [SeguimientoController::class, 'showByControl']);
 
 // ====================== ADMISIÓN ======================
 
