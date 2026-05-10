@@ -43,8 +43,9 @@ Route::get('/buscar-alumno', [ServiciosEscolaresController::class, 'buscarAlumno
 Route::get('/alumnos/buscar-control', [EventoController::class, 'buscarAlumno']);
 
 // === CRUD COMPLETO DE ALUMNOS ===
-Route::apiResource('alumnos', AlumnoController::class);
+Route::get('/alumnos/catalogos', [AlumnoController::class, 'catalogos']);
 Route::get('/alumnos-crud', [AlumnoController::class, 'index']);
+Route::apiResource('alumnos', AlumnoController::class);
 Route::put('/alumnos/{id}', [AlumnoController::class, 'update']);
 Route::delete('/alumnos/{id}', [AlumnoController::class, 'destroy']);
 

@@ -77,7 +77,7 @@ class MateriaController extends Controller
     // ===============================
     public function planes($id)
     {
-        return DB::table('plan_materia as pm')
+        $datos = DB::table('plan_materia as pm')
             ->join('plan_estudio as p', 'pm.id_plan', '=', 'p.id_plan')
             ->join('carrera as c', 'p.id_carrera', '=', 'c.id_carrera')
             ->where('pm.id_materia', $id)
@@ -85,8 +85,22 @@ class MateriaController extends Controller
                 'pm.id_plan',
                 'pm.semestre',
                 'p.nombre_plan',
-                'c.nombre as carrera'
+                'c.nombre as carrera_nombre'
             )
-            ->get();
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id_plan' => $item->id_plan,
+                    'semestre' => $item->semestre,
+                    'plan' => [
+                        'nombre_plan' => $item->nombre_plan,
+                        'carrera' => [
+                            'nombre' => $item->carrera_nombre
+                        ]
+                    ]
+                ];
+            });
+    
+        return response()->json($datos);
     }
 }
