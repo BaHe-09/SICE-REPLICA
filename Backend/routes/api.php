@@ -315,7 +315,7 @@ Route::get('/turnos',        [CatalogosController::class, 'turnos']);
 
 use App\Http\Controllers\Api\KardexController;
 
-Route::get('/kardex/{id_alumno}', [KardexController::class, 'show']);
+Route::get('/kardex/{numero_control}', [KardexController::class, 'show']);
 
 // ====================== SEGUIMIENTO ACADÉMICO ======================
 
