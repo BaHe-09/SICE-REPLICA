@@ -1,12 +1,12 @@
 <?php
 
 return [
-    'paths' => [],
+    'paths' => ['api/*'],
     'allowed_methods' => ['*'],
-    'allowed_origins' => ['*'],
-    'allowed_origins_patterns' => [],
+    'allowed_origins' => [
+        'http://localhost:5173', 
+        'https://sice.up.railway.app' // <--- Sin la "/" al final
+    ],
     'allowed_headers' => ['*'],
-    'exposed_headers' => [],
-    'max_age' => 0,
     'supports_credentials' => false,
 ];
