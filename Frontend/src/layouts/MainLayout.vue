@@ -783,7 +783,297 @@ const establecerRol = (rol) => {
   display: none;
 }
 
+/* ══════════════════════════════════════
+   RESPONSIVE — Navbar y Layout
+   Santiago Acosta — Modificaciones SICE
+══════════════════════════════════════ */
 
+/* ── Tablet (768px – 1024px) ── */
+@media (max-width: 1024px) {
+  .titulo-sistema {
+    font-size: 0.88rem;
+    letter-spacing: 0;
+  }
+
+  .grupo-busqueda {
+    width: 200px;
+  }
+
+  .encabezado-superior {
+    padding: 0 1.2rem;
+  }
+
+  .encabezado-derecha {
+    gap: 1.2rem;
+  }
+
+  .area-contenido {
+    padding: 1.2rem 1.4rem;
+  }
+}
+
+/* ── Móvil grande (640px – 768px) ── */
+@media (max-width: 768px) {
+
+  /* Ocultar título largo, mostrar solo "SICE" */
+  .titulo-sistema {
+    display: none;
+  }
+
+  /* Buscador más compacto */
+  .grupo-busqueda {
+    width: 160px;
+  }
+
+  .grupo-busqueda input {
+    font-size: 0.82rem;
+    padding: 8px 12px 8px 36px;
+  }
+
+  .encabezado-superior {
+    padding: 0 1rem;
+    height: 60px;
+  }
+
+  .logo-encabezado {
+    height: 40px;
+  }
+
+  /* Sidebar ocupa toda la pantalla en móvil */
+  .menu-lateral {
+    top: 60px;
+    width: 260px;
+  }
+
+  /* Cuando sidebar está abierto en móvil, oscurecer fondo */
+  .sistema-layout:not(.sidebar-collapsed) .menu-lateral {
+    box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+  }
+
+  /* El contenido no se desplaza — el sidebar flota encima */
+  .area-contenido {
+    margin-left: 0 !important;
+    margin-top: 60px;
+    padding: 1rem;
+  }
+
+  .area-contenido.contenido-retrasado {
+    margin-left: 0 !important;
+  }
+
+  /* Panel de notificaciones más angosto */
+  .panel-notificaciones {
+    width: 300px;
+    right: -60px;
+  }
+
+  .nombre-usuario {
+    display: none;
+  }
+
+  .flecha-desplegable {
+    display: none;
+  }
+
+  .encabezado-derecha {
+    gap: 0.75rem;
+  }
+}
+
+/* ── Móvil pequeño (menos de 480px) ── */
+@media (max-width: 480px) {
+
+  /* Ocultar búsqueda — solo icono de lupa queda */
+  .grupo-busqueda {
+    width: 36px;
+    overflow: hidden;
+  }
+
+  .grupo-busqueda input {
+    opacity: 0;
+    width: 0;
+    padding: 0;
+  }
+
+  /* Al hacer focus en la lupa, expandir */
+  .grupo-busqueda:focus-within {
+    width: 180px;
+    position: fixed;
+    top: 10px;
+    left: 60px;
+    right: 10px;
+    z-index: 1100;
+  }
+
+  .grupo-busqueda:focus-within input {
+    opacity: 1;
+    width: 100%;
+    padding: 8px 12px 8px 36px;
+  }
+
+  .encabezado-superior {
+    padding: 0 0.75rem;
+  }
+
+  .panel-notificaciones {
+    width: 280px;
+    right: -80px;
+  }
+
+  .desplegable-usuario {
+    right: -10px;
+    min-width: 180px;
+  }
+}
+
+/* ── Overlay para sidebar en móvil ── */
+@media (max-width: 768px) {
+  .sistema-layout:not(.sidebar-collapsed)::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 899;
+    top: 60px;
+  }
+}
+
+/* ══════════════════════════════════════
+  ANTI-ZOOM — SICE
+══════════════════════════════════════ */
+
+/* ── Viewport meta comportamiento ── */
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+
+/* ── Tamaños mínimos táctiles para botones ── */
+button, input, select, textarea, a {
+  min-height: 36px;
+  font-size: 0.875rem;
+}
+
+/* ── Inputs nunca más pequeños que 16px en móvil
+   (evita zoom automático en iOS al enfocar) ── */
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* ── Tablas con scroll horizontal en lugar de overflow oculto ── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-container,
+.tabla-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Contenedores no desbordan en pantallas pequeñas ── */
+img, svg, video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ── Texto mínimo legible sin zoom ── */
+p, span, td, th, label, li {
+  font-size: clamp(0.8rem, 2vw, 1rem);
+  line-height: 1.55;
+}
+
+h1 { font-size: clamp(1.3rem, 4vw, 1.75rem); }
+h2 { font-size: clamp(1.1rem, 3vw, 1.4rem);  }
+h3 { font-size: clamp(1rem,  2.5vw, 1.2rem); }
+
+/* ── Modales no desbordan en pantallas pequeñas ── */
+.modal-content,
+.modal-caja {
+  max-width: 95vw;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* ── Cards y paneles ── */
+.kpi-card,
+.grafica-card,
+.panel-card,
+.form-card,
+.tabla-card {
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ── Grids adaptativos ── */
+@media (max-width: 768px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .fila-graficas,
+  .fila-inferior {
+    grid-template-columns: 1fr !important;
+  }
+
+  .form-row,
+  .fila-campos {
+    flex-direction: column !important;
+  }
+
+  .grilla-roles,
+  .grilla-permisos,
+  .grilla-acciones,
+  .campos-grid-modal,
+  .filtros-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .kpi-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .form-grupo-doble {
+    grid-template-columns: 1fr !important;
+  }
+
+  .filters-bar,
+  .filtros-fila {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .filters-bar .btn-nuevo,
+  .filters-bar .btn-limpiar {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .paginacion {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+  }
+
+  .modal-footer,
+  .modal-pie {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+
+  .modal-footer button,
+  .modal-pie button {
+    width: 100% !important;
+    justify-content: center;
+  }
+}
 
 </style>
 
