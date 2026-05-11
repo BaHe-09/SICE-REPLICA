@@ -119,8 +119,12 @@
     ></div>
 
     <!-- ══ MENÚ LATERAL ══ -->
-    <aside class="menu-lateral" @mouseenter="onSidebarEnter" @mouseleave="onSidebarLeave" @click.capture="interceptarClick">
-
+    <aside
+      class="menu-lateral"
+      :class="{ 'colapsando': colapsandoSuave }"
+      @click.stop
+      @mouseleave="onSidebarLeave"
+    >
       <nav class="navegacion" role="navigation" aria-label="Menú principal">
 
         <!-- Inicio -->
@@ -311,7 +315,7 @@
     </aside>
 
     <!-- ══ CONTENIDO PRINCIPAL ══ -->
-    <main class="area-contenido">
+    <main class="area-contenido" :class="{ 'contenido-retrasado': contenidoMoviendo }">
       <slot :key="$route.fullPath" :busquedaGlobal="busquedaGlobal" />
     </main>
 
@@ -323,20 +327,21 @@ import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 useKeyboardShortcuts()
 
 import { ref, computed, watch, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const route  = useRoute()
 
 // ── Estado global ─────────────────────────────────────────────────────
 const busquedaGlobal = ref('')
-const isCollapsed    = ref(true)
+const isCollapsed    = ref(false)
 
 // ── Fijado del sidebar ────────────────────────────────────────────────
 // isFixed: true = sidebar siempre visible (fijado)
 //          false = sidebar se colapsa al navegar y se muestra solo con hover
 const isFixed       = ref(false)
 const isHovered     = ref(false)
+const colapsandoSuave = ref(false)
+const contenidoMoviendo = ref(false)
 
 // El sidebar está visible si está fijado O si el usuario está encima con el cursor
 const sidebarVisible = computed(() => isFixed.value || isHovered.value)
@@ -378,11 +383,15 @@ onMounted(() => {
   load('isHistorialAcademicoOpen',      isHistorialAcademicoOpen)
   load('isInscripcionesDetalladasOpen', isInscripcionesDetalladasOpen)
   load('rolActual',                     rolActual, false)
+  load('isFixed',                       isFixed)
 
-  // Siempre arrancar con sidebar colapsado — el usuario lo abre con hover o hamburguesa
-  isFixed.value     = false
-  isCollapsed.value = true
-  localStorage.removeItem('isFixed')
+  // Si estaba fijado, mostrar sidebar inmediatamente
+  if (isFixed.value) {
+    isCollapsed.value = false
+  } else {
+    // Si no estaba fijado, colapsar al cargar
+    isCollapsed.value = true
+  }
 })
 
 watch(
@@ -446,27 +455,26 @@ const onSidebarLeave = () => {
   }
 }
 
-// ── Colapso al navegar ───────────────────────────────────────────────
-// interceptarClick usa la fase capture para atrapar el click ANTES
-// de que router-link lo procese, así el sidebar se colapsa al instante
-const interceptarClick = (e) => {
-  if (!isFixed.value && e.target.closest('a[href]')) {
-    isHovered.value   = false
-    isCollapsed.value = true
-  }
-}
-
-// Watch de ruta como respaldo
+// ── Auto-colapso al navegar ───────────────────────────────────────────
+// Cuando el usuario hace clic en un link y cambia de ruta,
+// si el sidebar NO está fijado se colapsa automáticamente
 watch(
-  () => route.fullPath,
+  () => router.currentRoute.value.fullPath,
   () => {
     if (!isFixed.value) {
-      isHovered.value   = false
-      isCollapsed.value = true
+      isHovered.value         = false
+      colapsandoSuave.value   = true
+      contenidoMoviendo.value = true
+      setTimeout(() => {
+        isCollapsed.value       = true
+        colapsandoSuave.value   = false
+        contenidoMoviendo.value = false
+      }, 280)
     }
     cerrarMenus()
   }
 )
+
 
 // ── Toggles de submenús ───────────────────────────────────────────────
 const toggleServicios           = () => { isServiciosOpen.value          = !isServiciosOpen.value }
@@ -525,7 +533,7 @@ const establecerRol = (rol) => {
 
 /* ══ Encabezado ══ */
 .encabezado-superior {
-  background: #1a2744;
+  background: #1B396A;
   padding: 0 2rem;
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -645,109 +653,65 @@ const establecerRol = (rol) => {
 /* ══ Menú lateral ══ */
 .menu-lateral {
   width: 260px;
-  background: #1a2744;
+  background: #D6D6D6;
   position: fixed;
   top: 74px; bottom: 0; left: 0;
-  overflow: hidden;
-  padding-top: 0;
-  transition: width 0.35s ease;
+  overflow-y: auto; overflow-x: hidden;
+  padding-top: 0.5rem;
+  transition: width 0.35s ease, opacity 0.3s ease;
   z-index: 900;
-  box-shadow: 3px 0 16px rgba(0,0,0,0.3);
+  box-shadow: 2px 0 8px rgba(0,0,0,0.07);
+}
+
+.menu-lateral.colapsando {
+  opacity: 0;
+  pointer-events: none;
+  transition: width 0.35s ease, opacity 0.28s ease;
 }
 .sistema-layout.sidebar-collapsed .menu-lateral { width: 0; padding-top: 0; }
 
 .navegacion { width: 260px; display: flex; flex-direction: column; }
 
-/* ── Items del menú ── */
 .elemento-menu {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 16px;
-  color: rgba(255,255,255,0.72);
-  text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-  white-space: nowrap;
-  border-left: 3px solid transparent;
-  font-family: 'Montserrat', sans-serif;
+  display: flex; align-items: center; gap: 11px;
+  padding: 12px 20px;
+  color: #1A1A1A; text-decoration: none;
+  font-size: 0.93rem; font-weight: 500; cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+  white-space: nowrap; border-left: 3px solid transparent;
 }
-.elemento-menu:hover {
-  background: rgba(255,255,255,0.07);
-  color: #FFFFFF;
-}
-.elemento-menu:hover .icono-menu { stroke: #FFFFFF; }
-
+.elemento-menu:hover { background: #E5E7EB; color: #1B396A; }
 .elemento-menu.activo {
-  background: rgba(255,255,255,0.13);
-  color: #FFFFFF;
-  font-weight: 600;
-  border-left-color: #7DD3FC;
+  background: #FFFFFF; color: #1B396A;
+  font-weight: 600; border-left-color: #1B396A;
 }
-.elemento-menu.activo .icono-menu { stroke: #7DD3FC; }
+.elemento-menu.activo .icono-menu { stroke: #1B396A; }
 
-.icono-menu {
-  width: 17px; height: 17px;
-  stroke: rgba(255,255,255,0.5);
-  flex-shrink: 0;
-  transition: stroke 0.15s;
-}
+.icono-menu { width: 20px; height: 20px; stroke: #6B7280; flex-shrink: 0; transition: stroke 0.18s; }
 .etiqueta-menu { flex: 1; }
 
 .elemento-padre { user-select: none; }
-.flecha-submenu {
-  margin-left: auto;
-  font-size: 0.95rem;
-  color: rgba(255,255,255,0.35);
-  transition: transform 0.22s;
-}
+.flecha-submenu { margin-left: auto; font-size: 1.1rem; color: #6B7280; transition: transform 0.25s; }
 .flecha-submenu.abierto { transform: rotate(90deg); }
 
-/* ── Submenús ── */
-.submenu { background: rgba(0,0,0,0.12); }
-.elemento-submenu {
-  padding: 8px 16px 8px 42px;
-  font-size: 0.86rem;
-  font-weight: 400;
-  color: rgba(255,255,255,0.6);
-}
-.elemento-submenu:hover { color: #FFFFFF; background: rgba(255,255,255,0.06); }
-.elemento-submenu.activo {
-  color: #FFFFFF;
-  background: rgba(255,255,255,0.1);
-  border-left-color: #7DD3FC;
-  font-weight: 500;
-}
-.elemento-submenu-anidado {
-  padding-left: 58px;
-  font-size: 0.83rem;
-}
+.submenu { background: rgba(0,0,0,0.05); }
+.elemento-submenu { padding-left: 44px; font-size: 0.88rem; font-weight: 400; }
+.elemento-submenu-anidado { padding-left: 60px; font-size: 0.85rem; }
 
-/* ── Separador de sección ── */
-.separador-menu {
-  padding: 14px 16px 5px;
-  margin-top: 2px;
-  border-top: 1px solid rgba(255,255,255,0.06);
-}
+.separador-menu { padding: 10px 20px 4px; margin-top: 6px; border-top: 1px solid rgba(0,0,0,0.1); }
 .separador-menu span {
-  font-size: 0.63rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: rgba(255,255,255,0.3);
-  font-family: 'Montserrat', sans-serif;
+  font-size: 0.72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em; color: #6B7280;
 }
 
 /* ══ Barra de scroll — Navy Slim Minimal ══ */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #1e3a5f #f1f5f9;
+  scrollbar-color: #1a3a5f #f1f5f9;
 }
 
 *::-webkit-scrollbar {
-  width: 8px;
+  width: 0px;
   height: 8px;
 }
 
@@ -757,13 +721,13 @@ const establecerRol = (rol) => {
 }
 
 *::-webkit-scrollbar-thumb {
-  background: #1e3a5f;
+  background: #1a3a5f;
   border-radius: 4px;
   transition: background 200ms ease;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: #16304d;
+  background: #193d94;
 }
 
 *::-webkit-scrollbar-thumb:active {
@@ -782,7 +746,10 @@ const establecerRol = (rol) => {
   box-sizing: border-box;
 }
 .sistema-layout.sidebar-collapsed .area-contenido { margin-left: 0; }
-
+.area-contenido.contenido-retrasado {
+  transition: margin-left 0.28s ease;
+  margin-left: 260px !important;
+}
 
 /* ══ Sidebar fijado — indicador visual en el botón ══ */
 .sistema-layout:not(.sidebar-collapsed) .btn-toggle-menu {
@@ -793,8 +760,6 @@ const establecerRol = (rol) => {
 .sistema-layout.sidebar-collapsed .menu-lateral {
   width: 0;
   padding-top: 0;
-  overflow: hidden;
-  box-shadow: none;
 }
 
 /* Franja invisible de 8px para activar expansión por hover */
@@ -821,3 +786,4 @@ const establecerRol = (rol) => {
 
 
 </style>
+
