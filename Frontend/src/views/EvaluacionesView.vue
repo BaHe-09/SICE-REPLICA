@@ -170,21 +170,21 @@
                     <label>Periodo</label>
                     <select v-model="filtroPeriodoId" class="filtro-select" :disabled="cargandoCatalogos">
                       <option value="">Cualquiera</option>
-                      <option v-for="p in periodos" :key="p.id" :value="p.id">{{ p.nombre }}</option>
+                      <option v-for="p in periodos" :key="p.id_periodo" :value="p.id_periodo">{{ p.nombre_periodo }}</option>
                     </select>
                   </div>
                   <div class="campo-filtro">
                     <label>Materia</label>
                     <select v-model="filtroMateriaId" class="filtro-select" :disabled="cargandoCatalogos">
                       <option value="">Cualquiera</option>
-                      <option v-for="m in materias" :key="m.id" :value="m.id">{{ m.nombre }}</option>
+                      <option v-for="m in materias" :key="m.id_materia" :value="m.id_materia">{{ m.nombre }}</option>
                     </select>
                   </div>
                   <div class="campo-filtro">
                     <label>Grupo</label>
                     <select v-model="filtroGrupoId" class="filtro-select" :disabled="cargandoCatalogos">
                       <option value="">Cualquiera</option>
-                      <option v-for="g in grupos" :key="g.id" :value="g.id">{{ g.nombre }}</option>
+                      <option v-for="g in grupos" :key="g.id_grupo" :value="g.id_grupo">{{ g.clave_grupo }} — {{ g.materia }}</option>
                     </select>
                   </div>
                 </div>
@@ -726,13 +726,7 @@ async function cargarDatosVista(grupoId) {
     materiaActual.value   = data.materia         ?? materiaActual.value
     estadisticas.value    = data.estadisticas    ?? estadisticas.value
   } catch (error) {
-    // Generación robusta de Mockups si el API falla (solo para pruebas)
-    criterios.value = Array.from({ length: 15 }, (_, i) => ({ 
-      id_evaluacion: i + 1, 
-      nombre: `Evaluación Prueba ${i+1}`, 
-      porcentaje: 5, 
-      id_tipo_evaluacion: null 
-    }))
+    criterios.value = []
   }
 }
 
@@ -866,8 +860,9 @@ const guardarNuevaEvaluacion = async () => {
       await guardarEvaluaciones(itemEditando.value)
       mostrarToast(`Evaluación actualizada`)
     } else {
-      const payload = { nombre: nuevoNombre.value.trim(), porcentaje: Number(nuevoPorcentaje.value) || 0, id_tipo_evaluacion: nuevoTipoEvalId.value || null }
-      await guardarEvaluaciones(payload)
+      if (!filtroGrupoId.value) return mostrarToast('Selecciona un grupo antes de agregar evaluaciones', 'error')
+      const payload = { nombre: nuevoNombre.value.trim(), porcentaje: Number(nuevoPorcentaje.value) || 0, id_tipo_evaluacion: nuevoTipoEvalId.value || null, id_grupo: filtroGrupoId.value }
+      await guardarEvaluaciones(payload, filtroGrupoId.value)
       await cargarDatosVista(route.params.id || null) // Recargar datos frescos
       mostrarToast('Nueva evaluación agregada')
     }

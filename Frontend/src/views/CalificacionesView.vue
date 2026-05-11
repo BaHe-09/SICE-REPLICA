@@ -157,28 +157,28 @@
                 <label>Periodo</label>
                 <select v-model="filtroPeriodoId" class="filtro-select" :disabled="cargandoCatalogos">
                   <option value="">Cualquiera</option>
-                  <option v-for="p in periodos" :key="p.id" :value="p.id">{{ p.nombre }}</option>
+                  <option v-for="p in periodos" :key="p.id_periodo" :value="p.id_periodo">{{ p.nombre_periodo }}</option>
                 </select>
               </div>
               <div class="campo-filtro">
                 <label>Carrera</label>
                 <select v-model="filtroCarreraId" class="filtro-select" :disabled="cargandoCatalogos">
                   <option value="">Cualquiera</option>
-                  <option v-for="c in carreras" :key="c.id" :value="c.id">{{ c.nombre }}</option>
+                  <option v-for="c in carreras" :key="c.id_carrera" :value="c.id_carrera">{{ c.nombre }}</option>
                 </select>
               </div>
               <div class="campo-filtro">
                 <label>Materia</label>
                 <select v-model="filtroMateriaId" class="filtro-select" :disabled="cargandoCatalogos">
                   <option value="">Cualquiera</option>
-                  <option v-for="m in materias" :key="m.id" :value="m.id">{{ m.nombre }}</option>
+                  <option v-for="m in materias" :key="m.id_materia" :value="m.id_materia">{{ m.nombre }}</option>
                 </select>
               </div>
               <div class="campo-filtro">
                 <label>Grupo</label>
                 <select v-model="filtroGrupoId" class="filtro-select" :disabled="cargandoCatalogos">
                   <option value="">Cualquiera</option>
-                  <option v-for="g in grupos" :key="g.id" :value="g.id">{{ g.nombre }}</option>
+                  <option v-for="g in grupos" :key="g.id_grupo" :value="g.id_grupo">{{ g.clave_grupo }} — {{ g.materia }}</option>
                 </select>
               </div>
             </div>
@@ -589,14 +589,7 @@ async function cargarDatosVista(grupoId) {
     alumnos.value = data.alumnos ?? data
     materiasResumen.value = data.materias ?? materiasResumen.value
   } catch {
-    // Generación robusta de Mockups para probar la paginación a fondo
-    alumnos.value = Array.from({ length: 25 }, (_, i) => ({
-      control: `211100${i.toString().padStart(2, '0')}`,
-      nombre: `Alumno de Prueba ${i+1}, Falso`,
-      p1: Math.floor(Math.random() * 50) + 50,
-      p2: Math.floor(Math.random() * 50) + 50,
-      proy: Math.floor(Math.random() * 50) + 50
-    }))
+    alumnos.value = []
   }
 }
 
@@ -648,10 +641,7 @@ const buscar = async () => {
   try {
     await new Promise(r => setTimeout(r, 600))
     alumnos.value = await getCalificacionesGrupo({
-      periodoId: filtroPeriodoId.value || undefined,
-      carreraId: filtroCarreraId.value || undefined,
-      materiaId: filtroMateriaId.value || undefined,
-      grupoId: filtroGrupoId.value || undefined,
+      grupo: filtroGrupoId.value || undefined,
     })
     mostrarToast(`Se encontraron ${alumnos.value.length} alumno(s)`)
   } catch {
@@ -682,12 +672,33 @@ const guardarTodo = async () => {
   } finally { cargando.value = false }
 }
 
-const exportar = async () => {
-  cargando.value = true
-  try {
-    await new Promise(r => setTimeout(r, 1000))
-    mostrarToast('Exportado correctamente')
-  } finally { cargando.value = false }
+const exportar = () => {
+  const datos = alumnosFiltrados.value
+  if (!datos.length) return mostrarToast('No hay datos para exportar', 'error')
+
+  const encabezado = ['No. Control', 'Nombre', 'Parcial 1', 'Parcial 2', 'Proyecto', 'Final', 'Estado']
+  const filas = datos.map(a => {
+    const final = calcularFinal(a)
+    const estado = final === null ? 'Sin calificar'
+      : Number(final) >= 90 ? 'Excelente'
+      : Number(final) >= 80 ? 'Bien'
+      : Number(final) >= 60 ? 'Regular'
+      : 'Reprobado'
+    return [a.control, a.nombre, a.p1 ?? '', a.p2 ?? '', a.proy ?? '', final ?? '', estado]
+  })
+
+  const csv = [encabezado, ...filas]
+    .map(fila => fila.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
+    .join('\n')
+
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' })
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a')
+  a.href     = url
+  a.download = `calificaciones_${new Date().toISOString().slice(0,10)}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+  mostrarToast('CSV exportado correctamente')
 }
 
 // ── Lógica Paginación ────────────────────────────────────────
