@@ -709,6 +709,7 @@ onMounted(async () => {
   cargando.value = true
   try {
     const grupoId = route.params.id || null
+    if (grupoId) filtroGrupoId.value = grupoId
     await Promise.all([
       cargarCatalogos(['periodos', 'materias', 'grupos', 'tiposEval']),
       cargarDatosVista(grupoId),
@@ -819,6 +820,7 @@ const eliminarEvaluacion = async (item) => {
 
 // ── Modal Operaciones ─────────────────────────────────────────
 const abrirModalNueva = () => {
+  if (!filtroGrupoId.value) return mostrarToast('Selecciona un grupo antes de agregar evaluaciones', 'error')
   nuevoNombre.value = ''; nuevoPorcentaje.value = 0; nuevoTipoEvalId.value = ''
   errorNombre.value = ''; errorPorcentaje.value = ''
   modoEdicion.value = false; itemEditando.value = null; mostrarModal.value = true
