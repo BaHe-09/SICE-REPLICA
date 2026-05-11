@@ -48,17 +48,37 @@
           <span v-if="cargandoBusqueda" class="spinner-busqueda"></span>
         </div>
 
-        <select v-model="filtroDepartamento" class="filter-select" @change="currentPage = 1">
-          <option value="">Departamento</option>
-          <option v-for="d in departamentosDisponibles" :key="d" :value="d">{{ d }}</option>
-        </select>
+        <!-- Filter Icon -->
+        <div class="filtros-wrapper">
+          <button class="btn-filtros" @click="mostrarFiltros = !mostrarFiltros" :class="{ activo: !!filtroDepartamento }" title="Filtros avanzados">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
+            </svg>
+            Filtros
+            <span v-if="filtroDepartamento" class="filtros-badge">1</span>
+          </button>
+          <transition name="filtros-slide">
+            <div v-if="mostrarFiltros" class="filtros-panel" @click.stop>
+              <div class="filtros-panel-header">
+                <span>Filtros avanzados</span>
+                <button @click="filtroDepartamento = ''; currentPage = 1" class="btn-limpiar-filtros">Limpiar</button>
+              </div>
+              <div class="filtros-panel-body">
+                <div class="campo-filtro">
+                  <label>Departamento</label>
+                  <select v-model="filtroDepartamento" class="filtro-select" @change="currentPage = 1">
+                    <option value="">Todos los departamentos</option>
+                    <option v-for="d in departamentosDisponibles" :key="d" :value="d">{{ d }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="filtros-panel-footer">
+                <button @click="mostrarFiltros = false" class="btn-aplicar">Aplicar</button>
+              </div>
+            </div>
+          </transition>
+        </div>
 
-        <button class="btn-limpiar" @click="resetFilters">
-          <svg xmlns="http://www.w3.org/2000/svg" class="reset-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-          Limpiar
-        </button>
         <button class="btn-nuevo" @click="nuevaAdscripcion">+ Nueva Adscripción</button>
       </div>
 
@@ -96,12 +116,12 @@
                 <span v-else class="badge-vigente">Vigente</span>
               </td>
               <td class="celda-acciones">
-                <button class="btn-accion ver" @click.stop="abrirModalVer(ads)">
+                <!-- Ver -->
+                <button class="btn-icono ver" @click.stop="abrirModalVer(ads)" title="Ver detalles">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
-                  Ver
                 </button>
               </td>
             </tr>
@@ -167,7 +187,6 @@
         </div>
         <div class="modal-body">
 
-          <!-- Aviso amarillo si empleado ya tiene adscripción activa — igual a ServiciosEscolaresView -->
           <div v-if="avisoAdscripcionActiva" class="alerta-advertencia">
             <svg xmlns="http://www.w3.org/2000/svg" class="alerta-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -175,7 +194,6 @@
             <span>Este empleado ya tiene una adscripción vigente. Al guardar, la adscripción actual quedará como histórica.</span>
           </div>
 
-          <!-- Buscador de empleado — igual al de FormularioEmpleadoView -->
           <div v-if="!empleadoSeleccionado" class="form-grupo">
             <label class="form-label">Empleado <span class="obligatorio">*</span></label>
             <div class="search-group">
@@ -207,7 +225,6 @@
             </div>
           </div>
 
-          <!-- Empleado seleccionado -->
           <div v-if="empleadoSeleccionado" class="empleado-seleccionado">
             <div class="empleado-avatar">{{ empleadoSeleccionado.nombre.charAt(0).toUpperCase() }}</div>
             <div class="empleado-datos">
@@ -217,7 +234,6 @@
             <button class="btn-cambiar-empleado" @click="cambiarEmpleado">Cambiar</button>
           </div>
 
-          <!-- Selector de departamento -->
           <div class="form-grupo">
             <label class="form-label">Departamento <span class="obligatorio">*</span></label>
             <select v-model="form.id_departamento" class="modal-select" @change="verificarAdscripcionActiva">
@@ -226,7 +242,6 @@
             </select>
           </div>
 
-          <!-- Fechas -->
           <div class="form-grupo-doble">
             <div class="form-grupo">
               <label class="form-label">Fecha de inicio <span class="obligatorio">*</span></label>
@@ -256,10 +271,10 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
-import { 
-  getAdscripciones, 
-  crearAdscripcion, 
-  actualizarAdscripcion as actualizarAdscripcionAPI, 
+import {
+  getAdscripciones,
+  crearAdscripcion,
+  actualizarAdscripcion as actualizarAdscripcionAPI,
   eliminarAdscripcion as eliminarAdscripcionAPI
 } from '@/api/recursosHumanos'
 
@@ -274,6 +289,7 @@ const filaActiva      = ref(-1)
 const tablaRef        = ref(null)
 const busqueda        = ref('')
 const filtroDepartamento = ref('')
+const mostrarFiltros     = ref(false)
 const filasPorPagina  = ref(10)
 const currentPage     = ref(1)
 const hoyISO          = new Date().toISOString().split('T')[0]
@@ -286,49 +302,30 @@ const mostrarNotificacion = (mensaje, tipo = 'exito') => {
   timerNotif = setTimeout(() => { notificacion.value.visible = false }, 3500)
 }
 
-
 const eliminarAdscripcion = async (id) => {
   if (!confirm('¿Eliminar adscripción?')) return
   try {
     const res = await eliminarAdscripcionAPI(id)
-    if (res.success) {
-      mostrarNotificacion('Adscripción eliminada', 'exito')
-      cargarAdscripciones()
-    }
-  } catch (error) {
-    mostrarNotificacion('Error al eliminar', 'error')
-  }
+    if (res.success) { mostrarNotificacion('Adscripción eliminada', 'exito'); cargarAdscripciones() }
+  } catch { mostrarNotificacion('Error al eliminar', 'error') }
 }
 
 const actualizarAdscripcion = async (id, datos) => {
-    try {
-      const res = await actualizarAdscripcionAPI(id, {
-        id_departamento: datos.id_departamento,
-        fecha_inicio: datos.fecha_inicio,
-        fecha_fin: datos.fecha_fin || null
-      })
-      
-      if (res.success) {
-        mostrarNotificacion('Adscripción actualizada', 'exito')
-        cargarAdscripciones()
-      }
-    } catch (error) {
-      mostrarNotificacion('Error al actualizar', 'error')
-    }
-  }
+  try {
+    const res = await actualizarAdscripcionAPI(id, { id_departamento: datos.id_departamento, fecha_inicio: datos.fecha_inicio, fecha_fin: datos.fecha_fin || null })
+    if (res.success) { mostrarNotificacion('Adscripción actualizada', 'exito'); cargarAdscripciones() }
+  } catch { mostrarNotificacion('Error al actualizar', 'error') }
+}
 
-  const cargarAdscripciones = async () => {
-    cargando.value = true
-    try {
-      const res = await getAdscripciones()
-      if (!res.success) throw new Error()
-      adscripciones.value = res.data.map(normalizarAdscripcion)
-    } catch (error) {
-      mostrarNotificacion('Error cargando adscripciones', 'error')
-    } finally {
-      cargando.value = false
-    }
-  }
+const cargarAdscripciones = async () => {
+  cargando.value = true
+  try {
+    const res = await getAdscripciones()
+    if (!res.success) throw new Error()
+    adscripciones.value = res.data.map(normalizarAdscripcion)
+  } catch { mostrarNotificacion('Error cargando adscripciones', 'error') }
+  finally { cargando.value = false }
+}
 
 const normalize = (text) => {
   if (!text) return ''
@@ -355,44 +352,23 @@ const departamentosDisponibles = computed(() =>
   [...new Set(adscripciones.value.map(a => a.departamento).filter(Boolean))]
 )
 
-
-  const handleCrearAdscripcion = async (datos) => {
-    try {
-      const res = await crearAdscripcion({
-        id_empleado: datos.id_empleado,
-        id_departamento: datos.id_departamento,
-        fecha_inicio: datos.fecha_inicio,
-        fecha_fin: datos.fecha_fin || null
-      })
-      
-      if (res.success) {
-        mostrarNotificacion('Adscripción creada', 'exito')
-        cargarAdscripciones()
-      }
-    } catch (error) {
-      // ⚠️ VALIDACIÓN ESPECIAL PARA ADSCRIPCIÓN ACTIVA
-      if (error.response?.status === 409) {
-        // MOSTRAR EN AMARILLO
-        mostrarNotificacion(
-          error.response.data.error,
-          'warning'  // ← Color amarillo
-        )
-        console.log('Adscripción activa:', error.response.data.adscripcion_activa)
-        // Opcional: mostrar modal con datos de adscripción existente
-      } else {
-        mostrarNotificacion('Error al crear', 'error')
-      }
-    }
+const handleCrearAdscripcion = async (datos) => {
+  try {
+    const res = await crearAdscripcion({ id_empleado: datos.id_empleado, id_departamento: datos.id_departamento, fecha_inicio: datos.fecha_inicio, fecha_fin: datos.fecha_fin || null })
+    if (res.success) { mostrarNotificacion('Adscripción creada', 'exito'); cargarAdscripciones() }
+  } catch (error) {
+    if (error.response?.status === 409) {
+      mostrarNotificacion(error.response.data.error, 'warning')
+    } else { mostrarNotificacion('Error al crear', 'error') }
   }
+}
 
 const cargarDepartamentos = async () => {
   try {
     const res = await fetch(`${API}/departamentos`)
     if (!res.ok) throw new Error()
     departamentos.value = await res.json()
-  } catch {
-    console.error('❌ Error cargando departamentos')
-  }
+  } catch { console.error('❌ Error cargando departamentos') }
 }
 
 onMounted(async () => {
@@ -434,10 +410,10 @@ const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.v
 const resetFilters = () => { busqueda.value = ''; filtroDepartamento.value = ''; currentPage.value = 1; filaActiva.value = -1 }
 
 // Modal Ver
-const showViewModal    = ref(false)
-const adscripcionVer   = ref({})
-const abrirModalVer    = (a) => { adscripcionVer.value = { ...a }; showViewModal.value = true }
-const cerrarModalVer   = () => { showViewModal.value = false }
+const showViewModal  = ref(false)
+const adscripcionVer = ref({})
+const abrirModalVer  = (a) => { adscripcionVer.value = { ...a }; showViewModal.value = true }
+const cerrarModalVer = () => { showViewModal.value = false }
 
 // Modal Nueva Adscripción
 const showModal              = ref(false)
@@ -503,22 +479,11 @@ const verificarAdscripcionActiva = () => {
 }
 
 const guardarAdscripcion = async () => {
-  if (!empleadoSeleccionado.value) {
-    mostrarNotificacion('Seleccione un empleado.', 'error'); return
-  }
-  if (!form.value.id_departamento) {
-    mostrarNotificacion('Seleccione un departamento.', 'error'); return
-  }
-  if (!form.value.fecha_inicio) {
-    mostrarNotificacion('La fecha de inicio es obligatoria.', 'error'); return
-  }
+  if (!empleadoSeleccionado.value) { mostrarNotificacion('Seleccione un empleado.', 'error'); return }
+  if (!form.value.id_departamento) { mostrarNotificacion('Seleccione un departamento.', 'error'); return }
+  if (!form.value.fecha_inicio) { mostrarNotificacion('La fecha de inicio es obligatoria.', 'error'); return }
   guardando.value = true
-  const payload = {
-    id_empleado:     empleadoSeleccionado.value.id_empleado,
-    id_departamento: form.value.id_departamento,
-    fecha_inicio:    form.value.fecha_inicio,
-    fecha_fin:       form.value.fecha_fin || null,
-  }
+  const payload = { id_empleado: empleadoSeleccionado.value.id_empleado, id_departamento: form.value.id_departamento, fecha_inicio: form.value.fecha_inicio, fecha_fin: form.value.fecha_fin || null }
   try {
     const res = await fetch(`${API}/adscripciones`, {
       method: 'POST',
@@ -530,11 +495,8 @@ const guardarAdscripcion = async () => {
     cerrarModal()
     mostrarNotificacion('Adscripción registrada correctamente.', 'exito')
     console.log('✅ Adscripción creada')
-  } catch {
-    mostrarNotificacion('Error al guardar la adscripción.', 'error')
-  } finally {
-    guardando.value = false
-  }
+  } catch { mostrarNotificacion('Error al guardar la adscripción.', 'error') }
+  finally { guardando.value = false }
 }
 
 const navegarTeclado = (e) => {
@@ -557,137 +519,155 @@ const navegarTeclado = (e) => {
   max-width: 100%; background: var(--fondo); font-family: 'Montserrat', sans-serif;
 }
 
-.breadcrumb { display: flex; align-items: center; gap: 0.4rem; color: var(--gris); font-size: 0.88rem; margin-bottom: 0.75rem; }
+.breadcrumb { display: flex; align-items: center; gap: 0.4rem; color: var(--gris); font-size: 0.82rem; margin-bottom: 0.5rem; }
 .breadcrumb .sep { color: #E5E7EB; }
 .breadcrumb-link { color: var(--gris); text-decoration: none; transition: color 0.15s; }
 .breadcrumb-link:hover { color: var(--azul); }
 .breadcrumb-actual { color: var(--azul); font-weight: 600; }
 
-.page-header { display: flex; align-items: baseline; gap: 1rem; margin-bottom: 1.2rem; }
-.page-title { color: var(--texto); font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
-.page-subtitle { font-size: 0.9rem; color: var(--gris); font-weight: 500; }
+.page-header { display: flex; align-items: baseline; gap: 0.75rem; margin-bottom: 0.85rem; }
+.page-title { color: var(--texto); font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
+.page-subtitle { font-size: 0.85rem; color: var(--gris); font-weight: 500; }
 
-.barra-carga-global { height: 3px; background: transparent; border-radius: 2px; margin-bottom: 1rem; overflow: hidden; transition: opacity 0.3s; opacity: 0; }
+.barra-carga-global { height: 3px; background: transparent; border-radius: 2px; margin-bottom: 0.75rem; overflow: hidden; transition: opacity 0.3s; opacity: 0; }
 .barra-carga-global.visible { opacity: 1; }
 .barra-progreso { height: 100%; width: 40%; background: #1B396A; border-radius: 2px; animation: deslizar 1.2s ease-in-out infinite; }
 @keyframes deslizar { 0% { transform: translateX(-100%); } 100% { transform: translateX(350%); } }
 
-.notificacion-ui { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-radius: 10px; font-size: 0.93rem; font-weight: 500; margin-bottom: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.notificacion-ui { display: flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 8px; font-size: 0.88rem; font-weight: 500; margin-bottom: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
 .notificacion-ui.exito { background: #DCFCE7; color: #16A34A; border: 1px solid #86EFAC; }
 .notificacion-ui.error { background: #FEE2E2; color: #DC2626; border: 1px solid #FCA5A5; }
-.notif-icono { width: 20px; height: 20px; flex-shrink: 0; }
+.notif-icono { width: 18px; height: 18px; flex-shrink: 0; }
 .notif-fade-enter-active, .notif-fade-leave-active { transition: all 0.35s ease; }
 .notif-fade-enter-from, .notif-fade-leave-to { opacity: 0; transform: translateY(-8px); }
 
-.filters-bar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
-.search-group { position: relative; flex: 0 0 300px; min-width: 220px; }
-.search-input { width: 100%; padding: 10px 14px 10px 42px; border: 1px solid var(--borde); border-radius: 8px; font-size: 0.93rem; background: #FFFFFF; color: var(--texto); font-family: 'Montserrat', sans-serif; outline: none; transition: border-color 0.2s, box-shadow 0.2s; box-sizing: border-box; }
+.filters-bar { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.85rem; flex-wrap: wrap; }
+.filtros-wrapper { position: relative; }
+.btn-filtros { display: flex; align-items: center; gap: 7px; background: #FFFFFF; color: #1A1A1A; border: 1px solid #E5E7EB; padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.88rem; font-family: 'Montserrat', sans-serif; transition: all 0.15s; white-space: nowrap; }
+.btn-filtros svg { width: 15px; height: 15px; stroke: #6B7280; }
+.btn-filtros:hover { background: #F5F5F5; }
+.btn-filtros.activo { border-color: #1B396A; color: #1B396A; background: #DBEAFE; }
+.btn-filtros.activo svg { stroke: #1B396A; }
+.filtros-badge { background: #1B396A; color: white; font-size: 0.7rem; font-weight: 700; min-width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
+.filtros-panel { position: absolute; top: calc(100% + 8px); left: 0; width: 260px; background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 500; overflow: hidden; }
+.filtros-panel-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #F8FAFC; border-bottom: 1px solid #E5E7EB; font-weight: 600; font-size: 0.9rem; color: #1A1A1A; font-family: 'Montserrat', sans-serif; }
+.btn-limpiar-filtros { background: none; border: none; color: #1B396A; font-size: 0.82rem; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; }
+.filtros-panel-body { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+.campo-filtro label { display: block; font-size: 0.8rem; font-weight: 600; color: #6B7280; margin-bottom: 4px; font-family: 'Montserrat', sans-serif; }
+.filtro-select { width: 100%; padding: 8px 10px; border: 1px solid #E5E7EB; border-radius: 7px; font-size: 0.88rem; background: #FFFFFF; color: #1A1A1A; font-family: 'Montserrat', sans-serif; outline: none; }
+.filtro-select:focus { border-color: #1B396A; }
+.filtros-panel-footer { padding: 10px 16px; border-top: 1px solid #E5E7EB; display: flex; justify-content: flex-end; }
+.btn-aplicar { background: #1B396A; color: white; border: none; padding: 8px 20px; border-radius: 7px; font-weight: 600; font-size: 0.88rem; cursor: pointer; font-family: 'Montserrat', sans-serif; }
+.btn-aplicar:hover { background: #1D4ED8; }
+.filtros-slide-enter-active, .filtros-slide-leave-active { transition: all 0.2s ease; }
+.filtros-slide-enter-from, .filtros-slide-leave-to { opacity: 0; transform: translateY(-8px); }
+.search-group { position: relative; flex: 0 0 280px; min-width: 200px; }
+.search-input { width: 100%; padding: 7px 12px 7px 36px; border: 1px solid var(--borde); border-radius: 7px; font-size: 0.88rem; background: #FFFFFF; color: var(--texto); font-family: 'Montserrat', sans-serif; outline: none; transition: border-color 0.2s, box-shadow 0.2s; box-sizing: border-box; }
 .search-input:focus { border-color: #1B396A; box-shadow: 0 0 0 3px #DBEAFE; }
 .search-input::placeholder { color: #9CA3AF; }
-.search-icon-svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; stroke: var(--gris); pointer-events: none; }
-.spinner-busqueda { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; border: 2px solid #E5E7EB; border-top-color: #1B396A; border-radius: 50%; animation: girar 0.7s linear infinite; }
-.filter-select { padding: 10px 12px; border: 1px solid var(--borde); border-radius: 8px; font-size: 0.92rem; flex: 1 1 160px; min-width: 140px; background: #FFFFFF; color: var(--texto); font-family: 'Montserrat', sans-serif; cursor: pointer; outline: none; }
+.search-icon-svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: var(--gris); pointer-events: none; }
+.spinner-busqueda { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; border: 2px solid #E5E7EB; border-top-color: #1B396A; border-radius: 50%; animation: girar 0.7s linear infinite; }
+.filter-select { padding: 7px 10px; border: 1px solid var(--borde); border-radius: 7px; font-size: 0.86rem; flex: 1 1 150px; min-width: 130px; background: #FFFFFF; color: var(--texto); font-family: 'Montserrat', sans-serif; cursor: pointer; outline: none; }
 .filter-select:focus { border-color: #1B396A; }
-.btn-limpiar { display: flex; align-items: center; gap: 6px; background: #FFFFFF; color: var(--texto); border: 1px solid var(--borde); padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.92rem; white-space: nowrap; font-family: 'Montserrat', sans-serif; transition: background 0.15s; }
+.btn-limpiar { display: flex; align-items: center; gap: 5px; background: #FFFFFF; color: var(--texto); border: 1px solid var(--borde); padding: 7px 13px; border-radius: 7px; font-weight: 600; cursor: pointer; font-size: 0.86rem; white-space: nowrap; font-family: 'Montserrat', sans-serif; transition: background 0.15s; }
 .btn-limpiar:hover { background: var(--fondo); }
-.reset-icon { width: 16px; height: 16px; stroke: var(--gris); }
-.btn-nuevo { background: #1B396A; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; font-family: 'Montserrat', sans-serif; font-size: 0.92rem; transition: background 0.2s; margin-left: auto; }
+.reset-icon { width: 14px; height: 14px; stroke: var(--gris); }
+.btn-nuevo { background: #1B396A; color: white; border: none; padding: 7px 16px; border-radius: 7px; font-weight: 600; cursor: pointer; white-space: nowrap; font-family: 'Montserrat', sans-serif; font-size: 0.86rem; transition: background 0.2s; margin-left: auto; }
 .btn-nuevo:hover { background: #1D4ED8; }
 
-.table-container { background: #FFFFFF; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid var(--borde); }
+.table-container { background: #FFFFFF; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid var(--borde); }
 .adscripcion-table { width: 100%; border-collapse: collapse; outline: none; }
-.adscripcion-table th { background: var(--fondo); padding: 12px 16px; text-align: left; font-weight: 600; font-size: 0.88rem; color: var(--texto); border-bottom: 1px solid var(--borde); font-family: 'Montserrat', sans-serif; white-space: nowrap; }
-.adscripcion-table td { padding: 11px 16px; border-bottom: 1px solid var(--borde); color: var(--texto); font-size: 0.93rem; font-family: 'Montserrat', sans-serif; }
+.adscripcion-table th { background: var(--fondo); padding: 8px 12px; text-align: left; font-weight: 600; font-size: 0.8rem; color: var(--texto); border-bottom: 1px solid var(--borde); font-family: 'Montserrat', sans-serif; white-space: nowrap; }
+.adscripcion-table td { padding: 7px 12px; border-bottom: 1px solid var(--borde); color: var(--texto); font-size: 0.86rem; font-family: 'Montserrat', sans-serif; }
 .adscripcion-table tbody tr { transition: background 0.15s; cursor: pointer; }
 .adscripcion-table tbody tr:hover { background: #F8FAFC; }
 .adscripcion-table tbody tr:last-child td { border-bottom: none; }
 .fila-seleccionada { background: #DBEAFE !important; }
-.celda-control { font-weight: 600; color: #1B396A; font-size: 0.92rem; }
+.celda-control { font-weight: 600; color: #1B396A; font-size: 0.86rem; }
 
-.badge-departamento { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; background: #FEF3C7; color: #F59E0B; }
-.badge-vigente { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; background: #DCFCE7; color: #16A34A; }
-.fecha-fin { color: var(--gris); font-size: 0.9rem; }
+.badge-departamento { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.76rem; font-weight: 600; background: #FEF3C7; color: #F59E0B; }
+.badge-vigente { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.76rem; font-weight: 600; background: #DCFCE7; color: #16A34A; }
+.fecha-fin { color: var(--gris); font-size: 0.86rem; }
 
-.celda-acciones { display: flex; gap: 7px; align-items: center; }
-.btn-accion { display: flex; align-items: center; gap: 5px; padding: 6px 13px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; font-weight: 600; font-family: 'Montserrat', sans-serif; transition: background 0.15s; white-space: nowrap; border: none; }
-.btn-accion svg { width: 14px; height: 14px; }
-.btn-accion.ver { background: #FFFFFF; color: var(--texto); border: 1px solid var(--borde); }
-.btn-accion.ver:hover { background: var(--fondo); }
+/* ── Botones de acción (solo ícono) ── */
+.celda-acciones { display: flex; gap: 5px; align-items: center; }
+.btn-icono {
+  display: flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px;
+  border-radius: 6px; cursor: pointer; border: 1px solid transparent;
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+.btn-icono svg { width: 15px; height: 15px; }
+.btn-icono.ver { background: #FFFFFF; color: var(--texto); border-color: var(--borde); }
+.btn-icono.ver:hover { background: var(--fondo); }
 
-.estado-vacio, .estado-cargando { text-align: center; padding: 3.5rem 2rem; color: var(--gris); }
-.icono-vacio { width: 56px; height: 56px; stroke: #9CA3AF; margin-bottom: 12px; }
-.estado-vacio h3 { font-size: 1.2rem; color: var(--texto); margin: 0 0 6px; }
-.estado-vacio p { font-size: 0.93rem; margin: 0 0 1.2rem; }
-.btn-limpiar-vacio { background: #FFFFFF; color: var(--texto); border: 1px solid var(--borde); padding: 9px 20px; border-radius: 8px; font-weight: 500; cursor: pointer; font-family: 'Montserrat', sans-serif; }
-.spinner-tabla { display: inline-block; width: 36px; height: 36px; border: 3px solid #E5E7EB; border-top-color: #1B396A; border-radius: 50%; animation: girar 0.8s linear infinite; margin-bottom: 12px; }
+.estado-vacio, .estado-cargando { text-align: center; padding: 2.5rem 2rem; color: var(--gris); }
+.icono-vacio { width: 48px; height: 48px; stroke: #9CA3AF; margin-bottom: 10px; }
+.estado-vacio h3 { font-size: 1.1rem; color: var(--texto); margin: 0 0 4px; }
+.estado-vacio p { font-size: 0.88rem; margin: 0 0 1rem; }
+.btn-limpiar-vacio { background: #FFFFFF; color: var(--texto); border: 1px solid var(--borde); padding: 7px 18px; border-radius: 7px; font-weight: 500; cursor: pointer; font-family: 'Montserrat', sans-serif; }
+.spinner-tabla { display: inline-block; width: 32px; height: 32px; border: 3px solid #E5E7EB; border-top-color: #1B396A; border-radius: 50%; animation: girar 0.8s linear infinite; margin-bottom: 10px; }
 
-.paginacion { margin-top: 1.2rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; color: var(--gris); font-family: 'Montserrat', sans-serif; flex-wrap: wrap; gap: 0.5rem; }
-.paginacion-izquierda, .paginacion-centro, .paginacion-derecha { display: flex; align-items: center; gap: 8px; }
-.select-filas { border: 1px solid var(--borde); border-radius: 6px; padding: 4px 8px; font-size: 0.9rem; background: #FFFFFF; font-family: 'Montserrat', sans-serif; }
-.btn-pag { padding: 5px 11px; border: 1px solid var(--borde); background: #FFFFFF; border-radius: 6px; cursor: pointer; color: var(--texto); font-family: 'Montserrat', sans-serif; font-size: 0.9rem; transition: background 0.15s; }
+.paginacion { margin-top: 0.85rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.84rem; color: var(--gris); font-family: 'Montserrat', sans-serif; flex-wrap: wrap; gap: 0.4rem; }
+.paginacion-izquierda, .paginacion-centro, .paginacion-derecha { display: flex; align-items: center; gap: 6px; }
+.select-filas { border: 1px solid var(--borde); border-radius: 5px; padding: 3px 6px; font-size: 0.84rem; background: #FFFFFF; font-family: 'Montserrat', sans-serif; }
+.btn-pag { padding: 3px 9px; border: 1px solid var(--borde); background: #FFFFFF; border-radius: 5px; cursor: pointer; color: var(--texto); font-family: 'Montserrat', sans-serif; font-size: 0.84rem; transition: background 0.15s; }
 .btn-pag:hover:not(:disabled) { background: var(--fondo); }
 .btn-pag:disabled { opacity: 0.4; cursor: not-allowed; }
 .btn-pag.activo { background: #1B396A; color: white; border-color: #1B396A; }
 
 /* ── Modales ── */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 2000; }
-.modal-content { background: #FFFFFF; width: 520px; max-width: 92%; border-radius: 14px; box-shadow: 0 20px 50px rgba(0,0,0,0.18); overflow: hidden; border: 1px solid var(--borde); }
-.modal-adscripcion { width: 580px; }
-.modal-header { background: #1B396A; color: white; padding: 1.1rem 1.6rem; display: flex; justify-content: space-between; align-items: center; }
-.modal-header h3 { margin: 0; font-size: 1.2rem; font-weight: 700; font-family: 'Montserrat', sans-serif; }
-.btn-cerrar-modal { background: none; border: none; color: white; font-size: 1.7rem; cursor: pointer; line-height: 1; opacity: 0.85; }
+.modal-content { background: #FFFFFF; width: 500px; max-width: 92%; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.18); overflow: hidden; border: 1px solid var(--borde); }
+.modal-adscripcion { width: 560px; }
+.modal-header { background: #1B396A; color: white; padding: 0.9rem 1.4rem; display: flex; justify-content: space-between; align-items: center; }
+.modal-header h3 { margin: 0; font-size: 1.1rem; font-weight: 700; font-family: 'Montserrat', sans-serif; }
+.btn-cerrar-modal { background: none; border: none; color: white; font-size: 1.6rem; cursor: pointer; line-height: 1; opacity: 0.85; }
 .btn-cerrar-modal:hover { opacity: 1; }
-.modal-body { padding: 1.6rem; }
-.modal-footer { padding: 1rem 1.6rem; background: var(--fondo); display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid var(--borde); }
+.modal-body { padding: 1.3rem 1.4rem; }
+.modal-footer { padding: 0.8rem 1.4rem; background: var(--fondo); display: flex; gap: 8px; justify-content: flex-end; border-top: 1px solid var(--borde); }
 
-/* Aviso amarillo — igual a alerta-error de ServiciosEscolaresView pero en amarillo */
-.alerta-advertencia {
-  display: flex; align-items: flex-start; gap: 10px;
-  background: #FEF3C7; border: 1px solid #FCD34D; border-radius: 10px;
-  padding: 12px 16px; margin-bottom: 1.2rem;
-  font-size: 0.9rem; color: #F59E0B; font-weight: 500; font-family: 'Montserrat', sans-serif;
-}
-.alerta-icono { width: 20px; height: 20px; flex-shrink: 0; stroke: #F59E0B; margin-top: 1px; }
+.alerta-advertencia { display: flex; align-items: flex-start; gap: 10px; background: #FEF3C7; border: 1px solid #FCD34D; border-radius: 8px; padding: 10px 14px; margin-bottom: 1rem; font-size: 0.86rem; color: #F59E0B; font-weight: 500; font-family: 'Montserrat', sans-serif; }
+.alerta-icono { width: 18px; height: 18px; flex-shrink: 0; stroke: #F59E0B; margin-top: 1px; }
 
-/* Buscador de empleado en modal */
-.form-grupo { margin-bottom: 1.2rem; }
-.form-grupo-doble { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.2rem; }
-.form-label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: var(--texto); font-family: 'Montserrat', sans-serif; }
+.form-grupo { margin-bottom: 1rem; }
+.form-grupo-doble { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.form-label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.86rem; color: var(--texto); font-family: 'Montserrat', sans-serif; }
 .obligatorio { color: #DC2626; }
-.etiqueta-opcional { font-weight: 400; font-size: 0.78rem; color: var(--gris); }
-.modal-input, .modal-select { width: 100%; padding: 10px 14px; border: 1.5px solid var(--borde); border-radius: 8px; font-size: 0.95rem; background: #FFFFFF; color: var(--texto); font-family: 'Montserrat', sans-serif; outline: none; transition: border-color 0.2s; box-sizing: border-box; }
+.etiqueta-opcional { font-weight: 400; font-size: 0.76rem; color: var(--gris); }
+.modal-input, .modal-select { width: 100%; padding: 8px 12px; border: 1.5px solid var(--borde); border-radius: 7px; font-size: 0.9rem; background: #FFFFFF; color: var(--texto); font-family: 'Montserrat', sans-serif; outline: none; transition: border-color 0.2s; box-sizing: border-box; }
 .modal-input:focus, .modal-select:focus { border-color: #1B396A; }
-.hint-fecha { display: block; margin-top: 4px; font-size: 0.78rem; color: var(--gris); font-family: 'Montserrat', sans-serif; }
+.hint-fecha { display: block; margin-top: 3px; font-size: 0.75rem; color: var(--gris); font-family: 'Montserrat', sans-serif; }
 
-.resultados-empleado { margin-top: 8px; border: 1px solid var(--borde); border-radius: 10px; overflow: hidden; background: #FFFFFF; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-.resultado-empleado-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; cursor: pointer; transition: background 0.15s; border-bottom: 1px solid var(--borde); }
+.resultados-empleado { margin-top: 6px; border: 1px solid var(--borde); border-radius: 8px; overflow: hidden; background: #FFFFFF; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.resultado-empleado-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; cursor: pointer; transition: background 0.15s; border-bottom: 1px solid var(--borde); }
 .resultado-empleado-item:last-child { border-bottom: none; }
 .resultado-empleado-item:hover { background: #F8FAFF; }
-.resultado-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--azul); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; flex-shrink: 0; }
+.resultado-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--azul); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; }
 .resultado-info { flex: 1; display: flex; flex-direction: column; }
-.resultado-info strong { font-size: 0.93rem; color: var(--texto); }
-.resultado-info span { font-size: 0.82rem; color: var(--gris); margin-top: 1px; }
-.btn-seleccionar-empleado { background: #EFF6FF; color: var(--azul); border: 1px solid #BFDBFE; padding: 6px 14px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; white-space: nowrap; font-family: 'Montserrat', sans-serif; }
-.sin-resultados-empleado { margin-top: 8px; padding: 12px 14px; border-radius: 8px; background: #F5F5F5; color: var(--gris); font-size: 0.88rem; border: 1px solid var(--borde); }
+.resultado-info strong { font-size: 0.88rem; color: var(--texto); }
+.resultado-info span { font-size: 0.78rem; color: var(--gris); margin-top: 1px; }
+.btn-seleccionar-empleado { background: #EFF6FF; color: var(--azul); border: 1px solid #BFDBFE; padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 0.82rem; cursor: pointer; white-space: nowrap; font-family: 'Montserrat', sans-serif; }
+.sin-resultados-empleado { margin-top: 6px; padding: 10px 12px; border-radius: 7px; background: #F5F5F5; color: var(--gris); font-size: 0.84rem; border: 1px solid var(--borde); }
 
-/* Empleado seleccionado — igual a persona-seleccionada de FormularioEmpleadoView */
-.empleado-seleccionado { display: flex; align-items: center; gap: 16px; background: #F0FDF4; border: 1.5px solid #86EFAC; border-radius: 12px; padding: 14px 18px; margin-bottom: 1.2rem; }
-.empleado-avatar { width: 40px; height: 40px; border-radius: 50%; background: #16A34A; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; flex-shrink: 0; }
+.empleado-seleccionado { display: flex; align-items: center; gap: 14px; background: #F0FDF4; border: 1.5px solid #86EFAC; border-radius: 10px; padding: 12px 16px; margin-bottom: 1rem; }
+.empleado-avatar { width: 36px; height: 36px; border-radius: 50%; background: #16A34A; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; flex-shrink: 0; }
 .empleado-datos { flex: 1; }
-.empleado-datos strong { display: block; color: var(--texto); font-size: 0.97rem; }
-.empleado-datos span { color: var(--gris); font-size: 0.85rem; }
-.btn-cambiar-empleado { background: white; color: var(--gris); border: 1px solid var(--borde); padding: 7px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.88rem; font-family: 'Montserrat', sans-serif; transition: background 0.15s; }
+.empleado-datos strong { display: block; color: var(--texto); font-size: 0.93rem; }
+.empleado-datos span { color: var(--gris); font-size: 0.82rem; }
+.btn-cambiar-empleado { background: white; color: var(--gris); border: 1px solid var(--borde); padding: 6px 12px; border-radius: 7px; font-weight: 600; cursor: pointer; font-size: 0.84rem; font-family: 'Montserrat', sans-serif; transition: background 0.15s; }
 .btn-cambiar-empleado:hover { background: var(--fondo); }
 
-.btn-secundario { padding: 10px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; background: #FFFFFF; color: var(--texto); border: 1px solid var(--borde); transition: background 0.15s; }
+.btn-secundario { padding: 8px 18px; border-radius: 7px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; background: #FFFFFF; color: var(--texto); border: 1px solid var(--borde); transition: background 0.15s; font-size: 0.88rem; }
 .btn-secundario:hover { background: var(--fondo); }
 .btn-secundario:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn-guardar { display: flex; align-items: center; gap: 8px; padding: 10px 22px; border-radius: 8px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; background: #1B396A; color: white; border: none; transition: background 0.15s; }
+.btn-guardar { display: flex; align-items: center; gap: 7px; padding: 8px 18px; border-radius: 7px; font-weight: 600; cursor: pointer; font-family: 'Montserrat', sans-serif; background: #1B396A; color: white; border: none; transition: background 0.15s; font-size: 0.88rem; }
 .btn-guardar:hover:not(:disabled) { background: #1D4ED8; }
 .btn-guardar:disabled { opacity: 0.65; cursor: not-allowed; }
-.spinner-btn { display: inline-block; width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: girar 0.7s linear infinite; flex-shrink: 0; }
+.spinner-btn { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: girar 0.7s linear infinite; flex-shrink: 0; }
 
-.detalle-fila { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--borde); font-size: 0.95rem; color: var(--texto); font-family: 'Montserrat', sans-serif; }
+.detalle-fila { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--borde); font-size: 0.9rem; color: var(--texto); font-family: 'Montserrat', sans-serif; }
 .detalle-fila:last-child { border-bottom: none; }
 .detalle-label { font-weight: 600; color: var(--gris); }
 .detalle-valor { font-weight: 500; }

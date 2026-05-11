@@ -33,8 +33,9 @@
         </div>
       </transition>
 
-      <!-- Filtros -->
-      <div class="filters-bar">
+      <!-- Barra de acciones -->
+      <div class="actions-bar">
+        <!-- Búsqueda rápida -->
         <div class="search-group">
           <svg xmlns="http://www.w3.org/2000/svg" class="search-icon-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -44,35 +45,59 @@
                  @keydown.escape="busqueda = ''">
         </div>
 
-        <select v-model="filtroDepartamento" class="filter-select">
-          <option value="">Departamento</option>
-          <option v-for="dep in departamentos" :key="dep.id_departamento" :value="dep.id_departamento">
-            {{ dep.nombre }}
-          </option>
-        </select>
-
-        <select v-model="filtroNivel" class="filter-select">
-          <option value="">Nivel</option>
-          <option v-for="niv in niveles" :key="niv.id_nivel" :value="niv.id_nivel">
-            {{ niv.nombre_nivel }}
-          </option>
-        </select>
-
-        <select v-model="filtroEstatus" class="filter-select">
-          <option value="">Estatus</option>
-          <option value="1">Activo</option>
-          <option value="0">Inactivo</option>
-        </select>
-
-        <button class="btn-limpiar" @click="limpiarFiltros">
-          <svg xmlns="http://www.w3.org/2000/svg" class="reset-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+        <!-- Botón filtros -->
+        <button class="btn-filtros" @click="mostrarFiltros = !mostrarFiltros" :class="{ activo: filtrosActivos }">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
           </svg>
-          Limpiar
+          Filtros
+          <span v-if="filtrosActivos" class="filtros-badge">{{ contadorFiltros }}</span>
         </button>
 
         <button class="btn-nuevo" @click="abrirModalNuevo">+ Nueva carrera</button>
       </div>
+
+      <!-- Panel de filtros desplegable -->
+      <transition name="filtros-slide">
+        <div v-if="mostrarFiltros" class="filtros-panel">
+          <div class="filtros-grid">
+            <div class="filtro-item">
+              <label class="filtro-label">Departamento</label>
+              <select v-model="filtroDepartamento" class="filter-select">
+                <option value="">Todos</option>
+                <option v-for="dep in departamentos" :key="dep.id_departamento" :value="dep.id_departamento">
+                  {{ dep.nombre }}
+                </option>
+              </select>
+            </div>
+            <div class="filtro-item">
+              <label class="filtro-label">Nivel</label>
+              <select v-model="filtroNivel" class="filter-select">
+                <option value="">Todos</option>
+                <option v-for="niv in niveles" :key="niv.id_nivel" :value="niv.id_nivel">
+                  {{ niv.nombre_nivel }}
+                </option>
+              </select>
+            </div>
+            <div class="filtro-item">
+              <label class="filtro-label">Estatus</label>
+              <select v-model="filtroEstatus" class="filter-select">
+                <option value="">Todos</option>
+                <option value="1">Activo</option>
+                <option value="0">Inactivo</option>
+              </select>
+            </div>
+          </div>
+          <div class="filtros-footer">
+            <button class="btn-limpiar" @click="limpiarFiltros">
+              <svg xmlns="http://www.w3.org/2000/svg" class="reset-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Limpiar filtros
+            </button>
+          </div>
+        </div>
+      </transition>
 
       <!-- Tabla -->
       <div class="table-container">
@@ -88,7 +113,7 @@
               <th>Departamento</th>
               <th>Nivel</th>
               <th>Estatus</th>
-              <th>Acciones</th>
+              <th class="th-acciones">Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -104,18 +129,16 @@
                 </span>
               </td>
               <td class="celda-acciones">
-                <button class="btn-accion ver" @click.stop="abrirModalVer(carrera)">
+                <button class="btn-icono ver" @click.stop="abrirModalVer(carrera)" title="Ver detalles">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
-                  Ver
                 </button>
-                <button class="btn-accion editar" @click.stop="abrirModalEditar(carrera)">
+                <button class="btn-icono editar" @click.stop="abrirModalEditar(carrera)" title="Editar">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
-                  Editar
                 </button>
               </td>
             </tr>
@@ -267,10 +290,8 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 
-// ── Variable de entorno — estandarización del proyecto ───────────
 const API = `${import.meta.env.VITE_API_URL}/api`
 
-// ── Estado ───────────────────────────────────────────────────────
 const carreras        = ref([])
 const departamentos   = ref([])
 const niveles         = ref([])
@@ -279,6 +300,7 @@ const guardando       = ref(false)
 const filaActiva      = ref(-1)
 const currentPage     = ref(1)
 const filasPorPagina  = ref(10)
+const mostrarFiltros  = ref(false)
 
 const busqueda           = ref('')
 const filtroDepartamento = ref('')
@@ -297,19 +319,15 @@ const errors = reactive({})
 const notificacion = ref({ visible: false, mensaje: '', tipo: 'exito' })
 let timerNotif = null
 
-// ── Notificación ─────────────────────────────────────────────────
+const filtrosActivos = computed(() => !!(filtroDepartamento.value || filtroNivel.value || filtroEstatus.value))
+const contadorFiltros = computed(() => [filtroDepartamento.value, filtroNivel.value, filtroEstatus.value].filter(Boolean).length)
+
 const mostrarNotificacion = (mensaje, tipo = 'exito') => {
   if (timerNotif) clearTimeout(timerNotif)
   notificacion.value = { visible: true, mensaje, tipo }
   timerNotif = setTimeout(() => { notificacion.value.visible = false }, 3500)
 }
 
-// ── Carga de datos ───────────────────────────────────────────────
-/*
- * GET /api/carreras
- * Respuesta: [{ id_carrera, nombre, id_departamento, departamento: { nombre },
- *               id_nivel, nivel: { nombre_nivel }, estatus }]
- */
 const cargarCarreras = async () => {
   cargando.value = true
   try {
@@ -317,17 +335,12 @@ const cargarCarreras = async () => {
     if (!res.ok) throw new Error('Error del servidor')
     carreras.value = await res.json()
   } catch (e) {
-    console.error('Error cargando carreras:', e)
     mostrarNotificacion('No se pudieron cargar las carreras.', 'error')
   } finally {
     cargando.value = false
   }
 }
 
-/*
- * GET /api/departamentos     → [{ id_departamento, nombre }]
- * GET /api/niveles-carrera   → [{ id_nivel, nombre_nivel }]
- */
 const cargarCatalogos = async () => {
   try {
     const [resDep, resNiv] = await Promise.all([
@@ -343,7 +356,6 @@ const cargarCatalogos = async () => {
 
 onMounted(() => { cargarCarreras(); cargarCatalogos() })
 
-// ── Filtros y paginación ─────────────────────────────────────────
 const normalize = (t) => t?.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') ?? ''
 
 const carrerasFiltradas = computed(() =>
@@ -379,7 +391,6 @@ const limpiarFiltros = () => {
   currentPage.value = 1; filaActiva.value = -1
 }
 
-// ── Modales ──────────────────────────────────────────────────────
 const resetForm = () => {
   form.id_carrera = null; form.nombre = ''; form.id_departamento = ''; form.id_nivel = ''; form.estatus = 1
   Object.keys(errors).forEach(k => delete errors[k])
@@ -404,7 +415,6 @@ const solicitarEliminar = () => {
   showModalEliminar.value = true
 }
 
-// ── Validación ───────────────────────────────────────────────────
 const validar = () => {
   Object.keys(errors).forEach(k => delete errors[k])
   if (!form.nombre.trim())       errors.nombre          = 'El nombre es obligatorio'
@@ -413,64 +423,34 @@ const validar = () => {
   return Object.keys(errors).length === 0
 }
 
-// ── CRUD ─────────────────────────────────────────────────────────
-/*
- * POST /api/carreras
- * Body: { nombre, id_departamento, id_nivel, estatus }
- *
- * PUT /api/carreras/:id_carrera
- * Body: { nombre, id_departamento, id_nivel, estatus }
- */
 const guardar = async () => {
   if (!validar()) return
   guardando.value = true
   const esEdicion = !!form.id_carrera
   const url    = esEdicion ? `${API}/carreras/${form.id_carrera}` : `${API}/carreras`
   const method = esEdicion ? 'PUT' : 'POST'
-
-  const payload = {
-    nombre:          form.nombre.trim(),
-    id_departamento: form.id_departamento,
-    id_nivel:        form.id_nivel,
-    estatus:         form.estatus
-  }
-
+  const payload = { nombre: form.nombre.trim(), id_departamento: form.id_departamento, id_nivel: form.id_nivel, estatus: form.estatus }
   try {
-    const res = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify(payload)
-    })
+    const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(payload) })
     if (!res.ok) throw new Error('Error del servidor')
-    await cargarCarreras()
-    cerrarModal()
+    await cargarCarreras(); cerrarModal()
     mostrarNotificacion(esEdicion ? 'Carrera actualizada correctamente.' : 'Carrera creada correctamente.')
   } catch (e) {
-    console.error('Error guardando carrera:', e)
     mostrarNotificacion('Ocurrió un error al guardar.', 'error')
   } finally {
     guardando.value = false
   }
 }
 
-/*
- * DELETE /api/carreras/:id_carrera
- */
 const confirmarEliminar = async () => {
   if (!carreraAEliminar.value) return
   guardando.value = true
   try {
-    const res = await fetch(`${API}/carreras/${carreraAEliminar.value.id_carrera}`, {
-      method: 'DELETE',
-      headers: { 'Accept': 'application/json' }
-    })
+    const res = await fetch(`${API}/carreras/${carreraAEliminar.value.id_carrera}`, { method: 'DELETE', headers: { 'Accept': 'application/json' } })
     if (!res.ok) throw new Error('Error del servidor')
-    await cargarCarreras()
-    showModalEliminar.value = false
-    carreraAEliminar.value  = null
+    await cargarCarreras(); showModalEliminar.value = false; carreraAEliminar.value = null
     mostrarNotificacion('Carrera eliminada correctamente.')
   } catch (e) {
-    console.error('Error eliminando carrera:', e)
     mostrarNotificacion('Ocurrió un error al eliminar.', 'error')
   } finally {
     guardando.value = false
@@ -491,7 +471,6 @@ const confirmarEliminar = async () => {
   --gris:       #6B7280;
   --verde:      #16A34A;
   --rojo:       #DC2626;
-
   width: 100%;
   background: var(--fondo);
   font-family: 'Montserrat', sans-serif;
@@ -520,41 +499,65 @@ const confirmarEliminar = async () => {
 .toast-slide-enter-active, .toast-slide-leave-active { transition: all 0.35s ease; }
 .toast-slide-enter-from, .toast-slide-leave-to { opacity: 0; transform: translateX(110%); }
 
-.filters-bar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.2rem; flex-wrap: wrap; }
-.search-group { position: relative; flex: 0 0 300px; min-width: 220px; }
+/* ── Barra de acciones ── */
+.actions-bar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; flex-wrap: wrap; }
+.search-group { position: relative; flex: 1 1 260px; min-width: 200px; }
 .search-input { width: 100%; padding: 10px 14px 10px 42px; border: 1px solid var(--borde); border-radius: 8px; font-size: 0.93rem; background: #FFFFFF; color: var(--texto); font-family: 'Montserrat', sans-serif; outline: none; transition: border-color 0.2s, box-shadow 0.2s; box-sizing: border-box; }
 .search-input:focus { border-color: var(--azul); box-shadow: 0 0 0 3px #DBEAFE; }
 .search-input::placeholder { color: #9CA3AF; }
 .search-icon-svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; stroke: var(--gris); pointer-events: none; }
-.filter-select { padding: 10px 12px; border: 1px solid var(--borde); border-radius: 8px; font-size: 0.92rem; flex: 1 1 150px; min-width: 130px; background: #FFFFFF; color: var(--texto); font-family: 'Montserrat', sans-serif; cursor: pointer; outline: none; }
-.filter-select:focus { border-color: var(--azul); }
-.btn-limpiar { display: flex; align-items: center; gap: 6px; background: #FFFFFF; color: var(--texto); border: 1px solid var(--borde); padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.92rem; white-space: nowrap; font-family: 'Montserrat', sans-serif; transition: background 0.15s; }
-.btn-limpiar:hover { background: var(--fondo); }
-.reset-icon { width: 16px; height: 16px; stroke: var(--gris); }
+
+.btn-filtros { display: flex; align-items: center; gap: 7px; background: #FFFFFF; color: var(--texto); border: 1px solid var(--borde); padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.92rem; font-family: 'Montserrat', sans-serif; transition: background 0.15s, border-color 0.15s; white-space: nowrap; position: relative; }
+.btn-filtros svg { width: 16px; height: 16px; stroke: var(--gris); }
+.btn-filtros:hover { background: var(--fondo); }
+.btn-filtros.activo { border-color: var(--azul); color: var(--azul); background: var(--azul-suave); }
+.btn-filtros.activo svg { stroke: var(--azul); }
+.filtros-badge { background: var(--azul); color: white; font-size: 0.72rem; font-weight: 700; border-radius: 10px; padding: 1px 6px; margin-left: 2px; }
+
 .btn-nuevo { background: var(--azul); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; font-family: 'Montserrat', sans-serif; font-size: 0.92rem; transition: background 0.2s; margin-left: auto; }
 .btn-nuevo:hover { background: var(--azul-hover); }
 
+/* ── Panel filtros desplegable ── */
+.filtros-panel { background: #FFFFFF; border: 1px solid var(--borde); border-radius: 10px; padding: 1.2rem 1.4rem 1rem; margin-bottom: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+.filtros-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
+.filtro-item { display: flex; flex-direction: column; gap: 6px; }
+.filtro-label { font-size: 0.82rem; font-weight: 600; color: var(--gris); font-family: 'Montserrat', sans-serif; }
+.filter-select { padding: 9px 12px; border: 1px solid var(--borde); border-radius: 8px; font-size: 0.9rem; background: #FFFFFF; color: var(--texto); font-family: 'Montserrat', sans-serif; cursor: pointer; outline: none; }
+.filter-select:focus { border-color: var(--azul); }
+.filtros-footer { display: flex; justify-content: flex-end; margin-top: 0.9rem; padding-top: 0.9rem; border-top: 1px solid var(--borde); }
+.btn-limpiar { display: flex; align-items: center; gap: 6px; background: transparent; color: var(--gris); border: none; padding: 6px 10px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.88rem; font-family: 'Montserrat', sans-serif; transition: color 0.15s; }
+.btn-limpiar:hover { color: var(--rojo); }
+.reset-icon { width: 14px; height: 14px; }
+
+.filtros-slide-enter-active, .filtros-slide-leave-active { transition: all 0.25s ease; overflow: hidden; }
+.filtros-slide-enter-from, .filtros-slide-leave-to { opacity: 0; transform: translateY(-8px); }
+
+/* ── Tabla ── */
 .table-container { background: #FFFFFF; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid var(--borde); }
 .data-table { width: 100%; border-collapse: collapse; }
-.data-table th { background: var(--fondo); padding: 12px 16px; text-align: left; font-weight: 600; font-size: 0.88rem; color: var(--texto); border-bottom: 1px solid var(--borde); font-family: 'Montserrat', sans-serif; white-space: nowrap; }
-.data-table td { padding: 11px 16px; border-bottom: 1px solid var(--borde); color: var(--texto); font-size: 0.93rem; font-family: 'Montserrat', sans-serif; }
+.data-table th { background: var(--fondo); padding: 11px 14px; text-align: left; font-weight: 600; font-size: 0.85rem; color: var(--texto); border-bottom: 1px solid var(--borde); font-family: 'Montserrat', sans-serif; white-space: nowrap; }
+.th-acciones { text-align: center; }
+.data-table td { padding: 10px 14px; border-bottom: 1px solid var(--borde); color: var(--texto); font-size: 0.92rem; font-family: 'Montserrat', sans-serif; }
 .data-table tbody tr { transition: background 0.15s; cursor: pointer; }
 .data-table tbody tr:hover { background: #F8FAFC; }
 .data-table tbody tr:last-child td { border-bottom: none; }
 .fila-seleccionada { background: #DBEAFE !important; }
 .celda-nombre { font-weight: 600; }
 
-.estatus-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.83rem; font-weight: 600; }
+.estatus-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
 .estatus-badge.activo   { background: #DCFCE7; color: #16A34A; }
 .estatus-badge.inactivo { background: #F3F4F6; color: #6B7280; }
 
-.celda-acciones { display: flex; gap: 7px; align-items: center; }
-.btn-accion { display: flex; align-items: center; gap: 5px; padding: 6px 13px; border-radius: 6px; font-size: 0.85rem; cursor: pointer; font-weight: 600; font-family: 'Montserrat', sans-serif; transition: background 0.15s; white-space: nowrap; }
-.btn-accion svg { width: 14px; height: 14px; }
-.btn-accion.ver    { background: #F3F4F6; color: #1A1A1A; border: 1px solid #D1D5DB; }
-.btn-accion.ver:hover { background: #E5E7EB; }
-.btn-accion.editar { background: #1B396A; color: white; border: 1px solid #1B396A; }
-.btn-accion.editar:hover { background: #1D4ED8; }
+/* ── Botones ícono (Tarea 3) ── */
+.celda-acciones { display: flex; gap: 6px; align-items: center; justify-content: center; }
+.btn-icono { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 7px; cursor: pointer; border: 1px solid transparent; transition: background 0.15s, border-color 0.15s; flex-shrink: 0; }
+.btn-icono svg { width: 15px; height: 15px; }
+.btn-icono.ver { background: #F3F4F6; border-color: #D1D5DB; }
+.btn-icono.ver:hover { background: #E5E7EB; }
+.btn-icono.ver svg { stroke: #374151; }
+.btn-icono.editar { background: var(--azul); border-color: var(--azul); }
+.btn-icono.editar:hover { background: var(--azul-hover); border-color: var(--azul-hover); }
+.btn-icono.editar svg { stroke: #FFFFFF; }
 
 .estado-vacio, .estado-cargando { text-align: center; padding: 3.5rem 2rem; color: var(--gris); }
 .icono-vacio { width: 56px; height: 56px; stroke: #9CA3AF; margin-bottom: 12px; }
@@ -573,7 +576,6 @@ const confirmarEliminar = async () => {
 
 .pie-pagina { text-align: center; color: #9CA3AF; font-size: 0.82rem; padding-top: 2rem; border-top: 1px solid var(--borde); margin-top: 1rem; }
 
-/* Modales — hardcoded para no depender del scope */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 2000; }
 .modal-content { background: #FFFFFF; width: 520px; max-width: 92%; border-radius: 14px; box-shadow: 0 20px 50px rgba(0,0,0,0.18); overflow: hidden; border: 1px solid #E5E7EB; }
 .modal-confirmar { width: 440px; }

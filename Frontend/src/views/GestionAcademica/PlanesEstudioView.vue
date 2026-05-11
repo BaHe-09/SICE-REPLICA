@@ -23,27 +23,52 @@
         </div>
       </transition>
 
-      <div class="filters-bar">
+      <!-- Barra de acciones -->
+      <div class="actions-bar">
         <div class="search-group">
           <svg xmlns="http://www.w3.org/2000/svg" class="search-icon-svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
           <input type="text" placeholder="Buscar por nombre del plan..." v-model="busqueda" class="search-input" @keydown.escape="busqueda = ''">
         </div>
-        <select v-model="filtroCarrera" class="filter-select">
-          <option value="">Carrera</option>
-          <option v-for="c in carreras" :key="c.id_carrera" :value="c.id_carrera">{{ c.nombre }}</option>
-        </select>
-        <select v-model="filtroEstatus" class="filter-select">
-          <option value="">Estatus</option>
-          <option value="1">Activo</option>
-          <option value="0">Inactivo</option>
-        </select>
-        <button class="btn-limpiar" @click="limpiarFiltros">
-          <svg xmlns="http://www.w3.org/2000/svg" class="reset-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
-          Limpiar
+        <button class="btn-filtros" @click="mostrarFiltros = !mostrarFiltros" :class="{ activo: filtrosActivos }">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
+          </svg>
+          Filtros
+          <span v-if="filtrosActivos" class="filtros-badge">{{ contadorFiltros }}</span>
         </button>
         <button class="btn-nuevo" @click="abrirModalNuevo">+ Nuevo plan</button>
       </div>
 
+      <!-- Panel filtros desplegable -->
+      <transition name="filtros-slide">
+        <div v-if="mostrarFiltros" class="filtros-panel">
+          <div class="filtros-grid">
+            <div class="filtro-item">
+              <label class="filtro-label">Carrera</label>
+              <select v-model="filtroCarrera" class="filter-select">
+                <option value="">Todas</option>
+                <option v-for="c in carreras" :key="c.id_carrera" :value="c.id_carrera">{{ c.nombre }}</option>
+              </select>
+            </div>
+            <div class="filtro-item">
+              <label class="filtro-label">Estatus</label>
+              <select v-model="filtroEstatus" class="filter-select">
+                <option value="">Todos</option>
+                <option value="1">Activo</option>
+                <option value="0">Inactivo</option>
+              </select>
+            </div>
+          </div>
+          <div class="filtros-footer">
+            <button class="btn-limpiar" @click="limpiarFiltros">
+              <svg xmlns="http://www.w3.org/2000/svg" class="reset-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+              Limpiar filtros
+            </button>
+          </div>
+        </div>
+      </transition>
+
+      <!-- Tabla compacta -->
       <div class="table-container">
         <div v-if="cargando && planes.length === 0" class="estado-cargando">
           <div class="spinner-tabla"></div><p>Cargando registros...</p>
@@ -53,28 +78,26 @@
             <tr>
               <th>Nombre del Plan</th>
               <th>Carrera</th>
-              <th>Año de Vigencia</th>
-              <th>Total de Créditos</th>
+              <th class="th-centro">Año</th>
+              <th class="th-centro">Créditos</th>
               <th>Estatus</th>
-              <th>Acciones</th>
+              <th class="th-acciones">Acciones</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="(plan, index) in planesPaginados" :key="plan.id_plan"
                 :class="{ 'fila-seleccionada': filaActiva === index }" @click="filaActiva = index">
               <td class="celda-nombre">{{ plan.nombre_plan }}</td>
-              <td>{{ plan.carrera?.nombre || '—' }}</td>
-              <td>{{ plan.anio_vigencia }}</td>
-              <td>{{ plan.total_creditos }}</td>
+              <td class="celda-secundaria">{{ plan.carrera?.nombre || '—' }}</td>
+              <td class="td-centro">{{ plan.anio_vigencia }}</td>
+              <td class="td-centro">{{ plan.total_creditos }}</td>
               <td><span class="estatus-badge" :class="plan.estatus ? 'activo' : 'inactivo'">{{ plan.estatus ? 'Activo' : 'Inactivo' }}</span></td>
               <td class="celda-acciones">
-                <button class="btn-accion ver" @click.stop="abrirModalVer(plan)">
+                <button class="btn-icono ver" @click.stop="abrirModalVer(plan)" title="Ver detalles">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                  Ver
                 </button>
-                <button class="btn-accion editar" @click.stop="abrirModalEditar(plan)">
+                <button class="btn-icono editar" @click.stop="abrirModalEditar(plan)" title="Editar">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                  Editar
                 </button>
               </td>
             </tr>
@@ -191,7 +214,6 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 
-// ── Variable de entorno — estandarización del proyecto ───────────
 const API = `${import.meta.env.VITE_API_URL}/api`
 
 const planes         = ref([])
@@ -201,18 +223,24 @@ const guardando      = ref(false)
 const filaActiva     = ref(-1)
 const currentPage    = ref(1)
 const filasPorPagina = ref(10)
+const mostrarFiltros = ref(false)
 const busqueda       = ref('')
 const filtroCarrera  = ref('')
 const filtroEstatus  = ref('')
-const showModal          = ref(false)
-const showModalVer       = ref(false)
-const showModalEliminar  = ref(false)
-const planVer            = ref({})
-const planAEliminar      = ref(null)
+
+const showModal         = ref(false)
+const showModalVer      = ref(false)
+const showModalEliminar = ref(false)
+const planVer           = ref({})
+const planAEliminar     = ref(null)
+
 const form = reactive({ id_plan: null, id_carrera: '', nombre_plan: '', anio_vigencia: new Date().getFullYear(), total_creditos: '', estatus: 1 })
 const errors = reactive({})
 const notificacion = ref({ visible: false, mensaje: '', tipo: 'exito' })
 let timerNotif = null
+
+const filtrosActivos  = computed(() => !!(filtroCarrera.value || filtroEstatus.value))
+const contadorFiltros = computed(() => [filtroCarrera.value, filtroEstatus.value].filter(Boolean).length)
 
 const mostrarNotificacion = (mensaje, tipo = 'exito') => {
   if (timerNotif) clearTimeout(timerNotif)
@@ -220,11 +248,6 @@ const mostrarNotificacion = (mensaje, tipo = 'exito') => {
   timerNotif = setTimeout(() => { notificacion.value.visible = false }, 3500)
 }
 
-/*
- * GET /api/planes-estudio
- * Respuesta: [{ id_plan, id_carrera, nombre_plan, anio_vigencia, total_creditos, estatus,
- *               carrera: { nombre } }]
- */
 const cargarPlanes = async () => {
   cargando.value = true
   try {
@@ -235,9 +258,6 @@ const cargarPlanes = async () => {
   finally { cargando.value = false }
 }
 
-/*
- * GET /api/carreras → [{ id_carrera, nombre }]
- */
 const cargarCarreras = async () => {
   try {
     const res = await fetch(`${API}/carreras`)
@@ -258,13 +278,13 @@ const planesFiltrados = computed(() =>
   })
 )
 
-const totalPages     = computed(() => Math.ceil(planesFiltrados.value.length / filasPorPagina.value) || 1)
+const totalPages      = computed(() => Math.ceil(planesFiltrados.value.length / filasPorPagina.value) || 1)
 const planesPaginados = computed(() => { const s = (currentPage.value - 1) * filasPorPagina.value; return planesFiltrados.value.slice(s, s + filasPorPagina.value) })
-const visiblePages   = computed(() => { const t = totalPages.value, c = currentPage.value; if (t <= 7) return Array.from({ length: t }, (_, i) => i + 1); const p = new Set([1, t, c, c-1, c+1].filter(x => x >= 1 && x <= t)); return [...p].sort((a, b) => a - b) })
-const goToPage       = (p) => { currentPage.value = p; filaActiva.value = -1 }
-const prevPage       = () => { if (currentPage.value > 1) currentPage.value-- }
-const nextPage       = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
-const limpiarFiltros = () => { busqueda.value = ''; filtroCarrera.value = ''; filtroEstatus.value = ''; currentPage.value = 1; filaActiva.value = -1 }
+const visiblePages    = computed(() => { const t = totalPages.value, c = currentPage.value; if (t <= 7) return Array.from({ length: t }, (_, i) => i + 1); const p = new Set([1, t, c, c-1, c+1].filter(x => x >= 1 && x <= t)); return [...p].sort((a, b) => a - b) })
+const goToPage        = (p) => { currentPage.value = p; filaActiva.value = -1 }
+const prevPage        = () => { if (currentPage.value > 1) currentPage.value-- }
+const nextPage        = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
+const limpiarFiltros  = () => { busqueda.value = ''; filtroCarrera.value = ''; filtroEstatus.value = ''; currentPage.value = 1; filaActiva.value = -1 }
 
 const resetForm = () => { form.id_plan = null; form.id_carrera = ''; form.nombre_plan = ''; form.anio_vigencia = new Date().getFullYear(); form.total_creditos = ''; form.estatus = 1; Object.keys(errors).forEach(k => delete errors[k]) }
 const abrirModalNuevo  = () => { resetForm(); showModal.value = true }
@@ -275,17 +295,13 @@ const solicitarEliminar = () => { planAEliminar.value = { id_plan: form.id_plan,
 
 const validar = () => {
   Object.keys(errors).forEach(k => delete errors[k])
-  if (!form.id_carrera)                               errors.id_carrera    = 'Selecciona una carrera'
-  if (!form.nombre_plan.trim())                       errors.nombre_plan   = 'El nombre es obligatorio'
-  if (!form.anio_vigencia)                            errors.anio_vigencia = 'El año de vigencia es obligatorio'
+  if (!form.id_carrera)                                errors.id_carrera     = 'Selecciona una carrera'
+  if (!form.nombre_plan.trim())                        errors.nombre_plan    = 'El nombre es obligatorio'
+  if (!form.anio_vigencia)                             errors.anio_vigencia  = 'El año de vigencia es obligatorio'
   if (!form.total_creditos || form.total_creditos < 1) errors.total_creditos = 'Los créditos deben ser mayores a 0'
   return Object.keys(errors).length === 0
 }
 
-/*
- * POST /api/planes-estudio   body: { id_carrera, nombre_plan, anio_vigencia, total_creditos, estatus }
- * PUT  /api/planes-estudio/:id  body: mismos campos
- */
 const guardar = async () => {
   if (!validar()) return
   guardando.value = true
@@ -301,9 +317,6 @@ const guardar = async () => {
   finally { guardando.value = false }
 }
 
-/*
- * DELETE /api/planes-estudio/:id
- */
 const confirmarEliminar = async () => {
   if (!planAEliminar.value) return
   guardando.value = true
@@ -322,30 +335,39 @@ const confirmarEliminar = async () => {
 
 .planes-page{--azul:#1B396A;--azul-hover:#1D4ED8;--azul-suave:#DBEAFE;--borde:#E5E7EB;--fondo:#F5F5F5;--texto:#1A1A1A;--gris:#6B7280;--verde:#16A34A;--rojo:#DC2626;width:100%;background:var(--fondo);font-family:'Montserrat',sans-serif;padding-bottom:2rem}
 .breadcrumb{display:flex;align-items:center;gap:6px;color:var(--gris);font-size:0.88rem;margin-bottom:0.75rem}.breadcrumb-link{color:var(--azul);font-weight:500;cursor:pointer;transition:color 0.15s}.breadcrumb-link:hover{color:var(--azul-hover);text-decoration:underline}.breadcrumb-sep{color:#9CA3AF}.breadcrumb-actual{color:var(--gris);font-weight:600}
-.page-header{display:flex;flex-direction:column;gap:4px;margin-bottom:1.2rem}
-.page-title{color:var(--texto);font-size:1.75rem;font-weight:700;letter-spacing:-0.02em;margin:0}
-.page-subtitle{font-size:0.9rem;color:var(--gris);font-weight:500;margin:0}
+.page-header{display:flex;flex-direction:column;gap:4px;margin-bottom:1.2rem}.page-title{color:var(--texto);font-size:1.75rem;font-weight:700;letter-spacing:-0.02em;margin:0}.page-subtitle{font-size:0.9rem;color:var(--gris);font-weight:500;margin:0}
 .barra-carga{height:3px;background:transparent;border-radius:2px;margin-bottom:1rem;overflow:hidden;opacity:0;transition:opacity 0.3s}.barra-carga.visible{opacity:1}.barra-progreso{height:100%;width:40%;background:var(--azul);border-radius:2px;animation:deslizar 1.2s ease-in-out infinite}
 @keyframes deslizar{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}
 .toast{position:fixed;bottom:2rem;right:2rem;display:flex;align-items:center;gap:10px;padding:12px 20px;border-radius:10px;color:white;font-weight:500;font-size:0.93rem;box-shadow:0 6px 20px rgba(0,0,0,0.18);z-index:3000;max-width:380px}.toast.exito{background:var(--azul)}.toast.error{background:var(--rojo)}.toast-icono{width:20px;height:20px;flex-shrink:0}
 .toast-slide-enter-active,.toast-slide-leave-active{transition:all 0.35s ease}.toast-slide-enter-from,.toast-slide-leave-to{opacity:0;transform:translateX(110%)}
-.filters-bar{display:flex;align-items:center;gap:0.75rem;margin-bottom:1.2rem;flex-wrap:wrap}
-.search-group{position:relative;flex:0 0 300px;min-width:220px}.search-input{width:100%;padding:10px 14px 10px 42px;border:1px solid var(--borde);border-radius:8px;font-size:0.93rem;background:#FFFFFF;color:var(--texto);font-family:'Montserrat',sans-serif;outline:none;transition:border-color 0.2s,box-shadow 0.2s;box-sizing:border-box}.search-input:focus{border-color:var(--azul);box-shadow:0 0 0 3px #DBEAFE}.search-input::placeholder{color:#9CA3AF}.search-icon-svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:18px;height:18px;stroke:var(--gris);pointer-events:none}
-.filter-select{padding:10px 12px;border:1px solid var(--borde);border-radius:8px;font-size:0.92rem;flex:1 1 150px;min-width:130px;background:#FFFFFF;color:var(--texto);font-family:'Montserrat',sans-serif;cursor:pointer;outline:none}.filter-select:focus{border-color:var(--azul)}
-.btn-limpiar{display:flex;align-items:center;gap:6px;background:#FFFFFF;color:var(--texto);border:1px solid var(--borde);padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.92rem;white-space:nowrap;font-family:'Montserrat',sans-serif;transition:background 0.15s}.btn-limpiar:hover{background:var(--fondo)}.reset-icon{width:16px;height:16px;stroke:var(--gris)}
+
+.actions-bar{display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;flex-wrap:wrap}
+.search-group{position:relative;flex:1 1 260px;min-width:200px}.search-input{width:100%;padding:10px 14px 10px 42px;border:1px solid var(--borde);border-radius:8px;font-size:0.93rem;background:#FFFFFF;color:var(--texto);font-family:'Montserrat',sans-serif;outline:none;transition:border-color 0.2s,box-shadow 0.2s;box-sizing:border-box}.search-input:focus{border-color:var(--azul);box-shadow:0 0 0 3px #DBEAFE}.search-input::placeholder{color:#9CA3AF}.search-icon-svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:18px;height:18px;stroke:var(--gris);pointer-events:none}
+.btn-filtros{display:flex;align-items:center;gap:7px;background:#FFFFFF;color:var(--texto);border:1px solid var(--borde);padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.92rem;font-family:'Montserrat',sans-serif;transition:background 0.15s,border-color 0.15s;white-space:nowrap;position:relative}.btn-filtros svg{width:16px;height:16px;stroke:var(--gris)}.btn-filtros:hover{background:var(--fondo)}.btn-filtros.activo{border-color:var(--azul);color:var(--azul);background:var(--azul-suave)}.btn-filtros.activo svg{stroke:var(--azul)}.filtros-badge{background:var(--azul);color:white;font-size:0.72rem;font-weight:700;border-radius:10px;padding:1px 6px;margin-left:2px}
 .btn-nuevo{background:var(--azul);color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Montserrat',sans-serif;font-size:0.92rem;transition:background 0.2s;margin-left:auto}.btn-nuevo:hover{background:var(--azul-hover)}
+.filtros-panel{background:#FFFFFF;border:1px solid var(--borde);border-radius:10px;padding:1.2rem 1.4rem 1rem;margin-bottom:1rem;box-shadow:0 4px 12px rgba(0,0,0,0.06)}.filtros-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}.filtro-item{display:flex;flex-direction:column;gap:6px}.filtro-label{font-size:0.82rem;font-weight:600;color:var(--gris);font-family:'Montserrat',sans-serif}.filter-select{padding:9px 12px;border:1px solid var(--borde);border-radius:8px;font-size:0.9rem;background:#FFFFFF;color:var(--texto);font-family:'Montserrat',sans-serif;cursor:pointer;outline:none}.filter-select:focus{border-color:var(--azul)}.filtros-footer{display:flex;justify-content:flex-end;margin-top:0.9rem;padding-top:0.9rem;border-top:1px solid var(--borde)}.btn-limpiar{display:flex;align-items:center;gap:6px;background:transparent;color:var(--gris);border:none;padding:6px 10px;border-radius:6px;font-weight:600;cursor:pointer;font-size:0.88rem;font-family:'Montserrat',sans-serif;transition:color 0.15s}.btn-limpiar:hover{color:var(--rojo)}.reset-icon{width:14px;height:14px}
+.filtros-slide-enter-active,.filtros-slide-leave-active{transition:all 0.25s ease;overflow:hidden}.filtros-slide-enter-from,.filtros-slide-leave-to{opacity:0;transform:translateY(-8px)}
+
 .table-container{background:#FFFFFF;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.05);border:1px solid var(--borde)}
-.data-table{width:100%;border-collapse:collapse;outline:none}.data-table th{background:var(--fondo);padding:12px 16px;text-align:left;font-weight:600;font-size:0.88rem;color:var(--texto);border-bottom:1px solid var(--borde);font-family:'Montserrat',sans-serif;white-space:nowrap}.data-table td{padding:11px 16px;border-bottom:1px solid var(--borde);color:var(--texto);font-size:0.93rem;font-family:'Montserrat',sans-serif}.data-table tbody tr{transition:background 0.15s;cursor:pointer}.data-table tbody tr:hover{background:#F8FAFC}.data-table tbody tr:last-child td{border-bottom:none}.fila-seleccionada{background:#DBEAFE!important}.celda-nombre{font-weight:600}
-.estatus-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:0.83rem;font-weight:600}.estatus-badge.activo{background:#DCFCE7;color:#16A34A}.estatus-badge.inactivo{background:#F3F4F6;color:#6B7280}
-.celda-acciones{display:flex;gap:7px;align-items:center}.btn-accion{display:flex;align-items:center;gap:5px;padding:6px 13px;border-radius:6px;font-size:0.85rem;cursor:pointer;font-weight:600;font-family:'Montserrat',sans-serif;transition:background 0.15s;white-space:nowrap}.btn-accion svg{width:14px;height:14px}.btn-accion.ver{background:#F3F4F6;color:#1A1A1A;border:1px solid #D1D5DB}.btn-accion.ver:hover{background:#E5E7EB;border-color:#9CA3AF}.btn-accion.editar{background:#1B396A;color:#FFFFFF;border:1px solid #1B396A}.btn-accion.editar:hover{background:#1D4ED8;border-color:#1D4ED8}
-.estado-vacio,.estado-cargando{text-align:center;padding:3.5rem 2rem;color:var(--gris)}.icono-vacio{width:56px;height:56px;stroke:#9CA3AF;margin-bottom:12px}.estado-vacio h3{font-size:1.2rem;color:var(--texto);margin:0 0 6px}.estado-vacio p{font-size:0.93rem;margin:0 0 1.2rem}.btn-limpiar-vacio{background:#FFFFFF;color:var(--texto);border:1px solid var(--borde);padding:9px 20px;border-radius:8px;font-weight:500;cursor:pointer;font-family:'Montserrat',sans-serif}.spinner-tabla{display:inline-block;width:36px;height:36px;border:3px solid #E5E7EB;border-top-color:var(--azul);border-radius:50%;animation:girar 0.8s linear infinite;margin-bottom:12px}
+.data-table{width:100%;border-collapse:collapse}.data-table th{background:var(--fondo);padding:9px 12px;text-align:left;font-weight:600;font-size:0.82rem;color:var(--texto);border-bottom:1px solid var(--borde);font-family:'Montserrat',sans-serif;white-space:nowrap}.th-centro,.td-centro{text-align:center}.th-acciones{text-align:center}.data-table td{padding:8px 12px;border-bottom:1px solid var(--borde);color:var(--texto);font-size:0.88rem;font-family:'Montserrat',sans-serif}.data-table tbody tr{transition:background 0.15s;cursor:pointer}.data-table tbody tr:hover{background:#F8FAFC}.data-table tbody tr:last-child td{border-bottom:none}.fila-seleccionada{background:#DBEAFE!important}.celda-nombre{font-weight:600;font-size:0.9rem}.celda-secundaria{color:var(--gris);font-size:0.85rem}
+
+.estatus-badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:0.78rem;font-weight:600}.estatus-badge.activo{background:#DCFCE7;color:#16A34A}.estatus-badge.inactivo{background:#F3F4F6;color:#6B7280}
+
+.celda-acciones{display:flex;gap:5px;align-items:center;justify-content:center}
+.btn-icono{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:7px;cursor:pointer;border:1px solid transparent;transition:background 0.15s,border-color 0.15s;flex-shrink:0}.btn-icono svg{width:14px;height:14px}
+.btn-icono.ver{background:#F3F4F6;border-color:#D1D5DB}.btn-icono.ver:hover{background:#E5E7EB}.btn-icono.ver svg{stroke:#374151}
+.btn-icono.editar{background:var(--azul);border-color:var(--azul)}.btn-icono.editar:hover{background:var(--azul-hover);border-color:var(--azul-hover)}.btn-icono.editar svg{stroke:#FFFFFF}
+
+.estado-vacio,.estado-cargando{text-align:center;padding:3rem 2rem;color:var(--gris)}.icono-vacio{width:52px;height:52px;stroke:#9CA3AF;margin-bottom:12px}.estado-vacio h3{font-size:1.1rem;color:var(--texto);margin:0 0 6px}.estado-vacio p{font-size:0.9rem;margin:0 0 1rem}.btn-limpiar-vacio{background:#FFFFFF;color:var(--texto);border:1px solid var(--borde);padding:8px 18px;border-radius:8px;font-weight:500;cursor:pointer;font-family:'Montserrat',sans-serif}.spinner-tabla{display:inline-block;width:32px;height:32px;border:3px solid #E5E7EB;border-top-color:var(--azul);border-radius:50%;animation:girar 0.8s linear infinite;margin-bottom:12px}
+
 .paginacion{margin-top:1.2rem;display:flex;justify-content:space-between;align-items:center;font-size:0.9rem;color:var(--gris);font-family:'Montserrat',sans-serif;flex-wrap:wrap;gap:0.5rem}.paginacion-izquierda,.paginacion-centro,.paginacion-derecha{display:flex;align-items:center;gap:8px}.select-filas{border:1px solid var(--borde);border-radius:6px;padding:4px 8px;font-size:0.9rem;background:#FFFFFF;font-family:'Montserrat',sans-serif}.btn-pag{padding:5px 11px;border:1px solid var(--borde);background:#FFFFFF;border-radius:6px;cursor:pointer;color:var(--texto);font-family:'Montserrat',sans-serif;font-size:0.9rem;transition:background 0.15s}.btn-pag:hover:not(:disabled){background:var(--fondo)}.btn-pag:disabled{opacity:0.4;cursor:not-allowed}.btn-pag.activo{background:var(--azul);color:white;border-color:var(--azul)}
+
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;z-index:2000}.modal-content{background:#FFFFFF;width:520px;max-width:92%;border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,0.18);overflow:hidden;border:1px solid #E5E7EB}.modal-confirmar{width:440px}.modal-header{background:#1B396A;color:white;padding:1.1rem 1.6rem;display:flex;justify-content:space-between;align-items:center}.modal-header h3{margin:0;font-size:1.2rem;font-weight:700;font-family:'Montserrat',sans-serif}.btn-cerrar-modal{background:none;border:none;color:white;font-size:1.7rem;cursor:pointer;line-height:1;opacity:0.85}.btn-cerrar-modal:hover{opacity:1}
 .modal-body{padding:1.6rem}.form-grupo{margin-bottom:1.2rem}.form-grupo-doble{display:grid;grid-template-columns:1fr 1fr;gap:1rem}.form-grupo label{display:block;margin-bottom:6px;font-weight:600;font-size:0.9rem;color:#1A1A1A;font-family:'Montserrat',sans-serif}.obligatorio{color:#DC2626}.modal-input,.modal-select{width:100%;padding:10px 14px;border:1.5px solid #E5E7EB;border-radius:8px;font-size:0.95rem;background:#FFFFFF;color:#1A1A1A;font-family:'Montserrat',sans-serif;outline:none;transition:border-color 0.2s;box-sizing:border-box}.modal-input:focus,.modal-select:focus{border-color:#1B396A;box-shadow:0 0 0 3px #DBEAFE}.borde-error{border-color:#DC2626!important}.mensaje-error{display:block;color:#DC2626;font-size:0.82rem;margin-top:5px}
 .indicador-estatus{display:inline-flex;align-items:center;margin-top:7px;padding:4px 12px;border-radius:20px;font-size:0.82rem;font-weight:600}.indicador-estatus.activo{background:#DCFCE7;color:#16A34A}.indicador-estatus.inactivo{background:#F3F4F6;color:#6B7280}
 .modal-footer{padding:1rem 1.6rem;background:#F5F5F5;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #E5E7EB}.btn-secundario{padding:10px 22px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;background:#FFFFFF;color:#1B396A;border:2px solid #1B396A;transition:background 0.15s}.btn-secundario:hover{background:#DBEAFE}.btn-secundario:disabled{opacity:0.5;cursor:not-allowed}.btn-eliminar{padding:10px 22px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;background:#DC2626;color:white;border:2px solid #DC2626;transition:background 0.15s}.btn-eliminar:hover{background:#B91C1C}.btn-eliminar:disabled{opacity:0.5;cursor:not-allowed}.btn-guardar{display:flex;align-items:center;gap:8px;padding:10px 22px;border-radius:8px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;background:#1B396A;color:#FFFFFF;border:2px solid #1B396A;transition:background 0.15s}.btn-guardar:hover:not(:disabled){background:#1D4ED8}.btn-guardar:disabled{opacity:0.55;cursor:not-allowed}.spinner-btn{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:girar 0.7s linear infinite;flex-shrink:0}
 .detalle-fila{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #E5E7EB;font-size:0.95rem;font-family:'Montserrat',sans-serif}.detalle-fila:last-child{border-bottom:none}.detalle-label{font-weight:600;color:#6B7280}.detalle-valor{font-weight:500;color:#1A1A1A}
 .confirmar-body{display:flex;flex-direction:column;align-items:center;gap:1rem;text-align:center;padding:2rem 1.6rem}.confirmar-icono{width:52px;height:52px;stroke:#F59E0B}.confirmar-body p{color:#1A1A1A;font-size:0.95rem;margin:0;line-height:1.5;font-family:'Montserrat',sans-serif}
-@keyframes girar{to{transform:rotate(360deg)}}
 .pie-pagina{text-align:center;color:#9CA3AF;font-size:0.82rem;padding-top:2rem;border-top:1px solid #E5E7EB;margin-top:1rem}
+@keyframes girar{to{transform:rotate(360deg)}}
 </style>
