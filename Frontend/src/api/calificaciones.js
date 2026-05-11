@@ -29,8 +29,7 @@ export const guardarCalificaciones = async (alumnos) => {
   }
 
   if (peticiones.length === 0) {
-    console.warn('No hay calificaciones válidas para guardar')
-    return []
+    throw new Error('No hay calificaciones válidas para guardar (faltan IDs de evaluación)')
   }
 
   const LOTE = 5

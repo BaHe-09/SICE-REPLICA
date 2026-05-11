@@ -20,17 +20,21 @@ class ServiciosEscolaresController extends Controller
 {
     $grupoId = $request->query('grupo_id');
 
+    // JOIN evaluacion directo al grupo para tener los IDs aunque no haya calificaciones aún
     $datos = DB::table('inscripcion as i')
         ->join('alumno as a', 'i.id_alumno', '=', 'a.id_alumno')
         ->join('persona as p', 'a.id_persona', '=', 'p.id_persona')
-        ->leftJoin('calificacion as c', 'i.id_inscripcion', '=', 'c.id_inscripcion')
-        ->leftJoin('evaluacion as e', 'c.id_evaluacion', '=', 'e.id_evaluacion')
+        ->join('evaluacion as e', 'e.id_grupo', '=', 'i.id_grupo')
+        ->leftJoin('calificacion as c', function ($join) {
+            $join->on('c.id_inscripcion', '=', 'i.id_inscripcion')
+                 ->on('c.id_evaluacion',  '=', 'e.id_evaluacion');
+        })
         ->when($grupoId, fn($q) => $q->where('i.id_grupo', $grupoId))
         ->select(
-            'i.id_inscripcion',          // <-- NECESARIO para guardar
+            'i.id_inscripcion',
             'a.numero_control',
             DB::raw("CONCAT(p.nombre, ' ', p.apellido_paterno, ' ', p.apellido_materno) as nombre"),
-            'e.id_evaluacion',           // <-- NECESARIO para guardar
+            'e.id_evaluacion',
             'e.nombre as evaluacion',
             'c.calificacion'
         )
@@ -43,31 +47,33 @@ class ServiciosEscolaresController extends Controller
 
         if (!isset($resultado[$key])) {
             $resultado[$key] = [
-                'id_inscripcion' => $d->id_inscripcion,  // <-- incluir
-                'control'        => $d->numero_control,
-                'nombre'         => $d->nombre,
-                'p1'             => null,
-                'p2'             => null,
-                'proy'           => null,
-                // IDs de evaluacion por parcial
+                'id_inscripcion'          => $d->id_inscripcion,
+                'control'                 => $d->numero_control,
+                'nombre'                  => $d->nombre,
+                'p1'                      => null,
+                'p2'                      => null,
+                'proy'                    => null,
                 'id_evaluacion_parcial_1' => null,
                 'id_evaluacion_parcial_2' => null,
                 'id_evaluacion_proyecto'  => null,
             ];
         }
 
-        if ($d->evaluacion === 'Parcial 1') {
-            $resultado[$key]['p1'] = $d->calificacion;
+        $nombre = strtolower(trim($d->evaluacion ?? ''));
+
+        if ($nombre === 'parcial 1') {
+            $resultado[$key]['p1']                      = $d->calificacion;
             $resultado[$key]['id_evaluacion_parcial_1'] = $d->id_evaluacion;
-        } elseif ($d->evaluacion === 'Parcial 2') {
-            $resultado[$key]['p2'] = $d->calificacion;
+        } elseif (str_contains($nombre, 'parcial 2') || str_contains($nombre, 'parcial2')) {
+            $resultado[$key]['p2']                      = $d->calificacion;
             $resultado[$key]['id_evaluacion_parcial_2'] = $d->id_evaluacion;
-        } elseif ($d->evaluacion !== null) {
-            // Cualquier otra evaluación nombrada (proyecto, final, etc.)
-            $resultado[$key]['proy'] = $d->calificacion;
-            $resultado[$key]['id_evaluacion_proyecto'] = $d->id_evaluacion;
+        } elseif (str_contains($nombre, 'proyecto') || str_contains($nombre, 'project')) {
+            // Solo sobreescribe si trae calificacion real o aún no tiene ID asignado
+            if ($d->calificacion !== null || $resultado[$key]['id_evaluacion_proyecto'] === null) {
+                $resultado[$key]['proy']                   = $d->calificacion;
+                $resultado[$key]['id_evaluacion_proyecto'] = $d->id_evaluacion;
+            }
         }
-        // Si evaluacion es null (LEFT JOIN sin calificación) se ignora
     }
 
     return response()->json(array_values($resultado));
