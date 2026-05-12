@@ -79,26 +79,18 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
           </svg>
-          <span class="nombre-usuario">{{ nombreRolActual }}</span>
+          <span class="nombre-usuario">{{ nombreUsuarioActual }}</span>
           <span class="flecha-desplegable" :class="{ rotada: mostrarMenuUsuario }">▼</span>
 
           <div v-if="mostrarMenuUsuario" class="desplegable-usuario" @click.stop>
-            <div class="elemento-desplegable" @click="establecerRol('servicios-escolares')">
-              <svg xmlns="http://www.w3.org/2000/svg" class="icono-rol" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-              Servicios Escolares
-            </div>
-            <div class="elemento-desplegable" @click="establecerRol('admin')">
-              <svg xmlns="http://www.w3.org/2000/svg" class="icono-rol" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              </svg>
-              Administrador
+            <!-- Info del usuario logueado -->
+            <div style="padding: 10px 16px 8px; border-bottom: 1px solid #E5E7EB;">
+              <p style="margin:0; font-size:0.85rem; font-weight:600; color:#1A1A1A;">{{ nombreUsuarioActual }}</p>
+              <p style="margin:2px 0 0; font-size:0.78rem; color:#6B7280;">{{ etiquetaRol }}</p>
             </div>
             <div class="separador-desplegable"></div>
-            <div class="elemento-desplegable elemento-cerrar-sesion">
+            <!-- Cerrar sesión -->
+            <div class="elemento-desplegable elemento-cerrar-sesion" @click="cerrarSesion">
               <svg xmlns="http://www.w3.org/2000/svg" class="icono-rol" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -137,6 +129,7 @@
         </router-link>
 
         <!-- ── Servicios Escolares ── -->
+        <template v-if="puedeVer.serviciosEscolares">
         <div class="elemento-menu elemento-padre" @click.stop="toggleServicios" :aria-expanded="isServiciosOpen" aria-label="Servicios Escolares">
           <svg xmlns="http://www.w3.org/2000/svg" class="icono-menu" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -146,13 +139,14 @@
           <span class="flecha-submenu" :class="{ abierto: isServiciosOpen }">›</span>
         </div>
         <div v-if="isServiciosOpen" class="submenu">
-          <router-link to="/servicios-escolares" class="elemento-menu elemento-submenu" active-class="activo">Principal</router-link>
-          <router-link to="/alumnos"             class="elemento-menu elemento-submenu" active-class="activo">Alumnos</router-link>
-          <router-link to="/evaluaciones"        class="elemento-menu elemento-submenu" active-class="activo">Evaluaciones</router-link>
-          <router-link to="/calificaciones"      class="elemento-menu elemento-submenu" active-class="activo">Calificaciones</router-link>
-          <router-link to="/inscripcion"         class="elemento-menu elemento-submenu" active-class="activo">Inscripción</router-link>
-          <router-link to="/gestion-grupos" class="elemento-menu elemento-submenu" active-class="activo">Grupos y Horarios</router-link>
+          <router-link v-if="puedeVerItem('/servicios-escolares')" to="/servicios-escolares" class="elemento-menu elemento-submenu" active-class="activo">Principal</router-link>
+          <router-link v-if="puedeVerItem('/alumnos')"             to="/alumnos"             class="elemento-menu elemento-submenu" active-class="activo">Alumnos</router-link>
+          <router-link v-if="puedeVerItem('/evaluaciones')"        to="/evaluaciones"        class="elemento-menu elemento-submenu" active-class="activo">Evaluaciones</router-link>
+          <router-link v-if="puedeVerItem('/calificaciones')"      to="/calificaciones"      class="elemento-menu elemento-submenu" active-class="activo">Calificaciones</router-link>
+          <router-link v-if="puedeVerItem('/inscripcion')"         to="/inscripcion"         class="elemento-menu elemento-submenu" active-class="activo">Inscripción</router-link>
+          <router-link v-if="puedeVerItem('/gestion-grupos')"      to="/gestion-grupos"      class="elemento-menu elemento-submenu" active-class="activo">Grupos y Horarios</router-link>
           <!-- Inscripciones Detalladas: sub-submenú colapsable -->
+          <template v-if="puedeVerItem('/inscripciones')">
           <div class="elemento-menu elemento-submenu elemento-padre" @click.stop="toggleInscripcionesDetalladas">
             <span style="flex:1">Inscripciones Detalladas</span>
             <span class="flecha-submenu" :class="{ abierto: isInscripcionesDetalladasOpen }">›</span>
@@ -161,9 +155,12 @@
             <router-link to="/inscripciones"           class="elemento-menu elemento-submenu elemento-submenu-anidado" active-class="activo">Panel General</router-link>
             <router-link to="/inscripciones/historial" class="elemento-menu elemento-submenu elemento-submenu-anidado" active-class="activo">Historial</router-link>
           </div>
+          </template>
         </div>
+        </template><!-- /serviciosEscolares -->
 
         <!-- ── Gestión Académica ── -->
+        <template v-if="puedeVer.gestionAcademica">
         <div class="elemento-menu elemento-padre" @click.stop="toggleGestionAcademica" :aria-expanded="isGestionAcademicaOpen" aria-label="Gestión Académica">
           <svg xmlns="http://www.w3.org/2000/svg" class="icono-menu" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -181,8 +178,10 @@
           <router-link to="/gestion-academica/periodos"        class="elemento-menu elemento-submenu" active-class="activo">Periodos Académicos</router-link>
           <router-link to="/gestion-academica/edificios-aulas" class="elemento-menu elemento-submenu" active-class="activo">Edificios y Aulas</router-link>
         </div>
+        </template><!-- /gestionAcademica -->
 
         <!-- ── Eventos ── -->
+        <template v-if="puedeVer.eventos">
         <div class="elemento-menu elemento-padre" @click.stop="toggleEventos" :aria-expanded="isEventosOpen" aria-label="Eventos">
           <svg xmlns="http://www.w3.org/2000/svg" class="icono-menu" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -195,8 +194,10 @@
           <router-link to="/eventos"       class="elemento-menu elemento-submenu" active-class="activo">Lista de Eventos</router-link>
           <router-link to="/eventos/nuevo" class="elemento-menu elemento-submenu" active-class="activo">Nuevo Evento</router-link>
         </div>
+        </template><!-- /eventos -->
 
         <!-- ── Comité Académico ── -->
+        <template v-if="puedeVer.comite">
         <div class="elemento-menu elemento-padre" @click.stop="toggleComite" :aria-expanded="isComiteOpen" aria-label="Comité Académico">
           <svg xmlns="http://www.w3.org/2000/svg" class="icono-menu" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -212,6 +213,7 @@
           <router-link to="/comite/sesiones"          class="elemento-menu elemento-submenu" active-class="activo">Sesiones</router-link>
           <router-link to="/comite/resoluciones"      class="elemento-menu elemento-submenu" active-class="activo">Resoluciones</router-link>
         </div>
+        </template><!-- /comite -->
 
         <!-- ══════════════════════════════════════
              ADMINISTRACIÓN (solo admin)
@@ -269,7 +271,11 @@
             <router-link to="/personas/nueva" class="elemento-menu elemento-submenu" active-class="activo">Nueva Persona</router-link>
           </div>
 
-          <!-- ── Asignación Docente a Grupos ── -->
+        </template><!-- /admin -->
+
+        <!-- ── Asignación Docente a Grupos ── -->
+        <!-- Visible para admin y docente -->
+        <template v-if="puedeVer.asignacionDocente">
           <div class="elemento-menu elemento-padre" @click.stop="toggleAsignacionDocente" :aria-expanded="isAsignacionDocenteOpen" aria-label="Asignación Docente a Grupos">
             <svg xmlns="http://www.w3.org/2000/svg" class="icono-menu" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -279,9 +285,13 @@
             <span class="flecha-submenu" :class="{ abierto: isAsignacionDocenteOpen }">›</span>
           </div>
           <div v-if="isAsignacionDocenteOpen" class="submenu">
-            <router-link to="/asignacion-docente"       class="elemento-menu elemento-submenu" active-class="activo">Asignación de Grupos</router-link>
+            <router-link v-if="rolActual === 'admin'" to="/asignacion-docente" class="elemento-menu elemento-submenu" active-class="activo">Asignación de Grupos</router-link>
             <router-link to="/asignacion-docente/carga" class="elemento-menu elemento-submenu" active-class="activo">Carga Académica</router-link>
           </div>
+        </template><!-- /asignacionDocente -->
+
+        <!-- Kardex e Historial solo admin -->
+        <template v-if="rolActual === 'admin'">
 
           <!-- ── Kardex ── -->
           <div class="elemento-menu elemento-padre" @click.stop="toggleKardex" :aria-expanded="isKardexOpen" aria-label="Kardex">
@@ -309,7 +319,7 @@
             <router-link to="/historial-academico" class="elemento-menu elemento-submenu" active-class="activo">Avance Curricular</router-link>
           </div>
 
-        </template>
+        </template><!-- /admin kardex historial -->
 
       </nav>
     </aside>
@@ -362,8 +372,11 @@ const isInscripcionesDetalladasOpen = ref(false)
 // ── Encabezado ────────────────────────────────────────────────────────
 const mostrarMenuUsuario    = ref(false)
 const mostrarNotificaciones = ref(false)
-const rolActual             = ref('servicios-escolares')
 const notificaciones        = ref([])
+
+// ── Datos del usuario logueado (leídos desde localStorage) ───────────
+const usuarioLogueado = ref(JSON.parse(localStorage.getItem('usuario') || 'null'))
+const rolActual       = computed(() => usuarioLogueado.value?.rol ?? 'servicios-escolares')
 
 // ── Persistencia en localStorage ─────────────────────────────────────
 onMounted(() => {
@@ -382,7 +395,6 @@ onMounted(() => {
   load('isKardexOpen',                  isKardexOpen)
   load('isHistorialAcademicoOpen',      isHistorialAcademicoOpen)
   load('isInscripcionesDetalladasOpen', isInscripcionesDetalladasOpen)
-  load('rolActual',                     rolActual, false)
   load('isFixed',                       isFixed)
 
   // Si estaba fijado, mostrar sidebar inmediatamente
@@ -399,7 +411,7 @@ watch(
     isServiciosOpen, isGestionAcademicaOpen, isEventosOpen,
     isComiteOpen, isSeguridadOpen, isRecursosHumanosOpen,
     isPersonasOpen, isAsignacionDocenteOpen, isKardexOpen,
-    isHistorialAcademicoOpen, isInscripcionesDetalladasOpen, rolActual, isFixed
+    isHistorialAcademicoOpen, isInscripcionesDetalladasOpen, isFixed
   ],
   () => {
     localStorage.setItem('isServiciosOpen',               JSON.stringify(isServiciosOpen.value))
@@ -413,18 +425,73 @@ watch(
     localStorage.setItem('isKardexOpen',                  JSON.stringify(isKardexOpen.value))
     localStorage.setItem('isHistorialAcademicoOpen',      JSON.stringify(isHistorialAcademicoOpen.value))
     localStorage.setItem('isInscripcionesDetalladasOpen', JSON.stringify(isInscripcionesDetalladasOpen.value))
-    localStorage.setItem('rolActual',                     rolActual.value)
     localStorage.setItem('isFixed',                       JSON.stringify(isFixed.value))
   },
   { deep: true }
 )
 
 // ── Computed ──────────────────────────────────────────────────────────
-const nombreRolActual = computed(() =>
-  rolActual.value === 'admin' ? 'Administrador' : 'Servicios Escolares'
+const ETIQUETAS_ROL = {
+  'admin':               'Administrador',
+  'docente':             'Docente',
+  'servicios-escolares': 'Servicios Escolares',
+}
+const etiquetaRol       = computed(() => ETIQUETAS_ROL[rolActual.value] ?? rolActual.value)
+const nombreUsuarioActual = computed(() =>
+  usuarioLogueado.value?.nombre_usuario ?? etiquetaRol.value
 )
 
-// ── Toggle sidebar (fijar / desfijar) ─────────────────────────────────
+// ── Visibilidad de módulos en el sidebar por rol ──────────────────────
+// admin ve todo (no se lista aquí). Para otros roles se define qué módulos
+// aparecen en el menú lateral, alineado con PERMISOS_POR_ROL del router.
+const MODULOS_POR_ROL = {
+  'docente': ['servicios-escolares', 'eventos', 'asignacion-docente'],
+  'servicios-escolares': ['servicios-escolares', 'gestion-academica', 'eventos', 'comite'],
+}
+
+const puedeVer = computed(() => {
+  const rol = rolActual.value
+  if (rol === 'admin') {
+    // Admin ve todos los módulos
+    return {
+      serviciosEscolares:   true,
+      gestionAcademica:     true,
+      eventos:              true,
+      comite:               true,
+      asignacionDocente:    true,
+    }
+  }
+  const modulos = MODULOS_POR_ROL[rol] ?? []
+  return {
+    serviciosEscolares:   modulos.includes('servicios-escolares'),
+    gestionAcademica:     modulos.includes('gestion-academica'),
+    eventos:              modulos.includes('eventos'),
+    comite:               modulos.includes('comite'),
+    asignacionDocente:    modulos.includes('asignacion-docente'),
+  }
+})
+// Alias para la compatibilidad con el template existente (v-if="rolActual === 'admin'")
+
+
+// ── Visibilidad de ítems dentro de submenús por rol ──────────────────
+// Devuelve true si la ruta está permitida para el rol actual.
+// Se usa para ocultar items individuales dentro de módulos compartidos.
+const ITEMS_POR_ROL = {
+  'docente': [
+    '/evaluaciones', '/calificaciones', '/gestion-grupos',
+    '/asignacion-docente/carga', '/eventos',
+  ],
+  'servicios-escolares': null, // null = ve todo
+}
+
+const puedeVerItem = computed(() => (ruta) => {
+  const rol = rolActual.value
+  if (rol === 'admin') return true
+  const items = ITEMS_POR_ROL[rol]
+  if (items === null || items === undefined) return true
+  // startsWith para cubrir rutas con parámetros
+  return items.some(r => ruta.startsWith(r))
+})
 // El botón de hamburguesa ahora alterna entre fijado y no fijado
 const toggleSidebar = () => {
   isFixed.value = !isFixed.value
@@ -505,9 +572,20 @@ const marcarTodasLeidas = () => {
   notificaciones.value        = []
   mostrarNotificaciones.value = false
 }
-const establecerRol = (rol) => {
-  rolActual.value          = rol
-  mostrarMenuUsuario.value = false
+// ── Cerrar sesión ─────────────────────────────────────────────────────
+const cerrarSesion = async () => {
+  try {
+    const token = localStorage.getItem('auth_token')
+    if (token) {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/logout`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+      })
+    }
+  } catch (_) { /* silencioso */ }
+  localStorage.removeItem('auth_token')
+  localStorage.removeItem('usuario')
+  router.push('/login')
 }
 </script>
 
@@ -1076,5 +1154,3 @@ h3 { font-size: clamp(1rem,  2.5vw, 1.2rem); }
 }
 
 </style>
-
-
