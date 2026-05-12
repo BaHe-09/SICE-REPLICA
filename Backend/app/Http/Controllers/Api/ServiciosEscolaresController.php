@@ -1,0 +1,309 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Services\BitacoraService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Models\Evaluacion;
+use App\Models\Calificacion;
+use App\Http\Controllers\Api\AlumnoController;
+use App\Http\Controllers\Api\InscripcionController;
+
+class ServiciosEscolaresController extends Controller
+{
+    // 🔹 CALIFICACIONES
+
+
+    public function getCalificacionesGrupo(Request $request)
+{
+    $grupoId = $request->query('grupo_id');
+
+    // JOIN evaluacion directo al grupo para tener los IDs aunque no haya calificaciones aún
+    $datos = DB::table('inscripcion as i')
+        ->join('alumno as a', 'i.id_alumno', '=', 'a.id_alumno')
+        ->join('persona as p', 'a.id_persona', '=', 'p.id_persona')
+        ->join('evaluacion as e', 'e.id_grupo', '=', 'i.id_grupo')
+        ->leftJoin('calificacion as c', function ($join) {
+            $join->on('c.id_inscripcion', '=', 'i.id_inscripcion')
+                 ->on('c.id_evaluacion',  '=', 'e.id_evaluacion');
+        })
+        ->when($grupoId, fn($q) => $q->where('i.id_grupo', $grupoId))
+        ->select(
+            'i.id_inscripcion',
+            'a.numero_control',
+            DB::raw("CONCAT(p.nombre, ' ', p.apellido_paterno, ' ', p.apellido_materno) as nombre"),
+            'e.id_evaluacion',
+            'e.nombre as evaluacion',
+            'c.calificacion'
+        )
+        ->get();
+
+    $resultado = [];
+
+    foreach ($datos as $d) {
+        $key = $d->numero_control;
+
+        if (!isset($resultado[$key])) {
+            $resultado[$key] = [
+                'id_inscripcion'          => $d->id_inscripcion,
+                'control'                 => $d->numero_control,
+                'nombre'                  => $d->nombre,
+                'p1'                      => null,
+                'p2'                      => null,
+                'proy'                    => null,
+                'id_evaluacion_parcial_1' => null,
+                'id_evaluacion_parcial_2' => null,
+                'id_evaluacion_proyecto'  => null,
+            ];
+        }
+
+        $nombre = strtolower(trim($d->evaluacion ?? ''));
+
+        if ($nombre === 'parcial 1') {
+            $resultado[$key]['p1']                      = $d->calificacion;
+            $resultado[$key]['id_evaluacion_parcial_1'] = $d->id_evaluacion;
+        } elseif (str_contains($nombre, 'parcial 2') || str_contains($nombre, 'parcial2')) {
+            $resultado[$key]['p2']                      = $d->calificacion;
+            $resultado[$key]['id_evaluacion_parcial_2'] = $d->id_evaluacion;
+        } elseif (str_contains($nombre, 'proyecto') || str_contains($nombre, 'project')) {
+            // Solo sobreescribe si trae calificacion real o aún no tiene ID asignado
+            if ($d->calificacion !== null || $resultado[$key]['id_evaluacion_proyecto'] === null) {
+                $resultado[$key]['proy']                   = $d->calificacion;
+                $resultado[$key]['id_evaluacion_proyecto'] = $d->id_evaluacion;
+            }
+        }
+    }
+
+    return response()->json(array_values($resultado));
+}
+
+    public function guardarCalificaciones(Request $request)
+{
+    $request->validate([
+        'id_inscripcion' => 'required|integer',
+        'id_evaluacion'  => 'required|integer',
+        'calificacion'   => 'required|numeric|min:0|max:100',
+        'fecha_registro' => 'nullable|date'
+    ]);
+
+    // Verificar que el acta del grupo no esté cerrada
+    $actaCerrada = DB::table('inscripcion as i')
+        ->join('grupo as g', 'i.id_grupo', '=', 'g.id_grupo')
+        ->where('i.id_inscripcion', $request->id_inscripcion)
+        ->value('g.acta_cerrada');
+
+    if ($actaCerrada) {
+        return response()->json(['mensaje' => 'No se puede modificar: el acta está cerrada'], 403);
+    }
+
+    $anterior = Calificacion::where('id_inscripcion', $request->id_inscripcion)
+        ->where('id_evaluacion', $request->id_evaluacion)
+        ->first();
+
+    $calificacion = Calificacion::updateOrCreate(
+        [
+            'id_inscripcion' => $request->id_inscripcion,
+            'id_evaluacion'  => $request->id_evaluacion,
+        ],
+        [
+            'calificacion'   => $request->calificacion,
+        ]
+    );
+
+    BitacoraService::registrar(
+        $anterior ? 'UPDATE' : 'INSERT',
+        'calificacion',
+        $calificacion->id_calificacion ?? $request->id_inscripcion,
+        $anterior ? ['calificacion' => $anterior->calificacion] : [],
+        ['calificacion' => $request->calificacion]
+    );
+
+    return response()->json([
+        'mensaje'       => 'Calificación guardada correctamente',
+        'calificacion'  => $calificacion
+    ], 200);
+}
+
+    public function actualizarCalificacion(Request $request, $id)
+    {
+        $request->validate([
+            'calificacion' => 'required|numeric|min:0|max:100'
+        ]);
+
+        $calificacion = Calificacion::findOrFail($id);
+
+        // Verificar que el acta no esté cerrada
+        $actaCerrada = DB::table('inscripcion as i')
+            ->join('grupo as g', 'i.id_grupo', '=', 'g.id_grupo')
+            ->where('i.id_inscripcion', $calificacion->id_inscripcion)
+            ->value('g.acta_cerrada');
+
+        if ($actaCerrada) {
+            return response()->json(['mensaje' => 'No se puede modificar: el acta está cerrada'], 403);
+        }
+
+        $anterior = $calificacion->calificacion;
+        $calificacion->update($request->all());
+
+        BitacoraService::registrar('UPDATE', 'calificacion', $id,
+            ['calificacion' => $anterior],
+            ['calificacion' => $request->calificacion]
+        );
+
+        return response()->json([
+            'mensaje' => 'Calificación actualizada',
+            'calificacion' => $calificacion
+        ], 200);
+    }
+
+    public function eliminarCalificacion($id)
+    {
+        $calificacion = Calificacion::find($id);
+
+        if ($calificacion) {
+            // Verificar acta cerrada
+            $actaCerrada = DB::table('inscripcion as i')
+                ->join('grupo as g', 'i.id_grupo', '=', 'g.id_grupo')
+                ->where('i.id_inscripcion', $calificacion->id_inscripcion)
+                ->value('g.acta_cerrada');
+
+            if ($actaCerrada) {
+                return response()->json(['mensaje' => 'No se puede eliminar: el acta está cerrada'], 403);
+            }
+
+            BitacoraService::registrar('DELETE', 'calificacion', $id,
+                ['calificacion' => $calificacion->calificacion]
+            );
+        }
+
+        Calificacion::destroy($id);
+        return response()->json(['mensaje' => 'Calificación eliminada'], 200);
+    }
+
+    // 🔹 ALUMNOS
+    public function getAlumnos()
+    {
+        $alumnos = DB::table('alumno as a')
+            ->join('persona as p', 'a.id_persona', '=', 'p.id_persona')
+            ->join('carrera as c', 'a.id_carrera', '=', 'c.id_carrera')
+            ->select(
+                'a.id_alumno',
+                'a.numero_control',
+                'a.id_carrera',
+                'a.semestre_actual',
+                'a.estatus',
+                DB::raw("CONCAT(p.nombre, ' ', p.apellido_paterno, ' ', p.apellido_materno) as nombre"),
+                'c.nombre as carrera'
+            )
+            ->get()
+            ->map(function ($alumno) {
+                return [
+                    'id_alumno' => $alumno->id_alumno,
+                    'numero_control' => $alumno->numero_control,
+                    'id_carrera' => $alumno->id_carrera,
+                    'semestre_actual' => $alumno->semestre_actual,
+                    'estatus' => $alumno->estatus,  // VARCHAR: 'Activo', 'Baja Temporal', etc.
+                    'nombre' => $alumno->nombre,
+                    'carrera' => [
+                        'nombre_carrera' => $alumno->carrera // 👈 importante para Vue
+                    ]
+                ];
+            });
+
+        return response()->json($alumnos);
+    }
+
+    public function store(Request $request)
+    {
+        return app(AlumnoController::class)->store($request);
+    }
+
+    public function buscarAlumnoInscripcion(Request $request)
+    {
+        return app(InscripcionController::class)->buscarAlumno($request);
+    }
+
+    // 🔹 GRUPOS / INSCRIPCIÓN
+    public function getGruposDisponibles()
+    {
+        return app(InscripcionController::class)->gruposDisponibles();
+    }
+
+    public function inscribirAlumno(Request $request)
+    {
+        return app(InscripcionController::class)->inscribirAlumno($request);
+    }
+
+    // 🔹 EVALUACIONES
+    public function getEvaluaciones($id_grupo)
+    {
+        $evaluaciones = DB::table('evaluacion')
+            ->where('id_grupo', $id_grupo)
+            ->get();
+
+        return response()->json($evaluaciones);
+    }
+
+    public function guardarEvaluaciones(Request $request)
+    {
+        $request->validate([
+            'id_grupo' => 'required|integer',
+            'nombre' => 'required|string|max:50',
+            'porcentaje' => 'required|numeric|min:0|max:100'
+        ]);
+
+        $evaluacion = Evaluacion::create($request->all());
+
+        return response()->json([
+            'mensaje' => 'Evaluación guardada correctamente',
+            'evaluacion' => $evaluacion
+        ], 201);
+    }
+
+    public function actualizarEvaluacion(Request $request, $id)
+    {
+        $request->validate([
+            'nombre' => 'required|string|max:50',
+            'porcentaje' => 'required|numeric|min:0|max:100'
+        ]);
+
+        $evaluacion = Evaluacion::findOrFail($id);
+        $evaluacion->update($request->all());
+
+        return response()->json([
+            'mensaje' => 'Evaluación actualizada',
+            'evaluacion' => $evaluacion
+        ], 200);
+    }
+
+    public function eliminarEvaluacion($id)
+    {
+        // Primero borrar las calificaciones asociadas
+        DB::table('calificacion')->where('id_evaluacion', $id)->delete();
+
+        // Luego borrar la evaluación
+        Evaluacion::destroy($id);
+
+        return response()->json(['mensaje' => 'Evaluación eliminada'], 200);
+    }
+
+    // 🔹 RESUMEN ESCOLAR
+    public function getResumen()
+    {
+        try {
+            return response()->json([
+                'total_alumnos'       => DB::table('alumno')->count(),
+                'alumnos_activos'     => DB::table('alumno')->where('estatus', 'Activo')->count(),
+                'total_grupos'        => DB::table('grupo')->count(),
+                'total_inscripciones' => DB::table('inscripcion')->count(),
+                'total_materias'      => DB::table('materia')->count(),
+                'total_evaluaciones'  => DB::table('evaluacion')->count(),
+                'total_calificaciones'=> DB::table('calificacion')->count(),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+}
