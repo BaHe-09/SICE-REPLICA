@@ -895,7 +895,16 @@ const cerrarSesion = async () => {
 
   /* Ocultar título largo, mostrar solo "SICE" */
   .titulo-sistema {
-    display: none;
+    font-size: 0;        /* oculta el texto original */
+    letter-spacing: 0;
+  }
+
+  .titulo-sistema::after {
+    content: 'SICE';
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    color: white;
   }
 
   /* Buscador más compacto */
@@ -1154,3 +1163,4 @@ h3 { font-size: clamp(1rem,  2.5vw, 1.2rem); }
 }
 
 </style>
+titulo-sistema
