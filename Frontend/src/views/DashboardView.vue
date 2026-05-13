@@ -1,8 +1,3 @@
-<!-- ============================================================ -->
-<!-- src/views/DashboardView.vue                               -->
-<!-- Módulo: Dashboard principal del sistema SICE              -->
-<!-- Autor: Diego (SICE) | Refactorizado: Junio 2025           -->
-<!-- ============================================================ -->
 <template>
   <MainLayout v-slot="{ busquedaGlobal }">
     <div class="dashboard-page">
@@ -230,19 +225,7 @@
 </template>
 
 <script setup>
-/**
- * DashboardView.vue
- * Panel de inicio del sistema SICE.
- *
- * Responsable: Diego
- * Módulo: Dashboard / Acceso rápido
- *
- * Mejoras aplicadas:
- * - Búsqueda rápida de alumno por número de control (redirige a kardex)
- * - KPIs con skeleton de carga
- * - Acciones rápidas declarativas (array + v-for)
- * - Semántica HTML mejorada (time, role, aria-*)
- */
+
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -385,7 +368,7 @@ const accionesRapidas = [
     label:    'Nueva inscripción',
     primario: true,
     iconPath: 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z',
-    handler:  () => router.push('/alumnos/nuevo')
+    handler:  () => router.push('/formulario-alumno')
   },
   {
     label:    'Lista de alumnos',
@@ -395,7 +378,7 @@ const accionesRapidas = [
   {
     label:    'Gestión de grupos',
     iconPath: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z',
-    handler:  () => router.push('/grupos')
+    handler:  () => router.push('/gestion-grupos')
   },
   {
     label:    'Cargar calificaciones',
@@ -645,26 +628,128 @@ onMounted(() => {
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
 /* ══ RESPONSIVE ══ */
+/* ══════════════════════════════════════
+   RESPONSIVE — DashboardView
+   Santiago Acosta — Modificaciones SICE
+══════════════════════════════════════ */
+
+/* ── Tablet grande (≤1200px) ── */
 @media (max-width: 1200px) {
   .kpi-grid { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* ── Tablet (≤900px) ── */
 @media (max-width: 900px) {
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }
   .fila-graficas { grid-template-columns: 1fr; }
   .fila-inferior { grid-template-columns: 1fr; }
   .barra-etiqueta { width: 90px; }
 }
+
+/* ── Móvil grande (≤640px) ── */
 @media (max-width: 640px) {
-  .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
-  .busqueda-rapida-card { flex-direction: column; align-items: flex-start; }
-  .busqueda-rapida-form { width: 100%; }
-  .busqueda-input { flex: 1; width: 100%; }
-  .grilla-acciones { grid-template-columns: 1fr 1fr; }
-  .page-title { font-size: 1.4rem; }
+  .inicio-header {
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+  }
+
+  .page-title { font-size: 1.35rem; }
+  .welcome-text { font-size: 0.82rem; }
+
+  .fecha-actual {
+    font-size: 0.78rem;
+    white-space: normal;
+    align-self: flex-start;
+  }
+
+  /* Búsqueda rápida en columna */
+  .busqueda-rapida-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 1.2rem;
+  }
+
+  .busqueda-rapida-form {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .busqueda-input-wrap { flex: 1; }
+  .busqueda-input {
+    width: 100%;
+    font-size: 16px; /* evita zoom iOS */
+  }
+
+  .btn-buscar { width: 100%; justify-content: center; }
+
+  /* KPIs más compactos */
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .kpi-card { padding: 1rem; gap: 0.75rem; }
+  .kpi-valor { font-size: 1.35rem; }
+  .kpi-etiqueta { font-size: 0.72rem; }
+  .kpi-icono-wrapper { width: 36px; height: 36px; border-radius: 8px; }
+  .kpi-icono { width: 18px; height: 18px; }
+
+  /* Gráficas */
+  .grafica-card { padding: 1rem 1.2rem; }
+  .barra-etiqueta { width: 80px; font-size: 0.75rem; }
+
+  /* Acciones rápidas en 2 columnas */
+  .grilla-acciones { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .btn-accion { min-height: 72px; font-size: 0.78rem; padding: 0.8rem; }
+  .accion-icono { width: 18px; height: 18px; }
+
+  /* Panel card más compacto */
+  .panel-card { padding: 1rem 1.2rem; }
+
+  /* Bitácora compacta */
+  .bitacora-desc {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 }
+
+/* ── Móvil pequeño (≤480px) ── */
 @media (max-width: 480px) {
-  .kpi-valor { font-size: 1.25rem; }
+  .page-title { font-size: 1.2rem; }
+
+  /* KPIs en 2 columnas mantenidas pero más compactas */
+  .kpi-valor { font-size: 1.2rem; }
+  .kpi-etiqueta { font-size: 0.7rem; }
+  .kpi-card { padding: 0.85rem; }
+
+  /* Acciones en columna con fila horizontal */
   .grilla-acciones { grid-template-columns: 1fr; }
-  .btn-accion { flex-direction: row; min-height: 52px; justify-content: flex-start; padding: 12px 14px; }
+  .btn-accion {
+    flex-direction: row;
+    min-height: 52px;
+    justify-content: flex-start;
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  /* Búsqueda rápida más compacta */
+  .busqueda-label { font-size: 0.88rem; }
+  .busqueda-sub { display: none; }
+
+  /* Bitácora fila inferior en columna */
+  .bitacora-fila-inferior {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
 }
 </style>
+
+label:    'Nueva inscripción',
