@@ -182,7 +182,8 @@
 
       <!-- Paginación -->
       <div class="paginacion">
-        <div class="paginacion-izquierda">
+        <!-- ── CORRECCIÓN: Ocultar selector "Filas por página" cuando hay ≤ 5 registros ── -->
+        <div class="paginacion-izquierda" v-if="carrerasFiltradas.length > 5">
           Filas por página:
           <select v-model="filasPorPagina" @change="currentPage = 1" class="select-filas">
             <option :value="10">10</option>
@@ -190,6 +191,7 @@
             <option :value="50">50</option>
           </select>
         </div>
+        <div class="paginacion-izquierda" v-else></div>
         <div class="paginacion-centro">Página {{ currentPage }} de {{ totalPages }}</div>
         <div class="paginacion-derecha">
           <button class="btn-pag" @click="prevPage" :disabled="currentPage === 1">‹</button>

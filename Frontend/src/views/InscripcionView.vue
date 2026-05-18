@@ -78,11 +78,13 @@
               </div>
             </div>
 
-            <!-- ── CORRECCIÓN: Periodo cargado desde API ── -->
+            <!-- ── CORRECCIÓN #14: Periodo cargado desde API directamente ── -->
             <div class="campo-grupo campo-periodo">
               <label>Periodo</label>
-              <select v-model="periodo" class="select-periodo">
-                <option :value="null" disabled>Seleccionar periodo</option>
+              <select v-model="periodo" class="select-periodo" :disabled="cargandoPeriodos">
+                <option :value="null" disabled>
+                  {{ cargandoPeriodos ? 'Cargando periodos...' : periodos.length === 0 ? 'Sin periodos disponibles' : 'Seleccionar periodo' }}
+                </option>
                 <option
                   v-for="p in periodos"
                   :key="p.id"
@@ -297,14 +299,53 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
-// ── CORRECCIÓN: importar useCatalogos ──
-import { useCatalogos } from '@/composables/useCatalogos'
 
 const API = `${import.meta.env.VITE_API_URL}/api`
 const API_BASE = `${API}/inscripcion`
 
-// ── CORRECCIÓN: obtener periodos y su función de carga ──
-const { periodos, cargarPeriodos } = useCatalogos()
+// ── CORRECCIÓN #14: Periodos cargados directamente desde el backend ──
+// Se eliminó la dependencia de useCatalogos (que no era confiable).
+// Se hace fetch a /api/periodos al montar el componente.
+const periodos = ref([])
+const cargandoPeriodos = ref(false)
+
+const cargarPeriodos = async () => {
+  cargandoPeriodos.value = true
+  try {
+    // Intentar el endpoint estándar de periodos
+    const res = await fetch(`${API}/periodos`, { headers: { 'Accept': 'application/json' } })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = await res.json()
+    // Normalizar: el backend puede devolver { id_periodo, nombre } o variantes
+    periodos.value = data.map(p => ({
+      id:     p.id_periodo ?? p.id,
+      nombre: p.nombre    ?? p.descripcion ?? `Periodo ${p.id_periodo ?? p.id}`
+    }))
+    // Auto-seleccionar el periodo activo si existe
+    if (!periodo.value) {
+      const activo = periodos.value.find(p =>
+        p.nombre?.toLowerCase().includes('actual') ||
+        p.nombre?.toLowerCase().includes('activo')
+      )
+      if (activo) periodo.value = activo.id
+    }
+  } catch (err) {
+    console.error('Error cargando periodos:', err)
+    // Intentar ruta alternativa si la principal falla
+    try {
+      const res2 = await fetch(`${API}/catalogos/periodos`, { headers: { 'Accept': 'application/json' } })
+      if (res2.ok) {
+        const data2 = await res2.json()
+        periodos.value = (Array.isArray(data2) ? data2 : data2.periodos ?? []).map(p => ({
+          id:     p.id_periodo ?? p.id,
+          nombre: p.nombre    ?? p.descripcion ?? `Periodo ${p.id_periodo ?? p.id}`
+        }))
+      }
+    } catch {}
+  } finally {
+    cargandoPeriodos.value = false
+  }
+}
 
 const paso = ref(1)
 // ── CORRECCIÓN: periodo guarda el ID (null por defecto hasta cargar catálogo) ──

@@ -113,7 +113,7 @@
           <tbody>
             <tr v-for="(plan, index) in planesPaginados" :key="plan.id_plan"
                 :class="{ 'fila-seleccionada': filaActiva === index }" @click="filaActiva = index">
-              <td class="celda-nombre">{{ plan.nombre_plan }}</td>
+              <td class="celda-nombre">{{ corregirNombrePlan(plan.nombre_plan) }}</td>
               <td class="celda-secundaria">{{ plan.carrera?.nombre || '—' }}</td>
               <td class="td-centro">{{ plan.anio_vigencia }}</td>
               <td class="td-centro">{{ plan.total_creditos }}</td>
@@ -145,11 +145,13 @@
       </div>
 
       <div class="paginacion">
-        <div class="paginacion-izquierda">Filas por página:
+        <!-- ── CORRECCIÓN: Ocultar selector "Filas por página" cuando hay ≤ 5 registros ── -->
+        <div class="paginacion-izquierda" v-if="planesFiltrados.length > 5">Filas por página:
           <select v-model="filasPorPagina" @change="currentPage = 1" class="select-filas">
             <option :value="10">10</option><option :value="20">20</option><option :value="50">50</option>
           </select>
         </div>
+        <div class="paginacion-izquierda" v-else></div>
         <div class="paginacion-centro">Página {{ currentPage }} de {{ totalPages }}</div>
         <div class="paginacion-derecha">
           <button class="btn-pag" @click="prevPage" :disabled="currentPage === 1">‹</button>
@@ -170,7 +172,7 @@
           <div class="modal-header">
             <div class="modal-header-info">
               <span class="modal-header-tag">Plan de Estudio</span>
-              <h3>{{ planVer.nombre_plan }}</h3>
+              <h3>{{ corregirNombrePlan(planVer.nombre_plan) }}</h3>
             </div>
             <button @click="showModalVer = false" class="btn-cerrar-modal">×</button>
           </div>
@@ -349,6 +351,22 @@ const planesPaginados = computed(() => { const s = (currentPage.value - 1) * fil
 const visiblePages    = computed(() => { const t = totalPages.value, c = currentPage.value; if (t <= 7) return Array.from({ length: t }, (_, i) => i + 1); const p = new Set([1, t, c, c-1, c+1].filter(x => x >= 1 && x <= t)); return [...p].sort((a, b) => a - b) })
 
 // ── Métodos ──────────────────────────────────────────────
+
+/**
+ * CORRECCIÓN #9: El nombre del plan viene mal escrito desde la BD
+ * como "Plan Ingenieria en Sistemas Computaciona 2026".
+ * Este helper normaliza los errores tipográficos conocidos hasta
+ * que se corrija el dato en la base de datos.
+ */
+const corregirNombrePlan = (nombre) => {
+  if (!nombre) return nombre
+  return nombre
+    // Corrige "Computaciona " → "Computacional " (falta la l final antes de año/espacio)
+    .replace(/Computaciona(\s|$)/g, 'Computacional$1')
+    // Corrige "Ingenieria" → "Ingeniería" (falta tilde)
+    .replace(/\bIngenieria\b/g, 'Ingeniería')
+}
+
 const mostrarNotificacion = (mensaje, tipo = 'exito') => {
   if (timerNotif) clearTimeout(timerNotif)
   notificacion.value = { visible: true, mensaje, tipo }
@@ -360,7 +378,12 @@ const cargarPlanes = async () => {
   try {
     const res = await fetch(`${API}/planes-estudio`)
     if (!res.ok) throw new Error()
-    planes.value = await res.json()
+    const data = await res.json()
+    // ── CORRECCIÓN: normalizar nombres de plan al cargar (corrige typos del backend) ──
+    planes.value = data.map(p => ({
+      ...p,
+      nombre_plan: corregirNombrePlan(p.nombre_plan)
+    }))
   } catch { mostrarNotificacion('No se pudieron cargar los planes.', 'error') }
   finally { cargando.value = false }
 }
