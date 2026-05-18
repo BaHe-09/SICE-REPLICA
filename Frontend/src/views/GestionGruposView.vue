@@ -22,64 +22,69 @@
       </transition>
 
       <div class="filtros-card">
-        <div class="filtros-label">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
-            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
-          </svg>
-          Filtrar:
+
+        <!-- Fila principal: siempre visible -->
+        <div class="filtros-fila-principal">
+          <!-- Buscador principal: siempre visible -->
+          <div class="busqueda-control-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16" class="icono-lupa">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input
+              type="text"
+              placeholder="No. de Control del alumno (principal)..."
+              v-model="busquedaControl"
+              class="input-busqueda-control"
+              ref="inputControlRef"
+              @keyup.enter="aplicarFiltros"
+            />
+            <button v-if="busquedaControl" @click="busquedaControl = ''" class="btn-limpiar-busqueda">✕</button>
+          </div>
+
+          <!-- Botón para mostrar/ocultar filtros adicionales -->
+          <button class="btn-toggle-filtros" @click="mostrarFiltros = !mostrarFiltros">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+            </svg>
+            Filtros
+            <span class="filtros-contador" v-if="filtrosActivos > 0">{{ filtrosActivos }}</span>
+            <span class="filtros-chevron" :class="{ abierto: mostrarFiltros }">›</span>
+          </button>
+
+          <button class="btn-nuevo" @click="nuevoGrupo">+ Nuevo Grupo</button>
         </div>
 
-        <!-- Búsqueda principal: número de control -->
-        <div class="busqueda-control-wrap">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16" class="icono-lupa">
-            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-          <input
-            type="text"
-            placeholder="No. de Control del alumno (principal)..."
-            v-model="busquedaControl"
-            class="input-busqueda-control"
-            ref="inputControlRef"
-            @keyup.enter="aplicarFiltros"
-          />
-          <button v-if="busquedaControl" @click="busquedaControl = ''" class="btn-limpiar-busqueda">✕</button>
+        <!-- Filtros ocultos: se muestran al hacer clic en "Filtros" -->
+        <div v-if="mostrarFiltros" class="filtros-expandidos">
+          <!-- Búsqueda secundaria: materia o docente -->
+          <div class="busqueda-secundaria-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16" class="icono-lupa-gris">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input
+              type="text"
+              placeholder="Materia o docente..."
+              v-model="busquedaGrupo"
+              class="input-busqueda-secundaria"
+              ref="inputBusquedaRef"
+              @keyup.enter="aplicarFiltros"
+            />
+          </div>
+
+          <select v-model="filtroCarrera" class="filtro-select" @change="aplicarFiltros">
+            <option value="">Carrera</option>
+            <option v-for="c in carreras" :key="c.id" :value="c.id">{{ c.nombre }}</option>
+          </select>
+
+          <select v-model="filtroSemestre" class="filtro-select" @change="aplicarFiltros">
+            <option value="">Semestre</option>
+            <option v-for="n in 8" :key="n" :value="n">{{ n }}° Semestre</option>
+          </select>
+
+          <button class="btn-filtrar" @click="aplicarFiltros">Aplicar</button>
+          <button class="btn-limpiar" @click="limpiarFiltros">Limpiar</button>
         </div>
 
-        <!-- Búsqueda secundaria: materia o docente -->
-        <div class="busqueda-secundaria-wrap">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16" class="icono-lupa-gris">
-            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-          <input
-            type="text"
-            placeholder="Materia o docente..."
-            v-model="busquedaGrupo"
-            class="input-busqueda-secundaria"
-            ref="inputBusquedaRef"
-            @keyup.enter="aplicarFiltros"
-          />
-        </div>
-
-        <!-- ── CORRECCIÓN: carreras cargadas desde API ── -->
-        <select v-model="filtroCarrera" class="filtro-select" @change="aplicarFiltros">
-          <option value="">Carrera</option>
-          <option
-            v-for="c in carreras"
-            :key="c.id"
-            :value="c.id"
-          >
-            {{ c.nombre }}
-          </option>
-        </select>
-
-        <select v-model="filtroSemestre" class="filtro-select" @change="aplicarFiltros">
-          <option value="">Semestre</option>
-          <option v-for="n in 8" :key="n" :value="n">{{ n }}° Semestre</option>
-        </select>
-
-        <button class="btn-filtrar" @click="aplicarFiltros">Filtrar</button>
-        <button class="btn-limpiar" @click="limpiarFiltros">Limpiar</button>
-        <button class="btn-nuevo" @click="nuevoGrupo">+ Nuevo Grupo</button>
       </div>
 
       <div v-if="errorCarga" class="error-carga">
@@ -292,6 +297,50 @@
           </div>
         </div>
       </div>
+      
+
+      <!-- Modal Ver Detalle -->
+      <div v-if="showModalDetalle" class="modal-overlay" @click.self="cerrarDetalle">
+        <div class="modal-content modal-confirm">
+          <div class="modal-header">
+            <h3>Detalle del Grupo</h3>
+            <button @click="cerrarDetalle" class="close-btn">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="detalle-fila">
+              <span class="detalle-etiqueta">Materia</span>
+              <span class="detalle-valor">{{ grupoDetalle?.materia }}</span>
+            </div>
+            <div class="detalle-fila">
+              <span class="detalle-etiqueta">Docente</span>
+              <span class="detalle-valor">{{ grupoDetalle?.docente }}</span>
+            </div>
+            <div class="detalle-fila">
+              <span class="detalle-etiqueta">Aula</span>
+              <span class="detalle-valor">{{ grupoDetalle?.aula }}</span>
+            </div>
+            <div class="detalle-fila">
+              <span class="detalle-etiqueta">Semestre</span>
+              <span class="detalle-valor">{{ grupoDetalle?.semestre }}° Semestre</span>
+            </div>
+            <div class="detalle-fila">
+              <span class="detalle-etiqueta">Capacidad</span>
+              <span class="detalle-valor">{{ grupoDetalle?.inscritos }} / {{ grupoDetalle?.capacidad }} inscritos</span>
+            </div>
+            <div class="detalle-fila">
+              <span class="detalle-etiqueta">Horario</span>
+              <span class="detalle-valor">
+                {{ grupoDetalle?.horario?.dia || 'Sin día' }}
+                {{ grupoDetalle?.horario?.horaInicio }} - {{ grupoDetalle?.horario?.horaFin }}
+              </span>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-cancelar" @click="cerrarDetalle">Cerrar</button>
+            <button class="btn-guardar" @click="editarGrupo(grupoDetalle); cerrarDetalle()">Editar</button>
+          </div>
+        </div>
+      </div>
 
     </div>
   </MainLayout>
@@ -308,13 +357,13 @@ const API = `${import.meta.env.VITE_API_URL}/api`
 
 const router = useRouter()
 
-// ── CORRECCIÓN: obtener carreras y su función de carga ──
+
 const { carreras, cargarCarreras } = useCatalogos()
 
+const mostrarFiltros          = ref(false)
 const busquedaControl         = ref('')
 const busquedaControlAplicada = ref('')
 const busquedaGrupo           = ref('')
-// ── CORRECCIÓN: filtroCarrera ahora guarda un ID (número) en vez de un string de nombre ──
 const filtroCarrera           = ref('')
 const filtroSemestre          = ref('')
 const filasPorPagina          = ref(10)
@@ -328,7 +377,11 @@ const inputControlRef  = ref(null)
 const inputBusquedaRef = ref(null)
 const paginaRef        = ref(null)
 
-// ── Notificación UI ──────────────────────────────────────────────────
+const filtrosActivos = computed(() =>
+  [busquedaGrupo.value, filtroCarrera.value, filtroSemestre.value]
+    .filter(v => v !== '' && v !== null && v !== undefined).length
+)
+
 const notificacion = ref({ visible: false, mensaje: '', tipo: 'exito' })
 let timerNotif = null
 
@@ -461,6 +514,8 @@ const aplicarFiltros = () => {
     filaActiva.value  = -1
   })
 }
+
+
 const limpiarFiltros = () => {
   simularCarga('Limpiando filtros...', () => {
     busquedaControl.value         = ''
@@ -470,6 +525,7 @@ const limpiarFiltros = () => {
     filtroSemestre.value          = ''
     currentPage.value             = 1
     filaActiva.value              = -1
+    mostrarFiltros.value          = false
   })
 }
 
@@ -610,10 +666,23 @@ const confirmarEliminar = async () => {
   }
 }
 
-const verDetalle        = (grupo) => {}
+const showModalDetalle = ref(false)
+const grupoDetalle     = ref(null)
+
+const verDetalle = (grupo) => {
+  grupoDetalle.value     = grupo
+  showModalDetalle.value = true
+}
+
+const cerrarDetalle = () => {
+  showModalDetalle.value = false
+  grupoDetalle.value     = null
+}
 const irAEvaluaciones   = (grupo) => router.push(`/evaluaciones/${grupo.id}`)
 const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
 </script>
+
+
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
@@ -1080,5 +1149,106 @@ const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
 
   .modal-confirm { width: 94%; }
 }
+
+/* ── Anular min-height heredado en botones de tabla (tarea #5) ── */
+.grupos-table .btn-icono,
+.grupos-table .btn-accion {
+  min-height: unset;
+}
+
+/* ── Modal Ver Detalle (tarea #6) ── */
+.detalle-fila {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 0;
+  border-bottom: 1px solid #E5E7EB;
+}
+.detalle-fila:last-child { border-bottom: none; }
+.detalle-etiqueta {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.detalle-valor {
+  font-size: 0.9rem;
+  color: #1A1A1A;
+  font-weight: 500;
+}
+
+/* ── Filtros reorganizados ── */
+.filtros-fila-principal {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.filtros-fila-principal .busqueda-control-wrap {
+  flex: 1;
+  min-width: 200px;
+}
+
+.btn-toggle-filtros {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  background: #F5F5F5;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1A1A1A;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+  position: relative;
+}
+.btn-toggle-filtros:hover { background: #E5E7EB; border-color: #D1D5DB; }
+.btn-toggle-filtros svg { stroke: #6B7280; }
+
+.filtros-contador {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #1B396A;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+}
+
+.filtros-chevron {
+  font-size: 1rem;
+  color: #6B7280;
+  transition: transform 0.25s;
+  display: inline-block;
+}
+.filtros-chevron.abierto { transform: rotate(90deg); }
+
+.filtros-expandidos {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  width: 100%;
+  padding-top: 0.6rem;
+  border-top: 1px solid #E5E7EB;
+  margin-top: 0.2rem;
+  animation: expandir 0.2s ease;
+}
+
+@keyframes expandir {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 
 </style>
