@@ -2,6 +2,14 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+  
+  // Scroll Behavior configurado para no resetear el scroll automáticamente
+  scrollBehavior(to, from, savedPosition) {
+    // Retornar false evita que Vue Router maneje el scroll por defecto
+    // Esto ayuda a que el sidebar mantenga su posición de scroll
+    return false
+  },
+
   routes: [
 
     // ── Raíz ──────────────────────────────────────────────────────────────
@@ -35,7 +43,6 @@ const router = createRouter({
 
     // ══════════════════════════════════════════════════════════════════════
     // MÓDULO: INSCRIPCIONES DETALLADAS (Nelly — Semana 3)
-    // Carpeta: src/views/Inscripciones_detalladas/
     // ══════════════════════════════════════════════════════════════════════
     { 
         path: '/inscripciones', 
@@ -72,7 +79,6 @@ const router = createRouter({
 
     // ══════════════════════════════════════════════════════════════════════
     // MÓDULO: PERSONAS
-    // Carpeta: src/views/Personas/
     // ══════════════════════════════════════════════════════════════════════
     {
       path: '/personas',
@@ -98,7 +104,6 @@ const router = createRouter({
 
     // ══════════════════════════════════════════════════════════════════════
     // MÓDULO: GESTIÓN ACADÉMICA
-    // Carpeta: src/views/GestionAcademica/
     // ══════════════════════════════════════════════════════════════════════
     { path: '/gestion-academica',               name: 'GestionAcademica',      component: () => import('@/views/GestionAcademica/GestionAcademicaView.vue') },
     { path: '/gestion-academica/carreras',      name: 'Carreras',              component: () => import('@/views/GestionAcademica/CarrerasView.vue') },
@@ -110,7 +115,6 @@ const router = createRouter({
 
     // ══════════════════════════════════════════════════════════════════════
     // MÓDULO: RECURSOS HUMANOS
-    // Carpeta: src/views/Recursos Humanos/
     // ══════════════════════════════════════════════════════════════════════
     {
       path: '/recursos-humanos',
@@ -158,7 +162,6 @@ const router = createRouter({
 
     // ══════════════════════════════════════════════════════════════════════
     // MÓDULO: SEGURIDAD Y USUARIOS
-    // Carpeta: src/views/Seguridad y Usuarios/
     // ══════════════════════════════════════════════════════════════════════
     { path: '/roles',          name: 'Roles',          component: () => import('@/views/Seguridad y Usuarios/RolesView.vue') },
     { path: '/permisos',       name: 'Permisos',       component: () => import('@/views/Seguridad y Usuarios/PermisosView.vue') },
@@ -169,14 +172,12 @@ const router = createRouter({
 
     // ══════════════════════════════════════════════════════════════════════
     // MÓDULO: ASIGNACIÓN DOCENTE A GRUPOS
-    // Carpeta: src/views/Asignación_Docente_a_Grupos/
     // ══════════════════════════════════════════════════════════════════════
     { path: '/asignacion-docente',name: 'AsignacionDocente', component: () => import('@/views/Asignación_Docente_a_Grupos/Asignaciondocenteview.vue')},
     { path: '/asignacion-docente/carga', name: 'CargaDocente', component: () => import('@/views/Asignación_Docente_a_Grupos/CargaDocenteView.vue')  },
 
     // ══════════════════════════════════════════════════════════════════════
     // MÓDULO: EVENTOS
-    // Carpeta: src/views/Modulo_Eventos/
     // ══════════════════════════════════════════════════════════════════════
     {
       path: '/eventos',
@@ -201,7 +202,6 @@ const router = createRouter({
 
     // ══════════════════════════════════════════════════════════════════════
     // MÓDULO: COMITÉ ACADÉMICO
-    // Carpeta: src/views/Modulo_Comite_Academico/
     // ══════════════════════════════════════════════════════════════════════
     {
       path: '/comite',
@@ -241,7 +241,6 @@ const router = createRouter({
 
     // ══════════════════════════════════════════════════════════════════════
     // MÓDULO: HISTORIAL ACADÉMICO
-    // Carpeta: src/views/Modulo_HistorialAcademico/
     // ══════════════════════════════════════════════════════════════════════
     {
       path: '/historial-academico',
@@ -251,7 +250,6 @@ const router = createRouter({
 
     // ══════════════════════════════════════════════════════════════════════
     // MÓDULO: KARDEX
-    // Carpeta: src/views/Modulo_Kardex/
     // ══════════════════════════════════════════════════════════════════════
     {
       path: '/kardex',
@@ -325,7 +323,6 @@ router.beforeEach((to, from, next) => {
   if (rol === 'admin') {
     return next()
   }
-
 
   const permitidas  = PERMISOS_POR_ROL[rol] ?? []
   const tieneAcceso = permitidas.some(ruta => to.path.startsWith(ruta))

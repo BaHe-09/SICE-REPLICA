@@ -1,4 +1,7 @@
-/* color palette from <https://github.com/vuejs/theme> */
+/* ============================================= */
+/* Base CSS - Sistema Integral de Control Escolar */
+/* ============================================= */
+
 :root {
   --vt-c-white: #ffffff;
   --vt-c-white-soft: #f8f8f8;
@@ -10,43 +13,31 @@
 
   --vt-c-indigo: #2c3e50;
 
-  --vt-c-divider-light-1: rgba(60, 60, 60, 0.29);
-  --vt-c-divider-light-2: rgba(60, 60, 60, 0.12);
-  --vt-c-divider-dark-1: rgba(84, 84, 84, 0.65);
-  --vt-c-divider-dark-2: rgba(84, 84, 84, 0.48);
-
-  --vt-c-text-light-1: var(--vt-c-indigo);
-  --vt-c-text-light-2: rgba(60, 60, 60, 0.66);
-  --vt-c-text-dark-1: var(--vt-c-white);
-  --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
-}
-
-/* semantic color variables for this project */
-:root {
   --color-background: var(--vt-c-white);
   --color-background-soft: var(--vt-c-white-soft);
   --color-background-mute: var(--vt-c-white-mute);
 
-  --color-border: var(--vt-c-divider-light-2);
-  --color-border-hover: var(--vt-c-divider-light-1);
+  --color-border: rgba(60, 60, 60, 0.12);
+  --color-border-hover: rgba(60, 60, 60, 0.29);
 
-  --color-heading: var(--vt-c-text-light-1);
-  --color-text: var(--vt-c-text-light-1);
+  --color-text: var(--vt-c-indigo);
+  --color-heading: var(--vt-c-indigo);
 
   --section-gap: 160px;
 }
 
+/* Dark mode (mantenido por si lo activas después) */
 @media (prefers-color-scheme: dark) {
   :root {
     --color-background: var(--vt-c-black);
     --color-background-soft: var(--vt-c-black-soft);
     --color-background-mute: var(--vt-c-black-mute);
 
-    --color-border: var(--vt-c-divider-dark-2);
-    --color-border-hover: var(--vt-c-divider-dark-1);
+    --color-border: rgba(84, 84, 84, 0.48);
+    --color-border-hover: rgba(84, 84, 84, 0.65);
 
-    --color-heading: var(--vt-c-text-dark-1);
-    --color-text: var(--vt-c-text-dark-2);
+    --color-heading: var(--vt-c-white);
+    --color-text: rgba(235, 235, 235, 0.64);
   }
 }
 
@@ -55,37 +46,44 @@
 *::after {
   box-sizing: border-box;
   margin: 0;
+  padding: 0;
   font-weight: normal;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overflow-x: hidden;
 }
 
 body {
   min-height: 100vh;
   color: var(--color-text);
   background: var(--color-background);
-  transition:
-    color 0.5s,
-    background-color 0.5s;
   line-height: 1.6;
-  font-family:
-    Inter,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
-    Oxygen,
-    Ubuntu,
-    Cantarell,
-    'Fira Sans',
-    'Droid Sans',
-    'Helvetica Neue',
-    sans-serif;
+  font-family: 'Montserrat', 
+               Inter,
+               -apple-system,
+               BlinkMacSystemFont,
+               'Segoe UI',
+               Roboto,
+               Oxygen,
+               Ubuntu,
+               Cantarell,
+               'Fira Sans',
+               'Droid Sans',
+               'Helvetica Neue',
+               sans-serif;
   font-size: 15px;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  
+  /* Transición removida para evitar interferencias con scroll */
 }
 
-/* ══ Barra de scroll — Navy Slim Minimal (Propuesta #1 Aprobada) ══ */
+/* ══ Barra de scroll — Navy Slim Minimal ══ */
 
 /* Firefox */
 html, body, * {
@@ -118,9 +116,10 @@ html, body, * {
   background: #2c5282;
 }
 
-/* Asegurar que se aplique bien en áreas con scroll */
+/* Aplicar scroll personalizado en contenedores importantes */
 #app::-webkit-scrollbar,
 main::-webkit-scrollbar,
+.sidebar::-webkit-scrollbar,
 .table-container::-webkit-scrollbar,
 .modal-content::-webkit-scrollbar,
 .overflow-auto::-webkit-scrollbar {
@@ -128,62 +127,45 @@ main::-webkit-scrollbar,
   height: 8px;
 }
 
-/* ══════════════════════════════════════
-   CORRECCIONES ANTI-ZOOM — SICE
-   Santiago Acosta — Modificaciones SICE
-══════════════════════════════════════ */
+/* ============================================= */
+/* Correcciones Anti-Zoom y Mobile              */
+/* ============================================= */
 
-/* ── Viewport meta comportamiento ── */
-html {
-  font-size: 16px;
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
-  overflow-x: hidden;
-}
-
-/* ── Tamaños mínimos táctiles para botones ── */
 button, input, select, textarea, a {
   min-height: 36px;
   font-size: 0.875rem;
 }
 
-/* ── Inputs nunca más pequeños que 16px en móvil
-   (evita zoom automático en iOS al enfocar) ── */
+/* Evitar zoom automático en iOS al enfocar inputs */
 @media (max-width: 768px) {
   input, select, textarea {
     font-size: 16px !important;
   }
 }
 
-/* ── Tablas con scroll horizontal en lugar de overflow oculto ── */
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
+/* Tablas y contenedores con scroll horizontal */
 .table-container,
 .tabla-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-/* ── Contenedores no desbordan en pantallas pequeñas ── */
 img, svg, video {
   max-width: 100%;
   height: auto;
 }
 
-/* ── Texto mínimo legible sin zoom ── */
+/* Texto responsive */
 p, span, td, th, label, li {
   font-size: clamp(0.8rem, 2vw, 1rem);
   line-height: 1.55;
 }
 
 h1 { font-size: clamp(1.3rem, 4vw, 1.75rem); }
-h2 { font-size: clamp(1.1rem, 3vw, 1.4rem);  }
-h3 { font-size: clamp(1rem,  2.5vw, 1.2rem); }
+h2 { font-size: clamp(1.1rem, 3vw, 1.4rem); }
+h3 { font-size: clamp(1rem, 2.5vw, 1.2rem); }
 
-/* ── Modales no desbordan en pantallas pequeñas ── */
+/* Modales */
 .modal-content,
 .modal-caja {
   max-width: 95vw;
@@ -191,7 +173,7 @@ h3 { font-size: clamp(1rem,  2.5vw, 1.2rem); }
   overflow-y: auto;
 }
 
-/* ── Cards y paneles ── */
+/* Cards y contenedores */
 .kpi-card,
 .grafica-card,
 .panel-card,
@@ -201,67 +183,36 @@ h3 { font-size: clamp(1rem,  2.5vw, 1.2rem); }
   overflow: hidden;
 }
 
-/* ── Grids adaptativos ── */
+/* ============================================= */
+/* Responsive - Mobile Adjustments              */
+/* ============================================= */
+
 @media (max-width: 768px) {
-  .kpi-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-
+  .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
   .fila-graficas,
-  .fila-inferior {
-    grid-template-columns: 1fr !important;
-  }
-
+  .fila-inferior { grid-template-columns: 1fr !important; }
   .form-row,
-  .fila-campos {
-    flex-direction: column !important;
-  }
-
+  .fila-campos { flex-direction: column !important; }
   .grilla-roles,
   .grilla-permisos,
   .grilla-acciones,
   .campos-grid-modal,
-  .filtros-grid {
-    grid-template-columns: 1fr !important;
-  }
+  .filtros-grid { grid-template-columns: 1fr !important; }
 }
 
 @media (max-width: 480px) {
-  .kpi-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  .form-grupo-doble {
-    grid-template-columns: 1fr !important;
-  }
-
+  .kpi-grid { grid-template-columns: 1fr !important; }
+  .form-grupo-doble { grid-template-columns: 1fr !important; }
   .filters-bar,
-  .filtros-fila {
-    flex-direction: column !important;
-    align-items: stretch !important;
-  }
-
+  .filtros-fila { flex-direction: column !important; }
+  
   .filters-bar .btn-nuevo,
-  .filters-bar .btn-limpiar {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .paginacion {
-    flex-direction: column !important;
-    align-items: center !important;
-    gap: 0.5rem !important;
-  }
-
+  .filters-bar .btn-limpiar { width: 100%; justify-content: center; }
+  
+  .paginacion,
   .modal-footer,
-  .modal-pie {
-    flex-direction: column !important;
-    gap: 0.5rem !important;
-  }
-
+  .modal-pie { flex-direction: column !important; gap: 0.5rem !important; }
+  
   .modal-footer button,
-  .modal-pie button {
-    width: 100% !important;
-    justify-content: center;
-  }
+  .modal-pie button { width: 100% !important; justify-content: center; }
 }

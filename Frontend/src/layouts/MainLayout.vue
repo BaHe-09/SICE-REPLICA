@@ -116,6 +116,7 @@
 
     <!-- ══ MENÚ LATERAL ══ -->
     <aside
+      ref="sidebarRef"
       class="menu-lateral"
       :class="{ 'colapsando': colapsandoSuave }"
       @click.stop
@@ -330,7 +331,7 @@
 
     <!-- ══ CONTENIDO PRINCIPAL ══ -->
     <main class="area-contenido" :class="{ 'contenido-retrasado': contenidoMoviendo }">
-      <slot :key="$route.fullPath" :busquedaGlobal="busquedaGlobal" />
+      <slot :busquedaGlobal="busquedaGlobal" />
     </main>
 
     <!-- ══ BOTÓN REGRESAR FLOTANTE ══ -->
@@ -352,12 +353,13 @@
   </div>
 </template>
 
+
 <script setup>
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 useKeyboardShortcuts()
 
 
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
@@ -392,20 +394,24 @@ onUnmounted(() => {
   if (resizeTimer)  clearTimeout(resizeTimer)
   if (timerColapso) clearTimeout(timerColapso)
   if (timerStorage) clearTimeout(timerStorage)
+  if (sidebarRef.value) {
+    sidebarRef.value.style.overscrollBehavior = 'contain'
+  }
 })
 
 const isCollapsed    = ref(false)
 
+
 // ── Fijado del sidebar ────────────────────────────────────────────────
-// isFixed: true = sidebar siempre visible (fijado)
-//          false = sidebar se colapsa al navegar y se muestra solo con hover
+
 const isFixed       = ref(false)
 const isHovered     = ref(false)
 const colapsandoSuave = ref(false)
 const contenidoMoviendo = ref(false)
-
-// El sidebar está visible si está fijado O si el usuario está encima con el cursor
+const sidebarRef = ref(null)
+const SIDEBAR_SCROLL_KEY = 'sice_sidebar_scroll'
 const sidebarVisible = computed(() => isFixed.value || isHovered.value)
+
 
 // ── Estados de submenús ───────────────────────────────────────────────
 const isServiciosOpen          = ref(true)
@@ -455,6 +461,19 @@ onMounted(() => {
     // Si no estaba fijado, colapsar al cargar
     isCollapsed.value = true
   }
+
+  nextTick(() => {
+    const saved = parseInt(sessionStorage.getItem(SIDEBAR_SCROLL_KEY) || '0', 10)
+    if (sidebarRef.value && saved > 0) {
+      sidebarRef.value.scrollTop = saved
+    }
+  })
+})
+
+onBeforeUnmount(() => {
+  if (sidebarRef.value) {
+    sessionStorage.setItem(SIDEBAR_SCROLL_KEY, String(sidebarRef.value.scrollTop))
+  }
 })
 
 let timerStorage = null
@@ -499,8 +518,6 @@ const nombreUsuarioActual = computed(() =>
 )
 
 // ── Visibilidad de módulos en el sidebar por rol ──────────────────────
-// admin ve todo (no se lista aquí). Para otros roles se define qué módulos
-// aparecen en el menú lateral, alineado con PERMISOS_POR_ROL del router.
 const MODULOS_POR_ROL = {
   'docente': ['servicios-escolares', 'eventos', 'asignacion-docente'],
   'servicios-escolares': ['servicios-escolares', 'gestion-academica', 'eventos', 'comite'],
@@ -527,12 +544,10 @@ const puedeVer = computed(() => {
     asignacionDocente:    modulos.includes('asignacion-docente'),
   }
 })
-// Alias para la compatibilidad con el template existente (v-if="rolActual === 'admin'")
 
 
 // ── Visibilidad de ítems dentro de submenús por rol ──────────────────
-// Devuelve true si la ruta está permitida para el rol actual.
-// Se usa para ocultar items individuales dentro de módulos compartidos.
+
 const ITEMS_POR_ROL = {
   'docente': [
     '/evaluaciones', '/calificaciones', '/gestion-grupos',
@@ -568,9 +583,7 @@ const toggleSidebar = () => {
 }
 
 // ── Hover del sidebar ─────────────────────────────────────────────────
-// Solo actúa cuando el sidebar NO está fijado
 const onSidebarEnter = () => {
-  // En móvil el hover no aplica — el sidebar se controla solo con el botón
   if (!isFixed.value && !esMobil.value) {
     isHovered.value   = true
     isCollapsed.value = false
@@ -586,17 +599,21 @@ const onSidebarLeave = () => {
 }
 
 // ── Auto-colapso al navegar ───────────────────────────────────────────
-// Cuando el usuario hace clic en un link y cambia de ruta,
-// si el sidebar NO está fijado se colapsa automáticamente
 let timerColapso = null
 
 watch(
   () => router.currentRoute.value.fullPath,
-  () => {
-    // Cancelar cualquier animación pendiente antes de iniciar una nueva
+  (newPath, oldPath) => {
+    // Ignorar si es navegación a la misma ruta
+    if (newPath === oldPath) return
+
+    if (sidebarRef.value) {
+      sessionStorage.setItem(SIDEBAR_SCROLL_KEY, String(sidebarRef.value.scrollTop))
+    }
+
     if (timerColapso) {
       clearTimeout(timerColapso)
-      timerColapso      = null
+      timerColapso            = null
       colapsandoSuave.value   = false
       contenidoMoviendo.value = false
     }
@@ -615,9 +632,11 @@ watch(
         timerColapso            = null
       }, 280)
     }
+
     cerrarMenus()
   }
 )
+
 
 watch(esMobil, (ahoraMobil, antesEraMovil) => {
   if (!ahoraMobil && antesEraMovil) {
@@ -629,6 +648,18 @@ watch(esMobil, (ahoraMobil, antesEraMovil) => {
     // Pasó a móvil: colapsar siempre
     isCollapsed.value = true
     isHovered.value   = false
+  }
+})
+
+
+watch(isCollapsed, (nowCollapsed, wasCollapsed) => {
+  if (wasCollapsed && !nowCollapsed) {
+    const saved = parseInt(sessionStorage.getItem(SIDEBAR_SCROLL_KEY) || '0', 10)
+    if (saved > 0) {
+      setTimeout(() => {
+        if (sidebarRef.value) sidebarRef.value.scrollTop = saved
+      }, 360)
+    }
   }
 })
 
@@ -864,14 +895,17 @@ const regresarPagina = () => {
 .elemento-cerrar-sesion .icono-rol { stroke: #DC2626; }
 
 /* ══ Menú lateral ══ */
+
 .menu-lateral {
   width: 260px;
   background: #D6D6D6;
   position: fixed;
   top: 74px; bottom: 0; left: 0;
-  overflow-y: auto; overflow-x: hidden;
+  overflow-y: auto;
+  overflow-x: clip;  /* clip no afecta el scroll context, hidden sí */
+  overscroll-behavior: contain;
   padding-top: 0.5rem;
-  transition: width 0.35s ease, opacity 0.3s ease;
+  transition: transform 0.35s ease, opacity 0.3s ease;
   z-index: 900;
   box-shadow: 2px 0 8px rgba(0,0,0,0.07);
 }
@@ -879,9 +913,18 @@ const regresarPagina = () => {
 .menu-lateral.colapsando {
   opacity: 0;
   pointer-events: none;
-  transition: width 0.35s ease, opacity 0.28s ease;
+  transition: transform 0.35s ease, opacity 0.28s ease;
 }
-.sistema-layout.sidebar-collapsed .menu-lateral { width: 0; padding-top: 0; }
+
+/* Colapsado: se desliza fuera de pantalla hacia la izquierda */
+.sistema-layout.sidebar-collapsed .menu-lateral {
+  transform: translateX(-260px);
+}
+
+/* Expandido: posición normal */
+.sistema-layout:not(.sidebar-collapsed) .menu-lateral {
+  transform: translateX(0);
+}
 
 .navegacion { width: 260px; display: flex; flex-direction: column; }
 
@@ -917,35 +960,16 @@ const regresarPagina = () => {
   text-transform: uppercase; letter-spacing: 0.08em; color: #6B7280;
 }
 
-/* ══ Barra de scroll — Navy Slim Minimal ══ */
+/* ══ Barra de scroll ══ */
 * {
   scrollbar-width: thin;
   scrollbar-color: #1a3a5f #f1f5f9;
 }
-
-*::-webkit-scrollbar {
-  width: 0px;
-  height: 8px;
-}
-
-*::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 4px;
-}
-
-*::-webkit-scrollbar-thumb {
-  background: #1a3a5f;
-  border-radius: 4px;
-  transition: background 200ms ease;
-}
-
-*::-webkit-scrollbar-thumb:hover {
-  background: #193d94;
-}
-
-*::-webkit-scrollbar-thumb:active {
-  background: #2c5282;
-}
+*::-webkit-scrollbar { width: 0px; height: 8px; }
+*::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+*::-webkit-scrollbar-thumb { background: #1a3a5f; border-radius: 4px; transition: background 200ms ease; }
+*::-webkit-scrollbar-thumb:hover { background: #193d94; }
+*::-webkit-scrollbar-thumb:active { background: #2c5282; }
 
 /* ══ Área de contenido ══ */
 .area-contenido {
@@ -959,20 +983,15 @@ const regresarPagina = () => {
   box-sizing: border-box;
 }
 .sistema-layout.sidebar-collapsed .area-contenido { margin-left: 0; }
+.sistema-layout:not(.sidebar-collapsed) .area-contenido { margin-left: 260px; }
 .area-contenido.contenido-retrasado {
   transition: margin-left 0.28s ease;
   margin-left: 260px !important;
 }
 
-/* ══ Sidebar fijado — indicador visual en el botón ══ */
+/* Indicador visual en el botón cuando el sidebar está fijado */
 .sistema-layout:not(.sidebar-collapsed) .btn-toggle-menu {
   background: rgba(255,255,255,0.15);
-}
-
-/* Franja lateral izquierda visible cuando sidebar está colapsado */
-.sistema-layout.sidebar-collapsed .menu-lateral {
-  width: 0;
-  padding-top: 0;
 }
 
 /* Franja invisible de 8px para activar expansión por hover */
@@ -986,95 +1005,60 @@ const regresarPagina = () => {
   cursor: pointer;
 }
 
-/* Cuando el sidebar está fijo, el área de contenido tiene margin-left normal */
-.sistema-layout:not(.sidebar-collapsed) .area-contenido {
-  margin-left: 260px;
-}
-
-/* Eliminar el pseudo-elemento anterior que no funcionaba */
-.sistema-layout.sidebar-collapsed::before {
-  display: none;
-}
+.sistema-layout.sidebar-collapsed::before { display: none; }
 
 /* ══════════════════════════════════════
    RESPONSIVE — Navbar y Layout
-   Santiago Acosta — Modificaciones SICE
 ══════════════════════════════════════ */
 
-/* ── Tablet (768px – 1024px) ── */
+/* ── Tablet (≤1024px) ── */
 @media (max-width: 1024px) {
-  .titulo-sistema {
-    font-size: 0.88rem;
-    letter-spacing: 0;
-  }
-
-  .grupo-busqueda {
-    width: 200px;
-  }
-
-  .encabezado-superior {
-    padding: 0 1.2rem;
-  }
-
-  .encabezado-derecha {
-    gap: 1.2rem;
-  }
-
-  .area-contenido {
-    padding: 1.2rem 1.4rem;
-  }
+  .titulo-sistema { font-size: 0.88rem; letter-spacing: 0; }
+  .grupo-busqueda { width: 200px; }
+  .encabezado-superior { padding: 0 1.2rem; }
+  .encabezado-derecha { gap: 1.2rem; }
+  .area-contenido { padding: 1.2rem 1.4rem; }
 }
 
-/* ── Móvil grande (640px – 768px) ── */
-/* DESPUÉS */
+/* ── Móvil grande (≤768px) ── */
 @media (max-width: 768px) {
 
-  /* Ocultar título largo, mostrar solo "SICE" */
-  .titulo-sistema {
-    font-size: 0;
-    letter-spacing: 0;
-  }
-
+  .titulo-sistema { font-size: 0; letter-spacing: 0; }
   .titulo-sistema::after {
     content: 'SICE';
-    font-size: 1.1rem;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    color: white;
+    font-size: 1.1rem; font-weight: 800;
+    letter-spacing: 0.12em; color: white;
   }
 
   .grupo-busqueda { width: 160px; }
+  .grupo-busqueda input { font-size: 0.82rem; padding: 8px 12px 8px 36px; }
 
-  .grupo-busqueda input {
-    font-size: 0.82rem;
-    padding: 8px 12px 8px 36px;
-  }
-
-  /* Header fijo a 60px en móvil */
-  .encabezado-superior {
-    padding: 0 1rem;
-    height: 60px;
-  }
-
+  .encabezado-superior { padding: 0 1rem; height: 60px; }
   .logo-encabezado { height: 40px; }
 
-  /* Sidebar arranca justo debajo del header de 60px */
+  /* Sidebar debajo del header de 60px */
   .menu-lateral {
     top: 60px !important;
     width: 260px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
   }
 
-  /* Sidebar colapsado también respeta los 60px */
+  /* Colapsado en móvil: desliza fuera sin cambiar width */
   .sistema-layout.sidebar-collapsed .menu-lateral {
-    top: 60px !important;
+    transform: translateX(-260px);
+    opacity: 0;
+    pointer-events: none;
   }
 
-  /* Sidebar abierto: sombra para indicar que flota */
+  /* Expandido en móvil: visible y encima del contenido */
   .sistema-layout:not(.sidebar-collapsed) .menu-lateral {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
     box-shadow: 4px 0 20px rgba(0,0,0,0.3);
   }
 
-  /* Contenido arranca exactamente en 60px — sin importar sidebar */
+  /* Contenido no se mueve en móvil */
   .area-contenido,
   .area-contenido.contenido-retrasado {
     margin-left: 0 !important;
@@ -1083,91 +1067,12 @@ const regresarPagina = () => {
     min-height: calc(100vh - 60px);
   }
 
+  .franja-hover-sidebar { display: none; }
+
   .panel-notificaciones { width: 300px; right: -60px; }
   .nombre-usuario       { display: none; }
   .flecha-desplegable   { display: none; }
   .encabezado-derecha   { gap: 0.75rem; }
-
-  .menu-lateral {
-  transition: transform 0.3s ease, opacity 0.3s ease;
-  transform: translateX(0);
-}
-
-/* Sidebar colapsado en móvil: desliza fuera de pantalla */
-.sistema-layout.sidebar-collapsed .menu-lateral {
-  transform: translateX(-100%);
-  width: 260px !important; /* mantiene el ancho, solo se oculta con transform */
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* Sidebar abierto en móvil: visible y encima del contenido */
-.sistema-layout:not(.sidebar-collapsed) .menu-lateral {
-  transform: translateX(0);
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* Franja de hover: oculta en móvil */
-.franja-hover-sidebar {
-  display: none;
-}
-
-/* El contenido nunca se mueve en móvil */
-.area-contenido.contenido-retrasado {
-  margin-left: 0 !important;
-}
-
-}
-
-/* ── Móvil pequeño (menos de 480px) ── */
-@media (max-width: 480px) {
-
-  /* Ocultar búsqueda — solo icono de lupa queda */
-  .grupo-busqueda {
-    width: 36px;
-    overflow: hidden;
-  }
-
-  .grupo-busqueda input {
-  opacity: 0;
-  width: 0;
-  padding: 0;
-  pointer-events: none;  /* ← evita cualquier toque accidental */
-  position: absolute;    /* ← saca el input del flujo táctil */
-}
-
-  /* Al hacer focus en la lupa, expandir */
-  .grupo-busqueda:focus-within {
-    width: 180px;
-    position: fixed;
-    top: 10px;
-    left: 60px;
-    right: 10px;
-    z-index: 1100;
-  }
-
-  .grupo-busqueda:focus-within input {
-  opacity: 1;
-  width: 100%;
-  padding: 8px 12px 8px 36px;
-  pointer-events: auto;
-  position: relative;
-}
-
-  .encabezado-superior {
-    padding: 0 0.75rem;
-  }
-
-  .panel-notificaciones {
-    width: 280px;
-    right: -80px;
-  }
-
-  .desplegable-usuario {
-    right: -10px;
-    min-width: 180px;
-  }
 }
 
 /* ── Overlay para sidebar en móvil ── */
@@ -1175,21 +1080,36 @@ const regresarPagina = () => {
   .sistema-layout:not(.sidebar-collapsed)::after {
     content: '';
     position: fixed;
-    top: 60px;     /* ← primero top, luego los demás */
-    left: 0;
-    right: 0;
-    bottom: 0;
+    top: 60px; left: 0; right: 0; bottom: 0;
     background: rgba(0,0,0,0.4);
     z-index: 899;
   }
 }
 
+/* ── Móvil pequeño (≤480px) ── */
+@media (max-width: 480px) {
+  .grupo-busqueda { width: 36px; overflow: hidden; }
+  .grupo-busqueda input {
+    opacity: 0; width: 0; padding: 0;
+    pointer-events: none; position: absolute;
+  }
+  .grupo-busqueda:focus-within {
+    width: 180px; position: fixed;
+    top: 10px; left: 60px; right: 10px; z-index: 1100;
+  }
+  .grupo-busqueda:focus-within input {
+    opacity: 1; width: 100%;
+    padding: 8px 12px 8px 36px;
+    pointer-events: auto; position: relative;
+  }
+  .encabezado-superior { padding: 0 0.75rem; }
+  .panel-notificaciones { width: 280px; right: -80px; }
+  .desplegable-usuario { right: -10px; min-width: 180px; }
+}
 
 /* ══════════════════════════════════════
   ANTI-ZOOM — SICE
 ══════════════════════════════════════ */
-
-/* ── Viewport meta comportamiento ── */
 html {
   font-size: 16px;
   -webkit-text-size-adjust: 100%;
@@ -1197,215 +1117,70 @@ html {
   overflow-x: hidden;
 }
 
-/* ── Tamaños mínimos táctiles para botones ── */
 button, input, select, textarea, a {
   min-height: 36px;
   font-size: 0.875rem;
 }
 
-/* ── Inputs nunca más pequeños que 16px en móvil
-   (evita zoom automático en iOS al enfocar) ── */
 @media (max-width: 768px) {
-  input, select, textarea {
-    font-size: 16px !important;
-  }
+  input, select, textarea { font-size: 16px !important; }
 }
 
-/* ── Tablas con scroll horizontal en lugar de overflow oculto ── */
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
+table { width: 100%; border-collapse: collapse; }
+.table-container, .tabla-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+img, svg, video { max-width: 100%; height: auto; }
 
-.table-container,
-.tabla-scroll {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* ── Contenedores no desbordan en pantallas pequeñas ── */
-img, svg, video {
-  max-width: 100%;
-  height: auto;
-}
-
-/* ── Texto mínimo legible sin zoom ── */
-p, span, td, th, label, li {
-  font-size: clamp(0.8rem, 2vw, 1rem);
-  line-height: 1.55;
-}
-
+p, span, td, th, label, li { font-size: clamp(0.8rem, 2vw, 1rem); line-height: 1.55; }
 h1 { font-size: clamp(1.3rem, 4vw, 1.75rem); }
-h2 { font-size: clamp(1.1rem, 3vw, 1.4rem);  }
-h3 { font-size: clamp(1rem,  2.5vw, 1.2rem); }
+h2 { font-size: clamp(1.1rem, 3vw, 1.4rem); }
+h3 { font-size: clamp(1rem, 2.5vw, 1.2rem); }
 
-/* ── Modales no desbordan en pantallas pequeñas ── */
-.modal-content,
-.modal-caja {
-  max-width: 95vw;
-  max-height: 90vh;
-  overflow-y: auto;
-}
+.modal-content, .modal-caja { max-width: 95vw; max-height: 90vh; overflow-y: auto; }
 
-/* ── Cards y paneles ── */
-.kpi-card,
-.grafica-card,
-.panel-card,
-.form-card,
-.tabla-card {
-  min-width: 0;
-  overflow: hidden;
-}
+.kpi-card, .grafica-card, .panel-card, .form-card, .tabla-card { min-width: 0; overflow: hidden; }
 
-/* ── Grids adaptativos ── */
 @media (max-width: 768px) {
-  .kpi-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-
-  .fila-graficas,
-  .fila-inferior {
-    grid-template-columns: 1fr !important;
-  }
-
-  .form-row,
-  .fila-campos {
-    flex-direction: column !important;
-  }
-
-  .grilla-roles,
-  .grilla-permisos,
-  .grilla-acciones,
-  .campos-grid-modal,
-  .filtros-grid {
-    grid-template-columns: 1fr !important;
-  }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .fila-graficas, .fila-inferior { grid-template-columns: 1fr !important; }
+  .form-row, .fila-campos { flex-direction: column !important; }
+  .grilla-roles, .grilla-permisos, .grilla-acciones,
+  .campos-grid-modal, .filtros-grid { grid-template-columns: 1fr !important; }
 }
 
 @media (max-width: 480px) {
-  .kpi-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  .form-grupo-doble {
-    grid-template-columns: 1fr !important;
-  }
-
-  .filters-bar,
-  .filtros-fila {
-    flex-direction: column !important;
-    align-items: stretch !important;
-  }
-
-  .filters-bar .btn-nuevo,
-  .filters-bar .btn-limpiar {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .paginacion {
-    flex-direction: column !important;
-    align-items: center !important;
-    gap: 0.5rem !important;
-  }
-
-  .modal-footer,
-  .modal-pie {
-    flex-direction: column !important;
-    gap: 0.5rem !important;
-  }
-
-  .modal-footer button,
-  .modal-pie button {
-    width: 100% !important;
-    justify-content: center;
-  }
+  .kpi-grid { grid-template-columns: 1fr !important; }
+  .form-grupo-doble { grid-template-columns: 1fr !important; }
+  .filters-bar, .filtros-fila { flex-direction: column !important; align-items: stretch !important; }
+  .filters-bar .btn-nuevo, .filters-bar .btn-limpiar { width: 100%; justify-content: center; }
+  .paginacion { flex-direction: column !important; align-items: center !important; gap: 0.5rem !important; }
+  .modal-footer, .modal-pie { flex-direction: column !important; gap: 0.5rem !important; }
+  .modal-footer button, .modal-pie button { width: 100% !important; justify-content: center; }
 }
 
 /* ══════════════════════════════════════
    BOTÓN REGRESAR FLOTANTE (FAB)
-   Diego — SICE Back Button
 ══════════════════════════════════════ */
-
 .fab-regresar {
-  position: fixed;
-  bottom: 1.5rem;
-  left: 1.5rem;
-  z-index: 1200;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: none;
-  cursor: pointer;
-
-  background-color: #1B396A;
-  color: #ffffff;
-  box-shadow: 0 4px 14px rgba(27, 57, 106, 0.45);
-
-  opacity: 0.88;
-  transition: opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  position: fixed; bottom: 1.5rem; left: 1.5rem; z-index: 1200;
+  display: flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer;
+  background-color: #1B396A; color: #ffffff;
+  box-shadow: 0 4px 14px rgba(27,57,106,0.45);
+  opacity: 0.88; transition: opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
+.fab-regresar:hover { opacity: 1; transform: scale(1.08); box-shadow: 0 6px 20px rgba(27,57,106,0.6); }
+.fab-regresar:active { transform: scale(0.93); box-shadow: 0 2px 8px rgba(27,57,106,0.4); }
+.fab-regresar:focus-visible { outline: 3px solid #DBEAFE; outline-offset: 3px; }
+.fab-icono { width: 20px; height: 20px; pointer-events: none; flex-shrink: 0; }
 
-.fab-regresar:hover {
-  opacity: 1;
-  transform: scale(1.08);
-  box-shadow: 0 6px 20px rgba(27, 57, 106, 0.6);
-}
+.fab-back-enter-active, .fab-back-leave-active { transition: opacity 0.22s ease, transform 0.22s ease; }
+.fab-back-enter-from, .fab-back-leave-to { opacity: 0; transform: scale(0.65) translateY(10px); }
 
-.fab-regresar:active {
-  transform: scale(0.93);
-  box-shadow: 0 2px 8px rgba(27, 57, 106, 0.4);
-}
-
-.fab-regresar:focus-visible {
-  outline: 3px solid #DBEAFE;
-  outline-offset: 3px;
-}
-
-.fab-icono {
-  width: 20px;
-  height: 20px;
-  pointer-events: none;
-  flex-shrink: 0;
-}
-
-/* ── Animación de entrada / salida ── */
-.fab-back-enter-active,
-.fab-back-leave-active {
-  transition: opacity 0.22s ease, transform 0.22s ease;
-}
-.fab-back-enter-from,
-.fab-back-leave-to {
-  opacity: 0;
-  transform: scale(0.65) translateY(10px);
-}
-
-/* ── Móvil: área táctil más generosa ── */
 @media (max-width: 768px) {
-  .fab-regresar {
-    width: 48px;
-    height: 48px;
-    bottom: 1.25rem;
-    left: 1rem;
-    opacity: 1; /* siempre visible en móvil */
-  }
-
-  .fab-icono {
-    width: 22px;
-    height: 22px;
-  }
+  .fab-regresar { width: 48px; height: 48px; bottom: 1.25rem; left: 1rem; opacity: 1; }
+  .fab-icono { width: 22px; height: 22px; }
 }
-
-/* ── Móvil muy pequeño ── */
 @media (max-width: 480px) {
-  .fab-regresar {
-    bottom: 1rem;
-    left: 0.75rem;
-  }
+  .fab-regresar { bottom: 1rem; left: 0.75rem; }
 }
 </style>
