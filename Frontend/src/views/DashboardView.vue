@@ -18,7 +18,7 @@
         <time class="fecha-actual" :datetime="fechaISO">{{ fechaHoy }}</time>
       </div>
 
-      <!-- ── Búsqueda rápida de alumno (acceso desde Dashboard) ── -->
+      <!-- ── Búsqueda rápida de alumno ── -->
       <div class="busqueda-rapida-card" role="search" aria-label="Búsqueda rápida de alumno">
         <div class="busqueda-rapida-texto">
           <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20" aria-hidden="true">
@@ -70,35 +70,6 @@
           {{ error }}
         </div>
       </transition>
-
-      <!-- ── KPIs ── -->
-      <div class="kpi-grid" role="list" aria-label="Indicadores del sistema">
-        <div
-          v-for="(kpi, i) in kpis"
-          :key="i"
-          class="kpi-card"
-          role="listitem"
-        >
-          <div class="kpi-icono-wrapper" :style="{ background: kpi.fondo }" aria-hidden="true">
-            <svg xmlns="http://www.w3.org/2000/svg" class="kpi-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path :d="kpi.iconPath" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
-            </svg>
-          </div>
-          <div class="kpi-contenido">
-            <p class="kpi-etiqueta">{{ kpi.title }}</p>
-            <!-- Skeleton del valor -->
-            <div v-if="cargando" class="kpi-skeleton" aria-hidden="true"></div>
-            <p v-else class="kpi-valor">{{ kpi.value }}</p>
-            <p
-              v-if="kpi.trend && !cargando"
-              class="kpi-tendencia"
-              :class="{ positivo: kpi.trend.includes('+'), negativo: kpi.trend.includes('-') }"
-            >
-              {{ kpi.trend }}
-            </p>
-          </div>
-        </div>
-      </div>
 
       <!-- ── Gráficas ── -->
       <div class="fila-graficas">
@@ -170,13 +141,14 @@
             <p>Sin actividad reciente</p>
           </div>
 
-          <!-- Lista de actividad -->
+          <!-- Lista de actividad — click abre modal -->
           <div v-else class="lista-bitacora" role="list">
             <div
               v-for="(item, i) in bitacoraReciente"
               :key="item.id_bitacora || i"
-              class="item-bitacora"
+              class="item-bitacora item-bitacora-clickeable"
               role="listitem"
+              @click="abrirModalBitacora(item)"
             >
               <div class="avatar-bitacora" aria-hidden="true">
                 {{ item.usuario ? item.usuario.charAt(0).toUpperCase() : '?' }}
@@ -196,7 +168,7 @@
           </div>
         </div>
 
-        <!-- Acciones rápidas -->
+        <!-- Acciones rápidas — click abre modal de confirmación -->
         <div class="panel-card">
           <h3 class="panel-titulo">Acciones Rápidas</h3>
           <div class="grilla-acciones" role="list">
@@ -205,7 +177,7 @@
               :key="accion.label"
               class="btn-accion"
               :class="{ 'btn-primario-accion': accion.primario }"
-              @click="accion.handler"
+              @click="abrirModalAccion(accion)"
               type="button"
               role="listitem"
               :aria-label="accion.label"
@@ -220,12 +192,73 @@
 
       </div><!-- /fila-inferior -->
 
+      <!-- ── Modal detalle de registro de bitácora ── -->
+      <Teleport to="body">
+        <Transition name="fade">
+          <div v-if="modalBitacora" class="modal-overlay" @click.self="cerrarModalBitacora">
+            <div class="modal-caja">
+              <div class="modal-header">
+                <h3 class="modal-titulo">Detalle de actividad</h3>
+                <button class="modal-cerrar" @click="cerrarModalBitacora" aria-label="Cerrar">✕</button>
+              </div>
+              <div class="modal-body">
+                <div class="modal-fila">
+                  <span class="modal-etiqueta">Usuario</span>
+                  <span class="modal-valor">{{ modalBitacora.usuario || '—' }}</span>
+                </div>
+                <div class="modal-fila">
+                  <span class="modal-etiqueta">Acción</span>
+                  <span class="accion-badge-mini" :class="claseAccion(modalBitacora.accion)">{{ modalBitacora.accion }}</span>
+                </div>
+                <div class="modal-fila">
+                  <span class="modal-etiqueta">Módulo</span>
+                  <span class="modal-valor">{{ modalBitacora.modulo || '—' }}</span>
+                </div>
+                <div class="modal-fila">
+                  <span class="modal-etiqueta">Descripción</span>
+                  <span class="modal-valor">{{ modalBitacora.descripcion || '—' }}</span>
+                </div>
+                <div class="modal-fila">
+                  <span class="modal-etiqueta">Fecha y hora</span>
+                  <span class="modal-valor">{{ formatearFecha(modalBitacora.fecha_hora) }}</span>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button class="btn-modal-secundario" @click="cerrarModalBitacora">Cerrar</button>
+              </div>
+            </div>
+          </div>
+        </Transition>
+      </Teleport>
+
+      <!-- ── Modal confirmación de acción rápida ── -->
+      <Teleport to="body">
+        <Transition name="fade">
+          <div v-if="modalAccion" class="modal-overlay" @click.self="cerrarModalAccion">
+            <div class="modal-caja">
+              <div class="modal-header">
+                <h3 class="modal-titulo">{{ modalAccion.label }}</h3>
+                <button class="modal-cerrar" @click="cerrarModalAccion" aria-label="Cerrar">✕</button>
+              </div>
+              <div class="modal-body">
+                <p class="modal-descripcion">{{ modalAccion.descripcion }}</p>
+              </div>
+              <div class="modal-footer">
+                <button class="btn-modal-secundario" @click="cerrarModalAccion">Cancelar</button>
+                <button class="btn-modal-primario" @click="ejecutarAccion(modalAccion)">
+                  Ir ahora →
+                </button>
+              </div>
+            </div>
+          </div>
+        </Transition>
+      </Teleport>
+
     </div>
   </MainLayout>
 </template>
 
 <script setup>
-
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -240,10 +273,6 @@ const error    = ref(null)
 // ── Búsqueda rápida de alumno ───────────────────────────────────────────
 const busquedaControl = ref('')
 
-/**
- * Redirige al kardex del alumno buscado.
- * Solo requiere que el usuario ingrese el número de control UNA sola vez.
- */
 const irAKardex = () => {
   const nc = busquedaControl.value.trim()
   if (nc.length < 8) return
@@ -256,17 +285,7 @@ const fechaHoy = computed(() =>
 )
 const fechaISO = computed(() => new Date().toISOString().split('T')[0])
 
-// ── KPIs ─────────────────────────────────────────────────────────────────
-const kpis = ref([
-  { title: 'Alumnos activos',  value: '0', iconPath: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', fondo: '#DBEAFE', trend: '' },
-  { title: 'Inscripciones',    value: '0', iconPath: 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z',                         fondo: '#DCFCE7', trend: '' },
-  { title: 'Baja temporal',    value: '0', iconPath: 'M13 10V3L4 14h7v7l9-11h-7z',                                                                                     fondo: '#FEF3C7', trend: '' },
-  { title: 'Baja definitiva',  value: '0', iconPath: 'M6 18L18 6M6 6l12 12',                                                                                           fondo: '#FEE2E2', trend: '' },
-  { title: 'Grupos activos',   value: '0', iconPath: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z', fondo: '#F3E8FF', trend: '' },
-  { title: 'Promedio general', value: '0', iconPath: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', fondo: '#E0F2FE', trend: '' }
-])
-
-// ── Datos de gráficas (fallback si backend no responde) ────────────────
+// ── Datos de gráficas (fallback si backend no responde) ─────────────────
 const carreraDataDefault = [
   { carrera: 'Sist. Computacional', total: 312, porcentaje: 100 },
   { carrera: 'Industrial',          total: 268, porcentaje: 86  },
@@ -328,66 +347,91 @@ const tiempoRelativo = (fechaStr) => {
 
 const claseAccion = (accion = '') => {
   const a = accion.toLowerCase()
-  if (a.includes('login') || a.includes('acceso'))    return 'accion-login'
-  if (a.includes('cre') || a.includes('registr'))     return 'accion-creacion'
-  if (a.includes('edit') || a.includes('actualiz'))   return 'accion-edicion'
-  if (a.includes('elim') || a.includes('bor'))        return 'accion-eliminacion'
+  if (a.includes('login') || a.includes('acceso'))  return 'accion-login'
+  if (a.includes('cre') || a.includes('registr'))   return 'accion-creacion'
+  if (a.includes('edit') || a.includes('actualiz')) return 'accion-edicion'
+  if (a.includes('elim') || a.includes('bor'))      return 'accion-eliminacion'
   return 'accion-default'
 }
 
-// ── Carga de KPIs desde el backend ──────────────────────────────────────
+// ── Modal de bitácora ────────────────────────────────────────────────────
+const modalBitacora = ref(null)
+
+const abrirModalBitacora = (item) => {
+  modalBitacora.value = item
+}
+const cerrarModalBitacora = () => {
+  modalBitacora.value = null
+}
+const formatearFecha = (fechaStr) => {
+  if (!fechaStr) return '—'
+  return new Date(fechaStr).toLocaleString('es-MX', {
+    year: 'numeric', month: 'long', day: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  })
+}
+
+// ── Modal de acción rápida ───────────────────────────────────────────────
+const modalAccion = ref(null)
+
+const abrirModalAccion = (accion) => {
+  modalAccion.value = accion
+}
+const cerrarModalAccion = () => {
+  modalAccion.value = null
+}
+const ejecutarAccion = (accion) => {
+  cerrarModalAccion()
+  accion.handler()
+}
+
+// ── Carga de datos desde el backend ─────────────────────────────────────
 const cargarKPIs = async () => {
   cargando.value = true
   error.value    = null
   try {
     const res  = await fetch(`${API_URL}/api/dashboard/kpis`)
-    if (!res.ok) throw new Error('Error al cargar KPIs')
+    if (!res.ok) throw new Error('Error al cargar datos')
     const data = await res.json()
-
-    if (data.alumnos_activos   !== undefined) kpis.value[0].value = data.alumnos_activos.toString()
-    if (data.inscripciones     !== undefined) kpis.value[1].value = data.inscripciones.toString()
-    if (data.baja_temporal     !== undefined) kpis.value[2].value = data.baja_temporal.toString()
-    if (data.baja_definitiva   !== undefined) kpis.value[3].value = data.baja_definitiva.toString()
-    if (data.grupos_activos    !== undefined) kpis.value[4].value = data.grupos_activos.toString()
-    if (data.promedio_general  !== undefined) kpis.value[5].value = data.promedio_general.toString()
-
     if (data.carrera_data)  carreraData.value  = data.carrera_data
     if (data.semestre_data) semestreData.value = data.semestre_data
   } catch (err) {
-    console.error('[Dashboard] Error al cargar KPIs:', err)
-    // No mostramos error visible; los fallback se quedan en 0/default
+    console.error('[Dashboard] Error:', err)
   } finally {
     cargando.value = false
   }
 }
 
 // ── Acciones rápidas ─────────────────────────────────────────────────────
-/** Definición declarativa de las acciones del panel */
 const accionesRapidas = [
   {
-    label:    'Nueva inscripción',
-    primario: true,
-    iconPath: 'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z',
-    handler:  () => router.push('/formulario-alumno')
+    label:       'Nueva inscripción',
+    descripcion: 'Registrar un nuevo alumno en el sistema.',
+    primario:    true,
+    iconPath:    'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z',
+    handler:     () => router.push('/formulario-alumno')
   },
   {
-    label:    'Lista de alumnos',
-    iconPath: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
-    handler:  () => router.push('/alumnos')
+    label:       'Lista de alumnos',
+    descripcion: 'Ver el listado completo de alumnos registrados.',
+    iconPath:    'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
+    handler:     () => router.push('/alumnos')
   },
   {
-    label:    'Gestión de grupos',
-    iconPath: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z',
-    handler:  () => router.push('/gestion-grupos')
+    label:       'Gestión de grupos',
+    descripcion: 'Administrar grupos y horarios del periodo actual.',
+    iconPath:    'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z',
+    handler:     () => router.push('/gestion-grupos')
   },
   {
-    label:    'Cargar calificaciones',
-    iconPath: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
-    handler:  () => router.push('/calificaciones')
+    label:       'Cargar calificaciones',
+    descripcion: 'Registrar o actualizar calificaciones de alumnos.',
+    iconPath:    'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
+    handler:     () => router.push('/calificaciones')
   }
 ]
 
-// ── Lifecycle ─────────────────────────────────────────────────────────────
+// ── Lifecycle ────────────────────────────────────────────────────────────
 onMounted(() => {
   cargarKPIs()
   cargarBitacoraReciente()
@@ -418,7 +462,7 @@ onMounted(() => {
 /* ── Barra de carga ── */
 .barra-carga { position:fixed; top:0; left:0; right:0; height:3px; z-index:9999; opacity:0; transition:opacity 0.2s; pointer-events:none; }
 .barra-carga.activa { opacity:1; }
-.barra-progreso { height:100%; background:var(--azul); animation:progreso-carga 1.5s ease-in-out infinite; }
+.barra-progreso { height:100%; background:#1B396A; animation:progreso-carga 1.5s ease-in-out infinite; }
 @keyframes progreso-carga { 0%{width:0%;opacity:1} 70%{width:85%;opacity:1} 100%{width:100%;opacity:0} }
 
 /* ── Encabezado ── */
@@ -430,24 +474,24 @@ onMounted(() => {
   flex-wrap: wrap;
   gap: 0.5rem;
 }
-.page-title { font-size: 1.75rem; font-weight: 700; color: var(--texto); margin: 0 0 4px; }
-.welcome-text { font-size: 0.9rem; color: var(--gris); margin: 0; }
+.page-title { font-size: 1.75rem; font-weight: 700; color: #111827; margin: 0 0 4px; }
+.welcome-text { font-size: 0.9rem; color: #6B7280; margin: 0; }
 .fecha-actual {
   font-size: 0.85rem;
-  color: var(--gris);
+  color: #6B7280;
   font-weight: 500;
   text-transform: capitalize;
   white-space: nowrap;
-  background: var(--fondo);
+  background: #F9FAFB;
   padding: 6px 14px;
   border-radius: 20px;
-  border: 1px solid var(--borde);
+  border: 1px solid #E5E7EB;
 }
 
 /* ── Búsqueda rápida ── */
 .busqueda-rapida-card {
-  background: linear-gradient(135deg, var(--azul) 0%, #1D4ED8 100%);
-  border-radius: var(--radio);
+  background: linear-gradient(135deg, #1B396A 0%, #1D4ED8 100%);
+  border-radius: 12px;
   padding: 1.2rem 1.6rem;
   margin-bottom: 1.4rem;
   display: flex;
@@ -467,17 +511,8 @@ onMounted(() => {
 .busqueda-label { font-size: 0.95rem; font-weight: 700; color: #FFFFFF; margin: 0 0 2px; }
 .busqueda-sub   { font-size: 0.8rem; color: rgba(255,255,255,0.7); margin: 0; }
 .busqueda-rapida-form { display: flex; gap: 8px; align-items: center; }
-.busqueda-input-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-.busqueda-icono-input {
-  position: absolute;
-  left: 12px;
-  stroke: #9CA3AF;
-  pointer-events: none;
-}
+.busqueda-input-wrap { position: relative; display: flex; align-items: center; }
+.busqueda-icono-input { position: absolute; left: 12px; stroke: #9CA3AF; pointer-events: none; }
 .busqueda-input {
   padding: 10px 14px 10px 38px;
   border-radius: 8px;
@@ -498,7 +533,7 @@ onMounted(() => {
 .btn-buscar {
   display: flex; align-items: center; gap: 6px;
   padding: 10px 18px;
-  background: #FFFFFF; color: var(--azul);
+  background: #FFFFFF; color: #1B396A;
   border: none; border-radius: 8px;
   font-weight: 700; font-size: 0.875rem;
   cursor: pointer; font-family: inherit;
@@ -508,139 +543,215 @@ onMounted(() => {
 }
 .btn-buscar:hover:not(:disabled) { background: #F0F7FF; transform: translateY(-1px); }
 .btn-buscar:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-.btn-buscar svg { stroke: var(--azul); }
+.btn-buscar svg { stroke: #1B396A; }
 
 /* ── Alerta de error ── */
 .alerta-error {
   display: flex; align-items: center; gap: 10px;
   background: #FEF2F2; border: 1px solid #FECACA;
-  border-radius: var(--radio); padding: 12px 16px;
+  border-radius: 12px; padding: 12px 16px;
   margin-bottom: 1.2rem; font-size: 0.875rem;
-  color: var(--rojo); font-weight: 500;
+  color: #DC2626; font-weight: 500;
 }
-.alerta-icono { width: 20px; height: 20px; flex-shrink: 0; stroke: var(--rojo); }
-
-/* ── KPI Grid ── */
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 1rem;
-  margin-bottom: 1.4rem;
-}
-.kpi-card {
-  background: #FFFFFF;
-  border-radius: var(--radio);
-  padding: 1.2rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  border: 1px solid var(--borde);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.kpi-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
-.kpi-icono-wrapper {
-  width: 40px; height: 40px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.kpi-icono { width: 20px; height: 20px; stroke: var(--azul); }
-.kpi-contenido { flex: 1; min-width: 0; }
-.kpi-etiqueta { font-size: 0.78rem; color: var(--gris); font-weight: 500; margin: 0 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.kpi-valor    { font-size: 1.5rem; font-weight: 800; color: var(--texto); margin: 0; line-height: 1.1; }
-.kpi-skeleton { width: 60px; height: 28px; border-radius: 6px; background: linear-gradient(90deg,#E5E7EB 25%,#F3F4F6 50%,#E5E7EB 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; margin: 2px 0; }
-.kpi-tendencia { font-size: 0.75rem; font-weight: 600; margin: 2px 0 0; }
-.positivo { color: var(--verde); }
-.negativo { color: var(--rojo); }
-@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.alerta-icono { width: 20px; height: 20px; flex-shrink: 0; stroke: #DC2626; }
 
 /* ── Gráficas ── */
 .fila-graficas { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
 .grafica-card {
-  background: #FFFFFF; border-radius: var(--radio);
-  border: 1px solid var(--borde); padding: 1.4rem 1.6rem;
+  background: #FFFFFF; border-radius: 12px;
+  border: 1px solid #E5E7EB; padding: 1.4rem 1.6rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
-.grafica-titulo { font-size: 0.95rem; font-weight: 700; color: var(--texto); margin: 0 0 1.2rem; }
+.grafica-titulo { font-size: 0.95rem; font-weight: 700; color: #111827; margin: 0 0 1.2rem; }
 .grafica-barras { display: flex; flex-direction: column; gap: 10px; }
 .barra-item { display: flex; align-items: center; gap: 10px; }
-.barra-etiqueta { width: 130px; font-size: 0.8rem; color: var(--gris); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
-.barra-contenedor { flex: 1; background: var(--fondo); border-radius: 4px; height: 8px; overflow: hidden; }
-.barra-relleno { height: 100%; background: var(--azul); border-radius: 4px; transition: width 0.6s ease; }
-.barra-acento  { background: var(--verde); }
-.barra-valor   { font-size: 0.8rem; font-weight: 700; color: var(--texto); min-width: 30px; text-align: right; flex-shrink: 0; }
-.estado-vacio-grafica { display: flex; align-items: center; justify-content: center; padding: 2rem; color: var(--gris); font-size: 0.875rem; }
+.barra-etiqueta { width: 130px; font-size: 0.8rem; color: #6B7280; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
+.barra-contenedor { flex: 1; background: #F9FAFB; border-radius: 4px; height: 8px; overflow: hidden; }
+.barra-relleno { height: 100%; background: #1B396A; border-radius: 4px; transition: width 0.6s ease; }
+.barra-acento  { background: #16A34A; }
+.barra-valor   { font-size: 0.8rem; font-weight: 700; color: #111827; min-width: 30px; text-align: right; flex-shrink: 0; }
+.estado-vacio-grafica { display: flex; align-items: center; justify-content: center; padding: 2rem; color: #6B7280; font-size: 0.875rem; }
 
 /* ── Fila inferior ── */
 .fila-inferior { display: grid; grid-template-columns: 1fr 380px; gap: 1rem; }
 .panel-card {
-  background: #FFFFFF; border-radius: var(--radio);
-  border: 1px solid var(--borde); padding: 1.4rem 1.6rem;
+  background: #FFFFFF; border-radius: 12px;
+  border: 1px solid #E5E7EB; padding: 1.4rem 1.6rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
-.panel-titulo { font-size: 0.95rem; font-weight: 700; color: var(--texto); margin: 0; }
+.panel-titulo { font-size: 0.95rem; font-weight: 700; color: #111827; margin: 0; }
 
-/* Bitácora */
+/* ── Bitácora ── */
 .bitacora-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-.btn-ver-bitacora { font-size: 0.82rem; font-weight: 600; color: var(--azul); text-decoration: none; transition: color 0.15s; }
+.btn-ver-bitacora { font-size: 0.82rem; font-weight: 600; color: #1B396A; text-decoration: none; transition: color 0.15s; }
 .btn-ver-bitacora:hover { color: #1D4ED8; }
 
-.bitacora-cargando { display: flex; align-items: center; gap: 10px; padding: 1.5rem 0; color: var(--gris); font-size: 0.875rem; }
-.spinner-bitacora { width: 18px; height: 18px; border: 2px solid var(--borde); border-top-color: var(--azul); border-radius: 50%; animation: girar 0.75s linear infinite; flex-shrink: 0; }
+.bitacora-cargando { display: flex; align-items: center; gap: 10px; padding: 1.5rem 0; color: #6B7280; font-size: 0.875rem; }
+.spinner-bitacora { width: 18px; height: 18px; border: 2px solid #E5E7EB; border-top-color: #1B396A; border-radius: 50%; animation: girar 0.75s linear infinite; flex-shrink: 0; }
 @keyframes girar { to { transform: rotate(360deg); } }
 
 .lista-bitacora { display: flex; flex-direction: column; gap: 2px; }
 .item-bitacora { display: flex; gap: 10px; align-items: flex-start; padding: 8px; border-radius: 8px; transition: background 0.15s; }
-.item-bitacora:hover { background: var(--fondo); }
+.item-bitacora-clickeable { cursor: pointer; }
+.item-bitacora-clickeable:hover { background: #DBEAFE !important; }
 .item-placeholder { opacity: 0.5; }
-.avatar-bitacora { width: 32px; height: 32px; border-radius: 50%; background: var(--azul); color: white; font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.avatar-bitacora { width: 32px; height: 32px; border-radius: 50%; background: #1B396A; color: white; font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .avatar-gris { background: #9CA3AF; }
 .info-bitacora { flex: 1; min-width: 0; }
 .bitacora-fila-superior { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; flex-wrap: wrap; }
-.bitacora-usuario { font-weight: 600; font-size: 0.85rem; color: var(--texto); }
-.bitacora-desc { margin: 0 0 3px; font-size: 0.8rem; color: var(--gris); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bitacora-usuario { font-weight: 600; font-size: 0.85rem; color: #111827; }
+.bitacora-desc { margin: 0 0 3px; font-size: 0.8rem; color: #6B7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bitacora-fila-inferior { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
 .bitacora-modulo { font-size: 0.75rem; color: #9CA3AF; font-weight: 500; }
 .bitacora-tiempo { font-size: 0.75rem; color: #9CA3AF; white-space: nowrap; }
 .accion-badge-mini { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; flex-shrink: 0; }
-.accion-login       { background: var(--azul-suave); color: var(--azul); }
-.accion-creacion    { background: #DCFCE7; color: var(--verde); }
-.accion-edicion     { background: #FEF3C7; color: var(--amarillo); }
-.accion-eliminacion { background: #FEF2F2; color: var(--rojo); }
-.accion-default     { background: var(--fondo); color: var(--gris); }
+.accion-login       { background: #DBEAFE; color: #1B396A; }
+.accion-creacion    { background: #DCFCE7; color: #16A34A; }
+.accion-edicion     { background: #FEF3C7; color: #F59E0B; }
+.accion-eliminacion { background: #FEF2F2; color: #DC2626; }
+.accion-default     { background: #F9FAFB; color: #6B7280; }
 
-/* Acciones rápidas */
+/* ── Acciones rápidas ── */
 .grilla-acciones { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem; }
 .btn-accion {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 8px; padding: 1rem; min-height: 80px;
-  background: var(--fondo); border: 1.5px solid var(--borde);
-  border-radius: var(--radio); font-size: 0.82rem; font-weight: 600;
-  color: var(--texto); cursor: pointer; font-family: inherit;
+  background: #F9FAFB; border: 1.5px solid #E5E7EB;
+  border-radius: 12px; font-size: 0.82rem; font-weight: 600;
+  color: #111827; cursor: pointer; font-family: inherit;
   transition: all 0.2s; text-align: center;
 }
-.btn-accion:hover { background: var(--azul-suave); border-color: var(--azul); color: var(--azul); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(27,57,106,0.1); }
-.btn-accion.btn-primario-accion { background: var(--azul); color: white; border-color: var(--azul); }
-.btn-accion.btn-primario-accion:hover { background: var(--azul-hover); }
+.btn-accion:hover { background: #DBEAFE; border-color: #1B396A; color: #1B396A; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(27,57,106,0.1); }
+.btn-accion.btn-primario-accion { background: #1B396A; color: white; border-color: #1B396A; }
+.btn-accion.btn-primario-accion:hover { background: #15305A; }
 .accion-icono { width: 22px; height: 22px; stroke: currentColor; }
 
-/* Fade */
+/* ══ MODALES (con valores hexadecimales directos) ══ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.modal-caja {
+  background: #FFFFFF;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  overflow: hidden;
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem 1.5rem;
+  border-bottom: 1px solid #E5E7EB;
+  background: #F8FAFC;
+}
+.modal-titulo {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+.modal-cerrar {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: #6B7280;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.15s;
+  min-height: unset;
+  line-height: 1;
+}
+.modal-cerrar:hover { background: #F1F5F9; }
+.modal-body {
+  padding: 1.4rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.modal-descripcion {
+  color: #6B7280;
+  font-size: 0.9rem;
+  margin: 0;
+  line-height: 1.6;
+}
+.modal-fila {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.modal-etiqueta {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.modal-valor {
+  font-size: 0.9rem;
+  color: #111827;
+  font-weight: 500;
+}
+.modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #E5E7EB;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Botones del modal con valores directos */
+.btn-modal-primario {
+  padding: 8px 20px;
+  background: #1B396A;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  transition: background 0.15s;
+}
+.btn-modal-primario:hover { background: #15305A; }
+
+.btn-modal-secundario {
+  padding: 8px 20px;
+  background: #F1F5F9;
+  color: #111827;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  transition: background 0.15s;
+}
+.btn-modal-secundario:hover { background: #E2E8F0; }
+
+/* ── Transición fade ── */
 .fade-enter-active, .fade-leave-active { transition: opacity 0.25s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
 /* ══ RESPONSIVE ══ */
-/* ══════════════════════════════════════
-   RESPONSIVE — DashboardView
-   Santiago Acosta — Modificaciones SICE
-══════════════════════════════════════ */
 
 /* ── Tablet grande (≤1200px) ── */
 @media (max-width: 1200px) {
-  .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+  .fila-graficas { grid-template-columns: 1fr; }
 }
 
 /* ── Tablet (≤900px) ── */
 @media (max-width: 900px) {
-  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
   .fila-graficas { grid-template-columns: 1fr; }
   .fila-inferior { grid-template-columns: 1fr; }
   .barra-etiqueta { width: 90px; }
@@ -648,68 +759,25 @@ onMounted(() => {
 
 /* ── Móvil grande (≤640px) ── */
 @media (max-width: 640px) {
-  .inicio-header {
-    flex-direction: column;
-    gap: 0.4rem;
-    margin-bottom: 1rem;
-  }
-
+  .inicio-header { flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
   .page-title { font-size: 1.35rem; }
   .welcome-text { font-size: 0.82rem; }
+  .fecha-actual { font-size: 0.78rem; white-space: normal; align-self: flex-start; }
 
-  .fecha-actual {
-    font-size: 0.78rem;
-    white-space: normal;
-    align-self: flex-start;
-  }
-
-  /* Búsqueda rápida en columna */
-  .busqueda-rapida-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-    padding: 1rem 1.2rem;
-  }
-
-  .busqueda-rapida-form {
-    width: 100%;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
+  .busqueda-rapida-card { flex-direction: column; align-items: flex-start; gap: 1rem; padding: 1rem 1.2rem; }
+  .busqueda-rapida-form { width: 100%; flex-wrap: wrap; gap: 8px; }
   .busqueda-input-wrap { flex: 1; }
-  .busqueda-input {
-    width: 100%;
-    font-size: 16px; /* evita zoom iOS */
-  }
-
+  .busqueda-input { width: 100%; font-size: 16px; }
   .btn-buscar { width: 100%; justify-content: center; }
 
-  /* KPIs más compactos */
-  .kpi-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-  }
-
-  .kpi-card { padding: 1rem; gap: 0.75rem; }
-  .kpi-valor { font-size: 1.35rem; }
-  .kpi-etiqueta { font-size: 0.72rem; }
-  .kpi-icono-wrapper { width: 36px; height: 36px; border-radius: 8px; }
-  .kpi-icono { width: 18px; height: 18px; }
-
-  /* Gráficas */
   .grafica-card { padding: 1rem 1.2rem; }
   .barra-etiqueta { width: 80px; font-size: 0.75rem; }
 
-  /* Acciones rápidas en 2 columnas */
   .grilla-acciones { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
   .btn-accion { min-height: 72px; font-size: 0.78rem; padding: 0.8rem; }
   .accion-icono { width: 18px; height: 18px; }
 
-  /* Panel card más compacto */
   .panel-card { padding: 1rem 1.2rem; }
-
-  /* Bitácora compacta */
   .bitacora-desc {
     white-space: normal;
     display: -webkit-box;
@@ -723,33 +791,12 @@ onMounted(() => {
 /* ── Móvil pequeño (≤480px) ── */
 @media (max-width: 480px) {
   .page-title { font-size: 1.2rem; }
-
-  /* KPIs en 2 columnas mantenidas pero más compactas */
-  .kpi-valor { font-size: 1.2rem; }
-  .kpi-etiqueta { font-size: 0.7rem; }
-  .kpi-card { padding: 0.85rem; }
-
-  /* Acciones en columna con fila horizontal */
   .grilla-acciones { grid-template-columns: 1fr; }
-  .btn-accion {
-    flex-direction: row;
-    min-height: 52px;
-    justify-content: flex-start;
-    padding: 12px 14px;
-    gap: 10px;
-  }
-
-  /* Búsqueda rápida más compacta */
+  .btn-accion { flex-direction: row; min-height: 52px; justify-content: flex-start; padding: 12px 14px; gap: 10px; }
   .busqueda-label { font-size: 0.88rem; }
   .busqueda-sub { display: none; }
-
-  /* Bitácora fila inferior en columna */
-  .bitacora-fila-inferior {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
-  }
+  .bitacora-fila-inferior { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .modal-footer { flex-direction: column; gap: 0.5rem; }
+  .btn-modal-secundario, .btn-modal-primario { width: 100%; justify-content: center; }
 }
 </style>
-
-label:    'Nueva inscripción',

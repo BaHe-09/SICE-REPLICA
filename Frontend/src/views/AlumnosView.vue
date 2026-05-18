@@ -500,7 +500,8 @@ const cargarCatalogos = async () => {
 }
 
 // ── Filtros y paginación ─────────────────────────────────────────────
-const busquedaAlumno  = ref('')
+const busquedaAlumno  = ref('')   // valor del input (lo que el usuario escribe)
+const busquedaAplicada = ref('')  // valor que realmente filtra (solo se actualiza al buscar)
 const filtroCarreraId = ref('')
 const filtroSemestre  = ref('')
 const filtroEstatusId = ref('')
@@ -570,13 +571,10 @@ const cargarAlumnosDesdeBD = async () => {
 
 onMounted(() => { cargarAlumnosDesdeBD(); cargarCatalogos() })
 
-// Debounce búsqueda
-let timerBusqueda = null
-watch(busquedaAlumno, () => {
-  cargandoBusqueda.value = true
-  if (timerBusqueda) clearTimeout(timerBusqueda)
-  timerBusqueda = setTimeout(() => { cargandoBusqueda.value = false; currentPage.value = 1 }, 350)
-})
+// ── Búsqueda: NO filtra mientras se escribe.
+//    Solo aplica el filtro al presionar Enter o el botón Buscar.
+//    Para nombre (texto libre) se permite buscar al presionar Enter también.
+// No hay watch reactivo sobre busquedaAlumno — el filtrado usa busquedaAplicada.
 
 // ── Selección de alumno (panel lateral) ─────────────────────────────
 const seleccionarAlumno = async (alumno) => {
@@ -784,9 +782,10 @@ const alumnosFiltrados = computed(() => {
     const busqGlobal = !props.busquedaGlobal ||
       normalize(nombre).includes(normalize(props.busquedaGlobal)) ||
       noControl.includes(props.busquedaGlobal)
-    const busqLocal = !busquedaAlumno.value ||
-      normalize(nombre).includes(normalize(busquedaAlumno.value)) ||
-      noControl.includes(busquedaAlumno.value)
+    // ── CORRECCIÓN: usa busquedaAplicada (solo se actualiza al presionar Buscar/Enter) ──
+    const busqLocal = !busquedaAplicada.value ||
+      normalize(nombre).includes(normalize(busquedaAplicada.value)) ||
+      noControl.includes(busquedaAplicada.value)
     const filtCarrera  = !filtroCarreraId.value || Number(resolverIdCarrera(alumno)) === Number(filtroCarreraId.value)
     const filtSemestre = !filtroSemestre.value  || String(alumno.semestre_actual || alumno.semestre) === String(filtroSemestre.value)
     const filtEstatus  = !filtroEstatusId.value || Number(alumno.id_estatus_alumno) === Number(filtroEstatusId.value)
@@ -812,12 +811,15 @@ const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
 const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
 
 const resetFilters = () => {
-  busquedaAlumno.value = filtroCarreraId.value = filtroSemestre.value = filtroEstatusId.value = ''
+  busquedaAlumno.value = ''
+  busquedaAplicada.value = ''
+  filtroCarreraId.value = filtroSemestre.value = filtroEstatusId.value = ''
   currentPage.value = 1; filaActiva.value = -1
 }
 
-const limpiarBusqueda = () => { busquedaAlumno.value = ''; nextTick(() => inputBusqueda.value?.focus()) }
-const aplicarBusqueda = () => { currentPage.value = 1 }
+const limpiarBusqueda = () => { busquedaAlumno.value = ''; busquedaAplicada.value = ''; currentPage.value = 1; nextTick(() => inputBusqueda.value?.focus()) }
+// ── CORRECCIÓN: aplicarBusqueda copia el término al ref que usa el filtro ──
+const aplicarBusqueda = () => { busquedaAplicada.value = busquedaAlumno.value; currentPage.value = 1 }
 const nuevoAlumno     = () => router.push('/formulario-alumno')
 
 // ── Navegación por teclado ───────────────────────────────────────────
@@ -1489,11 +1491,14 @@ const navegarTeclado = (e) => {
   align-items: center;
   justify-content: center;
   z-index: 2000;
+  padding: 1rem;  /* ← evita que el modal toque los bordes en móvil */
 }
 .modal-content {
   background: #FFFFFF;
   width: 520px;
   max-width: 92%;
+  max-height: 90vh;          /* ← garantiza que el modal no salga de pantalla */
+  overflow-y: auto;          /* ← scroll interno si el contenido es largo */
   border-radius: 14px;
   box-shadow: 0 20px 50px rgba(0,0,0,0.18);
   overflow: hidden;
