@@ -338,35 +338,32 @@
         
         <!-- Paginación -->
         <div class="paginacion-container" v-if="alumnosFiltrados.length > 0">
-          <div class="paginacion-info">
-            <span>Mostrando {{ mostrandoDesde }}-{{ mostrandoHasta }} de {{ alumnosFiltrados.length }}</span>
-          </div>
-          <div class="paginacion-controles">
+          <div class="paginacion-izquierda">
+            <span class="paginacion-filas-label">Filas por página:</span>
             <select v-model.number="itemsPorPagina" @change="cambiarItemsPorPagina(itemsPorPagina)" class="paginacion-select">
               <option :value="10">10</option>
               <option :value="20">20</option>
               <option :value="50">50</option>
               <option :value="100">100</option>
             </select>
-            <button @click="cambiarPagina(1)" :disabled="paginaActual === 1" class="btn-pag" title="Primera página">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><polyline points="18 17 13 12 18 7"/><line x1="6" y1="12" x2="14" y2="12"/></svg>
-            </button>
+          </div>
+          <div class="paginacion-centro">
+            <span class="paginacion-pagina-label">Página {{ paginaActual }} de {{ totalPaginas }}</span>
+          </div>
+          <div class="paginacion-controles">
             <button @click="cambiarPagina(paginaActual - 1)" :disabled="paginaActual === 1" class="btn-pag" title="Anterior">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
-            <div class="paginacion-numeros">
+            <template v-for="(item, idx) in paginasVisibles" :key="idx">
+              <span v-if="item === '...'" class="paginacion-ellipsis">…</span>
               <button
-                v-for="pag in totalPaginas"
-                :key="pag"
-                @click="cambiarPagina(pag)"
-                :class="['btn-num', { activa: paginaActual === pag }]"
-              >{{ pag }}</button>
-            </div>
+                v-else
+                @click="cambiarPagina(item)"
+                :class="['btn-num', { activa: paginaActual === item }]"
+              >{{ item }}</button>
+            </template>
             <button @click="cambiarPagina(paginaActual + 1)" :disabled="paginaActual === totalPaginas" class="btn-pag" title="Siguiente">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-            <button @click="cambiarPagina(totalPaginas)" :disabled="paginaActual === totalPaginas" class="btn-pag" title="Última página">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><line x1="10" y1="12" x2="18" y2="12"/><polyline points="18 17 13 12 18 7"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           </div>
         </div>
@@ -508,6 +505,26 @@ const alumnosPaginados = computed(() => {
 
 const mostrandoDesde = computed(() => alumnosFiltrados.value.length === 0 ? 0 : (paginaActual.value - 1) * itemsPorPagina.value + 1)
 const mostrandoHasta = computed(() => Math.min(paginaActual.value * itemsPorPagina.value, alumnosFiltrados.value.length))
+
+const paginasVisibles = computed(() => {
+  const total = totalPaginas.value
+  const actual = paginaActual.value
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  const paginas = []
+  const agregar = (p) => { if (!paginas.includes(p) && p >= 1 && p <= total) paginas.push(p) }
+  agregar(1)
+  agregar(actual - 1)
+  agregar(actual)
+  agregar(actual + 1)
+  agregar(total)
+  paginas.sort((a, b) => a - b)
+  const resultado = []
+  for (let i = 0; i < paginas.length; i++) {
+    if (i > 0 && paginas[i] - paginas[i - 1] > 1) resultado.push('...')
+    resultado.push(paginas[i])
+  }
+  return resultado
+})
 
 const promedioGeneral = computed(() => {
   const completos = alumnos.value.filter(a => calcularFinal(a) !== null)
@@ -851,17 +868,21 @@ watch(totalPaginas, (nuevoTotal) => { if (paginaActual.value > nuevoTotal) pagin
 .sin-resultados-inner p { color: #9CA3AF; font-size: 0.9rem; margin: 0; }
 
 /* PAGINACIÓN ESTANDARIZADA */
-.paginacion-container { padding: 0.9rem 1.4rem; border-top: 1px solid #E5E7EB; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; background: #FFFFFF; }
-.paginacion-info { font-size: 0.82rem; color: #6B7280; }
-.paginacion-controles { display: flex; align-items: center; gap: 4px; }
-.paginacion-select { padding: 4px 6px; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.8rem; font-family: inherit; color: #1A1A1A; background: #F5F5F5; outline: none; cursor: pointer; }
-.btn-pag { width: 32px; height: 32px; border-radius: 8px; border: 1px solid #E5E7EB; background: #FFFFFF; color: #6B7280; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
-.btn-pag:hover:not(:disabled) { background: #F5F5F5; border-color: #E5E7EB; color: #1B396A; }
-.btn-pag:disabled { opacity: 0.4; cursor: not-allowed; }
-.paginacion-numeros { display: flex; gap: 4px; flex-wrap: wrap; }
-.btn-num { min-width: 32px; height: 32px; border-radius: 8px; border: 1px solid #E5E7EB; background: #FFFFFF; color: #6B7280; font-weight: 600; font-size: 0.82rem; font-family: inherit; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-.btn-num:hover { background: #F5F5F5; color: #1B396A; }
-.btn-num.activa { background: #1B396A; color: #FFFFFF; border-color: #1B396A; }
+.paginacion-container { padding: 0.85rem 1.4rem; border-top: 1px solid #E5E7EB; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; background: #FAFAFA; }
+.paginacion-izquierda { display: flex; align-items: center; gap: 8px; }
+.paginacion-filas-label { font-size: 0.82rem; color: #6B7280; white-space: nowrap; }
+.paginacion-centro { font-size: 0.82rem; color: #6B7280; font-weight: 500; }
+.paginacion-pagina-label { white-space: nowrap; }
+.paginacion-select { padding: 5px 8px; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 0.82rem; font-family: inherit; color: #1A1A1A; background: #FFFFFF; outline: none; cursor: pointer; }
+.paginacion-select:focus { border-color: #1B396A; }
+.paginacion-controles { display: flex; align-items: center; gap: 3px; }
+.btn-pag { width: 32px; height: 32px; border-radius: 7px; border: 1px solid #E5E7EB; background: #FFFFFF; color: #6B7280; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; }
+.btn-pag:hover:not(:disabled) { background: #F0F4FF; border-color: #BFDBFE; color: #1B396A; }
+.btn-pag:disabled { opacity: 0.35; cursor: not-allowed; }
+.paginacion-ellipsis { width: 28px; height: 32px; display: flex; align-items: center; justify-content: center; color: #9CA3AF; font-size: 0.9rem; user-select: none; }
+.btn-num { min-width: 32px; height: 32px; padding: 0 6px; border-radius: 7px; border: 1px solid #E5E7EB; background: #FFFFFF; color: #374151; font-weight: 600; font-size: 0.82rem; font-family: inherit; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+.btn-num:hover { background: #F0F4FF; border-color: #BFDBFE; color: #1B396A; }
+.btn-num.activa { background: #1B396A; color: #FFFFFF; border-color: #1B396A; box-shadow: 0 2px 6px rgba(27,57,106,0.3); }
 
 /* RESUMEN TABLA */
 .tabla-resumen { padding: 0.75rem 1.4rem; background: #F5F5F5; border-top: 1px solid #E5E7EB; display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
@@ -983,8 +1004,8 @@ kbd { background: #E5E7EB; border-radius: 4px; padding: 1px 6px; font-family: mo
 
 @media (max-width: 900px) {
   .resumen-grid { grid-template-columns: repeat(2, 1fr); }
-  .paginacion-container { flex-direction: column; align-items: center; gap: 1rem; }
-  .paginacion-controles { flex-wrap: wrap; justify-content: center; }
+  .paginacion-container { flex-direction: column; align-items: center; gap: 0.75rem; }
+  .paginacion-centro { order: -1; }
 }
 
 @media (max-width: 640px) {
@@ -1065,13 +1086,11 @@ kbd { background: #E5E7EB; border-radius: 4px; padding: 1px 6px; font-family: mo
   /* Paginación */
   .paginacion-container {
     flex-direction: column;
-    gap: 1rem;
+    align-items: center;
+    gap: 0.75rem;
     padding: 1rem;
   }
-  .paginacion-numeros {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
+  .paginacion-centro { order: -1; }
 
   /* Indicadores */
   .indicadores-grid { 

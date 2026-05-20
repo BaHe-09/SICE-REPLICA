@@ -889,7 +889,7 @@ const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
 .modal-input, .modal-select { width: 100%; padding: 12px 16px; border: 1.5px solid #E5E7EB; border-radius: 10px; font-size: 1rem; background: #FFFFFF; box-sizing: border-box; }
 
 .modal-footer { padding: 1.2rem 1.8rem; background: #F5F5F5; display: flex; gap: 12px; justify-content: flex-end; }
-.btn-cancelar, .btn-eliminar, .btn-guardar { padding: 12px 28px; border-radius: 10px; font-weight: 600; cursor: pointer; }
+.btn-cancelar, .btn-eliminar, .btn-guardar { padding: 12px 28px; border-radius: 10px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .btn-cancelar { background: #FFFFFF; color: #1A1A1A; border: 1px solid #E5E7EB; }
 .btn-eliminar { background: #DC2626; color: white; border: none; }
 .btn-guardar { background: #1B396A; color: white; border: none; }
@@ -924,27 +924,37 @@ const irACalificaciones = (grupo) => router.push(`/calificaciones/${grupo.id}`)
 }
 
 .loading-spinner {
+  display: block;
   width: 32px;
   height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  border-radius: 50%;
   border: 3px solid #E5E7EB;
   border-top-color: #1B396A;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
+  box-sizing: border-box;
+  animation: spin 0.75s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  flex-shrink: 0;
 }
 
 .spinner-btn {
-  display: inline-block;
+  display: block;
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(255,255,255,0.4);
-  border-top-color: white;
+  min-width: 14px;
+  min-height: 14px;
   border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-  margin-right: 6px;
-  vertical-align: middle;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  box-sizing: border-box;
+  animation: spin 0.75s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  flex-shrink: 0;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 
 /* ── Navegación por teclado ── */
 .fila-activa {
