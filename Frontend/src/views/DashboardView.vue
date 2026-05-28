@@ -757,7 +757,7 @@ onMounted(() => {
   .barra-etiqueta { width: 90px; }
 }
 
-/* ── Móvil grande (≤640px) ── */
+/* ── Móvil grandee (≤640px) ── */
 @media (max-width: 640px) {
   .inicio-header { flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
   .page-title { font-size: 1.35rem; }
