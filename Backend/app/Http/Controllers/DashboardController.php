@@ -13,10 +13,15 @@ class DashboardController extends Controller
             $alumnosActivosQuery = $this->alumnosConEstatus(['Activo', '1', 'true']);
 
             $alumnos = (clone $alumnosActivosQuery)->count();
+
             $inscripciones = DB::table('inscripcion')->count();
+
             $grupos = $this->gruposActivos()->count();
+
             $bajasTemporales = $this->alumnosConEstatus(['Baja Temporal'])->count();
+
             $bajasDefinitivas = $this->alumnosConEstatus(['Baja Definitiva'])->count();
+
             $promedio = DB::table('calificacion')->avg('calificacion');
 
             $carreras = (clone $alumnosActivosQuery)
@@ -47,11 +52,19 @@ class DashboardController extends Controller
                     'bajas_definitivas' => $bajasDefinitivas,
                     'promedio' => $promedio ? round($promedio, 2) : 0,
                 ],
+
                 'carreras' => $carreras,
+
                 'semestres' => $semestres,
+
+                // NUEVO
+                'carreras_detalle' => $this->resumenCarreras(),
+
                 'actividad_reciente' => $this->actividadReciente(),
             ]);
+
         } catch (\Exception $e) {
+
             return response()->json([
                 'error' => 'Error en servidor',
                 'mensaje' => $e->getMessage(),
@@ -61,33 +74,49 @@ class DashboardController extends Controller
 
     private function alumnosConEstatus(array $estatus)
     {
-        $normalizados = array_map(fn ($valor) => mb_strtolower($valor), $estatus);
+        $normalizados = array_map(
+            fn ($valor) => mb_strtolower($valor),
+            $estatus
+        );
 
-        // Evaluar los schema checks UNA VEZ, fuera de cualquier closure,
-        // para evitar generarlos dentro de la query y para evitar que
-        // un callback vacío produzca SQL inválido: WHERE ()
-        $tieneEstatusCol     = Schema::hasColumn('alumno', 'estatus');
+        $tieneEstatusCol = Schema::hasColumn('alumno', 'estatus');
+
         $tieneCatalogoEstatus = Schema::hasTable('estatus_alumno')
             && Schema::hasColumn('alumno', 'id_estatus_alumno');
 
         $query = DB::table('alumno as a');
 
         if ($tieneCatalogoEstatus) {
-            $query->leftJoin('estatus_alumno as ea', 'a.id_estatus_alumno', '=', 'ea.id_estatus_alumno');
+            $query->leftJoin(
+                'estatus_alumno as ea',
+                'a.id_estatus_alumno',
+                '=',
+                'ea.id_estatus_alumno'
+            );
         }
 
-        // Si no hay ninguna columna de estatus disponible, devolver query sin filtro
-        // (muestra todos los alumnos — peor escenario, pero no crashea)
         if (!$tieneEstatusCol && !$tieneCatalogoEstatus) {
             return $query;
         }
 
-        return $query->where(function ($q) use ($normalizados, $tieneEstatusCol, $tieneCatalogoEstatus) {
+        return $query->where(function ($q) use (
+            $normalizados,
+            $tieneEstatusCol,
+            $tieneCatalogoEstatus
+        ) {
+
             if ($tieneEstatusCol) {
-                $q->whereIn(DB::raw('LOWER(CAST(a.estatus AS CHAR))'), $normalizados);
+                $q->whereIn(
+                    DB::raw('LOWER(CAST(a.estatus AS CHAR))'),
+                    $normalizados
+                );
             }
+
             if ($tieneCatalogoEstatus) {
-                $q->orWhereIn(DB::raw('LOWER(ea.nombre)'), $normalizados);
+                $q->orWhereIn(
+                    DB::raw('LOWER(ea.nombre)'),
+                    $normalizados
+                );
             }
         });
     }
@@ -97,10 +126,74 @@ class DashboardController extends Controller
         $query = DB::table('grupo');
 
         if (Schema::hasColumn('grupo', 'estatus')) {
-            $query->whereIn(DB::raw('LOWER(CAST(estatus AS CHAR))'), ['activo', '1', 'true']);
+            $query->whereIn(
+                DB::raw('LOWER(CAST(estatus AS CHAR))'),
+                ['activo', '1', 'true']
+            );
         }
 
         return $query;
+    }
+
+    private function resumenCarreras()
+    {
+        $periodoActual = DB::table('periodo')
+            ->where('estatus', 1)
+            ->first();
+
+        if (!$periodoActual) {
+            return [];
+        }
+
+        $carreras = DB::table('carrera')
+            ->where('estatus', 1)
+            ->get();
+
+        $resultado = [];
+
+        foreach ($carreras as $carrera) {
+
+            // Total alumnos activos
+            $totalAlumnos = DB::table('alumno as a')
+                ->where('a.id_carrera', $carrera->id_carrera)
+                ->where(function ($q) {
+                    $q->where('a.estatus', 'Activo')
+                      ->orWhere('a.estatus', '1');
+                })
+                ->count();
+
+            // Total grupos activos del periodo
+            $totalGrupos = DB::table('grupo as g')
+                ->join('inscripcion as i', 'g.id_grupo', '=', 'i.id_grupo')
+                ->join('alumno as a', 'i.id_alumno', '=', 'a.id_alumno')
+                ->where('a.id_carrera', $carrera->id_carrera)
+                ->where('g.id_periodo', $periodoActual->id_periodo)
+                ->where('g.estatus', 1)
+                ->distinct('g.id_grupo')
+                ->count('g.id_grupo');
+
+            // Alumnos irregulares
+            $irregulares = DB::table('alumno as a')
+                ->join('inscripcion as i', 'a.id_alumno', '=', 'i.id_alumno')
+                ->join('grupo as g', 'i.id_grupo', '=', 'g.id_grupo')
+                ->join('calificacion as c', 'i.id_inscripcion', '=', 'c.id_inscripcion')
+                ->where('a.id_carrera', $carrera->id_carrera)
+                ->where('g.id_periodo', $periodoActual->id_periodo)
+                ->where('c.calificacion', '<', 70)
+                ->distinct('a.id_alumno')
+                ->count('a.id_alumno');
+
+            $resultado[] = [
+                'id_carrera' => $carrera->id_carrera,
+                'nombre' => $carrera->nombre,
+                'total_grupos' => $totalGrupos,
+                'total_alumnos' => $totalAlumnos,
+                'alumnos_regulares' => $totalAlumnos - $irregulares,
+                'alumnos_irregulares' => $irregulares,
+            ];
+        }
+
+        return $resultado;
     }
 
     private function actividadReciente()
@@ -108,7 +201,9 @@ class DashboardController extends Controller
         $actividad = collect();
 
         if (Schema::hasTable('bitacora')) {
+
             $actividad = $actividad->merge(
+
                 DB::table('bitacora')
                     ->select(
                         DB::raw("COALESCE(accion, 'Actividad del sistema') as descripcion"),
@@ -121,10 +216,16 @@ class DashboardController extends Controller
         }
 
         $actividad = $actividad->merge(
+
             DB::table('inscripcion as i')
                 ->leftJoin('alumno as a', 'i.id_alumno', '=', 'a.id_alumno')
                 ->select(
-                    DB::raw("CONCAT('Inscripcion registrada para ', COALESCE(a.numero_control, 'alumno sin control')) as descripcion"),
+                    DB::raw("
+                        CONCAT(
+                            'Inscripcion registrada para ',
+                            COALESCE(a.numero_control, 'alumno sin control')
+                        ) as descripcion
+                    "),
                     'i.fecha_inscripcion as fecha'
                 )
                 ->whereNotNull('i.fecha_inscripcion')
@@ -134,6 +235,7 @@ class DashboardController extends Controller
         );
 
         $actividad = $actividad->merge(
+
             DB::table('calificacion as c')
                 ->select(
                     DB::raw("'Calificacion registrada' as descripcion"),
