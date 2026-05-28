@@ -331,7 +331,7 @@ import {
   formatNum,
   tiempoRelativo,
   claseBadge,
-} from '@/stores/dashboardStore.js'
+} from '@/store/dashboardStore.js'
 
 const router = useRouter()
 

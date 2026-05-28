@@ -62,7 +62,7 @@
 </template>
 
 <script setup>
-import { formatNum } from '@/stores/dashboardStore.js'
+import { formatNum } from '@/store/dashboardStore.js'
 
 defineProps({
   stats:    { type: Array,   required: true },

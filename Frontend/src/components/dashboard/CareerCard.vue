@@ -100,7 +100,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { formatNum } from '@/stores/dashboardStore.js'
+import { formatNum } from '@/store/dashboardStore.js'
 
 const props = defineProps({
   carrera: { type: Object,  required: true },

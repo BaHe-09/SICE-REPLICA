@@ -74,7 +74,7 @@
 </template>
 
 <script setup>
-import { COLORES_CARRERA, formatNum } from '@/stores/dashboardStore.js'
+import { COLORES_CARRERA, formatNum } from '@/store/dashboardStore.js'
 
 defineProps({
   carreras:      { type: Array,  default: () => [] },
