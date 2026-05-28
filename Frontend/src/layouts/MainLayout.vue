@@ -4,7 +4,6 @@
     <!-- ══ ENCABEZADO FIJO ══ -->
     <header class="encabezado-superior">
       <div class="encabezado-izquierda">
-        <!-- Hamburguesa solo en móvil -->
         <button
           class="btn-hamburguesa"
           @click.stop="toggleDrawer"
@@ -104,371 +103,501 @@
     </header>
 
     <!-- ══ BARRA DE NAVEGACIÓN HORIZONTAL (solo desktop) ══ -->
-    <nav class="barra-nav-horizontal" @click.stop aria-label="Menú principal" style="overflow-y: visible;">
+    <nav class="barra-nav-horizontal" @click.stop aria-label="Menú principal">
       <div class="nav-scroll-inner" ref="navScrollRef">
 
-      <!-- Inicio -->
-      <router-link to="/inicio" class="nav-item nav-item-link" active-class="nav-activo">
-        <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-        </svg>
-        <span>Inicio</span>
-      </router-link>
-
-      <!-- ── Servicios Escolares ── -->
-      <template v-if="puedeVer.serviciosEscolares">
-        <div
-          class="nav-item nav-item-dropdown"
-          :class="{ 'nav-abierto': dropdownActivo === 'servicios' }"
-          @mouseenter="abrirDropdown('servicios')"
-          @mouseleave="cerrarDropdownConDelay"
-          @click.stop="toggleDropdown('servicios')"
-          aria-haspopup="true"
-          :aria-expanded="dropdownActivo === 'servicios'"
+        <!-- Inicio -->
+        <router-link
+          to="/inicio"
+          class="nav-item nav-item-link"
+          active-class="nav-activo"
+          :title="tooltips.inicio"
+          @click="cerrarTab"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
           </svg>
-          <span>Servicios Escolares</span>
-          <svg class="nav-flecha" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-          </svg>
+          <span class="nav-label">Inicio</span>
+        </router-link>
 
-          <!-- Dropdown Panel Servicios Escolares -->
-          <Transition name="dropdown">
-            <div
-              v-if="dropdownActivo === 'servicios'"
-              class="dropdown-panel"
-              @mouseenter="cancelarCierreDropdown"
-              @mouseleave="cerrarDropdownConDelay"
-              @click.stop
-            >
-              <!-- Fila de íconos grandes -->
-              <div class="dropdown-iconos-grid">
-                <router-link v-if="puedeVerItem('/servicios-escolares')" to="/servicios-escolares" class="dropdown-icono-item" @click="cerrarMenus">
-                  <div class="icono-grande-wrap">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                  </div>
-                  <span>Principal</span>
-                </router-link>
-                <router-link v-if="puedeVerItem('/alumnos')" to="/alumnos" class="dropdown-icono-item" @click="cerrarMenus">
-                  <div class="icono-grande-wrap">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                  </div>
-                  <span>Alumnos</span>
-                </router-link>
-                <router-link v-if="puedeVerItem('/evaluaciones')" to="/evaluaciones" class="dropdown-icono-item" @click="cerrarMenus">
-                  <div class="icono-grande-wrap">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
-                  </div>
-                  <span>Evaluaciones</span>
-                </router-link>
-                <router-link v-if="puedeVerItem('/calificaciones')" to="/calificaciones" class="dropdown-icono-item" @click="cerrarMenus">
-                  <div class="icono-grande-wrap">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                  </div>
-                  <span>Calificaciones</span>
-                </router-link>
-                <router-link v-if="puedeVerItem('/inscripcion')" to="/inscripcion" class="dropdown-icono-item" @click="cerrarMenus">
-                  <div class="icono-grande-wrap">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-                  </div>
-                  <span>Inscripción</span>
-                </router-link>
-                <router-link v-if="puedeVerItem('/gestion-grupos')" to="/gestion-grupos" class="dropdown-icono-item" @click="cerrarMenus">
-                  <div class="icono-grande-wrap">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                  </div>
-                  <span>Grupos y Horarios</span>
-                </router-link>
-                <template v-if="puedeVerItem('/inscripciones')">
-                  <router-link to="/inscripciones" class="dropdown-icono-item" @click="cerrarMenus">
-                    <div class="icono-grande-wrap">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-                    </div>
-                    <span>Inscripciones Detalladas</span>
-                  </router-link>
-                  <router-link to="/inscripciones/historial" class="dropdown-icono-item" @click="cerrarMenus">
-                    <div class="icono-grande-wrap">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    </div>
-                    <span>Historial</span>
-                  </router-link>
-                </template>
-              </div>
+        <!-- ── Servicios Escolares ── -->
+        <template v-if="puedeVer.serviciosEscolares">
+          <div
+            class="nav-item nav-item-tab"
+            :class="{ 'nav-activo': tabActivo === 'servicios' }"
+            @click.stop="toggleTab('servicios')"
+            :title="tooltips.servicios"
+            aria-haspopup="true"
+            :aria-expanded="tabActivo === 'servicios'"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            <span class="nav-label">Servicios Escolares</span>
+            <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'servicios' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </template>
 
-            </div>
-          </Transition>
-        </div>
-      </template>
+        <!-- ── Gestión Académica ── -->
+        <template v-if="puedeVer.gestionAcademica">
+          <div
+            class="nav-item nav-item-tab"
+            :class="{ 'nav-activo': tabActivo === 'academica' }"
+            @click.stop="toggleTab('academica')"
+            :title="tooltips.academica"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 14l9-5-9-5-9 5 9 5zM12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+            </svg>
+            <span class="nav-label">Gestión Académica</span>
+            <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'academica' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </template>
 
-      <!-- ── Gestión Académica ── -->
-      <template v-if="puedeVer.gestionAcademica">
-        <div
-          class="nav-item nav-item-dropdown"
-          :class="{ 'nav-abierto': dropdownActivo === 'academica' }"
-          @mouseenter="abrirDropdown('academica')"
-          @mouseleave="cerrarDropdownConDelay"
-          @click.stop="toggleDropdown('academica')"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 14l9-5-9-5-9 5 9 5zM12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-          </svg>
-          <span>Gestión Académica</span>
-          <svg class="nav-flecha" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-          </svg>
+        <!-- ── Eventos ── -->
+        <template v-if="puedeVer.eventos">
+          <div
+            class="nav-item nav-item-tab"
+            :class="{ 'nav-activo': tabActivo === 'eventos' }"
+            @click.stop="toggleTab('eventos')"
+            :title="tooltips.eventos"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span class="nav-label">Eventos</span>
+            <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'eventos' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </template>
 
-          <Transition name="dropdown">
-            <div v-if="dropdownActivo === 'academica'" class="dropdown-panel dropdown-panel--lista"
-              @mouseenter="cancelarCierreDropdown" @mouseleave="cerrarDropdownConDelay" @click.stop>
-              <router-link to="/gestion-academica"                 class="dropdown-lista-item" @click="cerrarMenus">Panel Principal</router-link>
-              <router-link to="/gestion-academica/carreras"        class="dropdown-lista-item" @click="cerrarMenus">Carreras</router-link>
-              <router-link to="/gestion-academica/planes"          class="dropdown-lista-item" @click="cerrarMenus">Planes de Estudio</router-link>
-              <router-link to="/gestion-academica/materias"        class="dropdown-lista-item" @click="cerrarMenus">Materias</router-link>
-              <router-link to="/gestion-academica/prerrequisitos"  class="dropdown-lista-item" @click="cerrarMenus">Prerrequisitos</router-link>
-              <router-link to="/gestion-academica/periodos"        class="dropdown-lista-item" @click="cerrarMenus">Periodos Académicos</router-link>
-              <router-link to="/gestion-academica/edificios-aulas" class="dropdown-lista-item" @click="cerrarMenus">Edificios y Aulas</router-link>
-            </div>
-          </Transition>
-        </div>
-      </template>
+        <!-- ── Comité Académico ── -->
+        <template v-if="puedeVer.comite">
+          <div
+            class="nav-item nav-item-tab"
+            :class="{ 'nav-activo': tabActivo === 'comite' }"
+            @click.stop="toggleTab('comite')"
+            :title="tooltips.comite"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+            <span class="nav-label">Comité Académico</span>
+            <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'comite' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </template>
 
-      <!-- ── Eventos ── -->
-      <template v-if="puedeVer.eventos">
-        <div
-          class="nav-item nav-item-dropdown"
-          :class="{ 'nav-abierto': dropdownActivo === 'eventos' }"
-          @mouseenter="abrirDropdown('eventos')"
-          @mouseleave="cerrarDropdownConDelay"
-          @click.stop="toggleDropdown('eventos')"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          <span>Eventos</span>
-          <svg class="nav-flecha" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-          </svg>
+        <!-- ══ ADMINISTRACIÓN (solo admin) ══ -->
+        <template v-if="rolActual === 'admin'">
+          <div class="nav-separador-admin">
+            <span class="nav-separador-admin-label">ADMINISTRACIÓN</span>
+          </div>
 
-          <Transition name="dropdown">
-            <div v-if="dropdownActivo === 'eventos'" class="dropdown-panel dropdown-panel--lista"
-              @mouseenter="cancelarCierreDropdown" @mouseleave="cerrarDropdownConDelay" @click.stop>
-              <router-link to="/eventos"       class="dropdown-lista-item" @click="cerrarMenus">Lista de Eventos</router-link>
-              <router-link to="/eventos/nuevo" class="dropdown-lista-item" @click="cerrarMenus">Nuevo Evento</router-link>
-            </div>
-          </Transition>
-        </div>
-      </template>
+          <!-- Seguridad y Usuarios -->
+          <div
+            class="nav-item nav-item-tab"
+            :class="{ 'nav-activo': tabActivo === 'seguridad' }"
+            @click.stop="toggleTab('seguridad')"
+            :title="tooltips.seguridad"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            <span class="nav-label">Seguridad y Usuarios</span>
+            <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'seguridad' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
 
-      <!-- ── Comité Académico ── -->
-      <template v-if="puedeVer.comite">
-        <div
-          class="nav-item nav-item-dropdown"
-          :class="{ 'nav-abierto': dropdownActivo === 'comite' }"
-          @mouseenter="abrirDropdown('comite')"
-          @mouseleave="cerrarDropdownConDelay"
-          @click.stop="toggleDropdown('comite')"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-          </svg>
-          <span>Comité Académico</span>
-          <svg class="nav-flecha" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-          </svg>
+          <!-- Recursos Humanos -->
+          <div
+            class="nav-item nav-item-tab"
+            :class="{ 'nav-activo': tabActivo === 'rrhh' }"
+            @click.stop="toggleTab('rrhh')"
+            :title="tooltips.rrhh"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            <span class="nav-label">Recursos Humanos</span>
+            <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'rrhh' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
 
-          <Transition name="dropdown">
-            <div v-if="dropdownActivo === 'comite'" class="dropdown-panel dropdown-panel--lista"
-              @mouseenter="cancelarCierreDropdown" @mouseleave="cerrarDropdownConDelay" @click.stop>
-              <router-link to="/comite"                   class="dropdown-lista-item" @click="cerrarMenus">Panel Principal</router-link>
-              <router-link to="/comite/solicitudes"       class="dropdown-lista-item" @click="cerrarMenus">Solicitudes</router-link>
-              <router-link to="/comite/solicitudes/nueva" class="dropdown-lista-item" @click="cerrarMenus">Nueva Solicitud</router-link>
-              <router-link to="/comite/sesiones"          class="dropdown-lista-item" @click="cerrarMenus">Sesiones</router-link>
-              <router-link to="/comite/resoluciones"      class="dropdown-lista-item" @click="cerrarMenus">Resoluciones</router-link>
-            </div>
-          </Transition>
-        </div>
-      </template>
+          <!-- Personas -->
+          <div
+            class="nav-item nav-item-tab"
+            :class="{ 'nav-activo': tabActivo === 'personas' }"
+            @click.stop="toggleTab('personas')"
+            :title="tooltips.personas"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span class="nav-label">Personas</span>
+            <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'personas' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </template>
 
-      <!-- ══ ADMINISTRACIÓN (solo admin) ══ -->
-      <template v-if="rolActual === 'admin'">
-        <div class="nav-separador-admin">
-          <span class="nav-separador-admin-label">ADMINISTRACIÓN</span>
-        </div>
+        <!-- ── Asignación Docente ── -->
+        <template v-if="puedeVer.asignacionDocente">
+          <div
+            class="nav-item nav-item-tab"
+            :class="{ 'nav-activo': tabActivo === 'asignacion' }"
+            @click.stop="toggleTab('asignacion')"
+            :title="tooltips.asignacion"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            <span class="nav-label">Asignación Docente</span>
+            <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'asignacion' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </template>
 
-        <!-- Seguridad y Usuarios -->
-        <div
-          class="nav-item nav-item-dropdown"
-          :class="{ 'nav-abierto': dropdownActivo === 'seguridad' }"
-          @mouseenter="abrirDropdown('seguridad')"
-          @mouseleave="cerrarDropdownConDelay"
-          @click.stop="toggleDropdown('seguridad')"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-          </svg>
-          <span>Seguridad y Usuarios</span>
-          <svg class="nav-flecha" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-          </svg>
+        <!-- Kardex e Historial solo admin -->
+        <template v-if="rolActual === 'admin'">
+          <!-- Kardex -->
+          <div
+            class="nav-item nav-item-tab"
+            :class="{ 'nav-activo': tabActivo === 'kardex' }"
+            @click.stop="toggleTab('kardex')"
+            :title="tooltips.kardex"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span class="nav-label">Kardex</span>
+            <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'kardex' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
 
-          <Transition name="dropdown">
-            <div v-if="dropdownActivo === 'seguridad'" class="dropdown-panel dropdown-panel--lista"
-              @mouseenter="cancelarCierreDropdown" @mouseleave="cerrarDropdownConDelay" @click.stop>
-              <router-link to="/roles"         class="dropdown-lista-item" @click="cerrarMenus">Roles</router-link>
-              <router-link to="/permisos"      class="dropdown-lista-item" @click="cerrarMenus">Permisos</router-link>
-              <router-link to="/usuarios"      class="dropdown-lista-item" @click="cerrarMenus">Usuarios</router-link>
-              <router-link to="/bitacora"      class="dropdown-lista-item" @click="cerrarMenus">Bitácora</router-link>
-              <router-link to="/nuevo-usuario" class="dropdown-lista-item" @click="cerrarMenus">Nuevo Usuario</router-link>
-            </div>
-          </Transition>
-        </div>
+          <!-- Historial Académico -->
+          <div
+            class="nav-item nav-item-tab"
+            :class="{ 'nav-activo': tabActivo === 'historial' }"
+            @click.stop="toggleTab('historial')"
+            :title="tooltips.historial"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <span class="nav-label">Historial Académico</span>
+            <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'historial' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </template>
 
-        <!-- Recursos Humanos -->
-        <div
-          class="nav-item nav-item-dropdown"
-          :class="{ 'nav-abierto': dropdownActivo === 'rrhh' }"
-          @mouseenter="abrirDropdown('rrhh')"
-          @mouseleave="cerrarDropdownConDelay"
-          @click.stop="toggleDropdown('rrhh')"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-          </svg>
-          <span>Recursos Humanos</span>
-          <svg class="nav-flecha" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-          </svg>
-
-          <Transition name="dropdown">
-            <div v-if="dropdownActivo === 'rrhh'" class="dropdown-panel dropdown-panel--lista"
-              @mouseenter="cancelarCierreDropdown" @mouseleave="cerrarDropdownConDelay" @click.stop>
-              <router-link to="/recursos-humanos"               class="dropdown-lista-item" @click="cerrarMenus">Principal</router-link>
-              <router-link to="/recursos-humanos/empleados"     class="dropdown-lista-item" @click="cerrarMenus">Empleados</router-link>
-              <router-link to="/recursos-humanos/docentes"      class="dropdown-lista-item" @click="cerrarMenus">Docentes</router-link>
-              <router-link to="/recursos-humanos/adscripciones" class="dropdown-lista-item" @click="cerrarMenus">Adscripciones</router-link>
-              <router-link to="/recursos-humanos/puestos"       class="dropdown-lista-item" @click="cerrarMenus">Puestos</router-link>
-              <router-link to="/recursos-humanos/departamentos" class="dropdown-lista-item" @click="cerrarMenus">Departamentos</router-link>
-            </div>
-          </Transition>
-        </div>
-
-        <!-- Personas -->
-        <div
-          class="nav-item nav-item-dropdown"
-          :class="{ 'nav-abierto': dropdownActivo === 'personas' }"
-          @mouseenter="abrirDropdown('personas')"
-          @mouseleave="cerrarDropdownConDelay"
-          @click.stop="toggleDropdown('personas')"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          <span>Personas</span>
-          <svg class="nav-flecha" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-          </svg>
-
-          <Transition name="dropdown">
-            <div v-if="dropdownActivo === 'personas'" class="dropdown-panel dropdown-panel--lista"
-              @mouseenter="cancelarCierreDropdown" @mouseleave="cerrarDropdownConDelay" @click.stop>
-              <router-link to="/personas"       class="dropdown-lista-item" @click="cerrarMenus">Catálogo</router-link>
-              <router-link to="/personas/nueva" class="dropdown-lista-item" @click="cerrarMenus">Nueva Persona</router-link>
-            </div>
-          </Transition>
-        </div>
-      </template>
-
-      <!-- ── Asignación Docente ── -->
-      <template v-if="puedeVer.asignacionDocente">
-        <div
-          class="nav-item nav-item-dropdown"
-          :class="{ 'nav-abierto': dropdownActivo === 'asignacion' }"
-          @mouseenter="abrirDropdown('asignacion')"
-          @mouseleave="cerrarDropdownConDelay"
-          @click.stop="toggleDropdown('asignacion')"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-          </svg>
-          <span>Asignación Docente</span>
-          <svg class="nav-flecha" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-          </svg>
-
-          <Transition name="dropdown">
-            <div v-if="dropdownActivo === 'asignacion'" class="dropdown-panel dropdown-panel--lista"
-              @mouseenter="cancelarCierreDropdown" @mouseleave="cerrarDropdownConDelay" @click.stop>
-              <router-link v-if="rolActual === 'admin'" to="/asignacion-docente" class="dropdown-lista-item" @click="cerrarMenus">Asignación de Grupos</router-link>
-              <router-link to="/asignacion-docente/carga" class="dropdown-lista-item" @click="cerrarMenus">Carga Académica</router-link>
-            </div>
-          </Transition>
-        </div>
-      </template>
-
-      <!-- Kardex e Historial solo admin -->
-      <template v-if="rolActual === 'admin'">
-        <!-- Kardex -->
-        <div
-          class="nav-item nav-item-dropdown"
-          :class="{ 'nav-abierto': dropdownActivo === 'kardex' }"
-          @mouseenter="abrirDropdown('kardex')"
-          @mouseleave="cerrarDropdownConDelay"
-          @click.stop="toggleDropdown('kardex')"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          <span>Kardex</span>
-          <svg class="nav-flecha" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-          </svg>
-
-          <Transition name="dropdown">
-            <div v-if="dropdownActivo === 'kardex'" class="dropdown-panel dropdown-panel--lista"
-              @mouseenter="cancelarCierreDropdown" @mouseleave="cerrarDropdownConDelay" @click.stop>
-              <router-link to="/kardex" class="dropdown-lista-item" @click="cerrarMenus">Consulta de Kardex</router-link>
-            </div>
-          </Transition>
-        </div>
-
-        <!-- Historial Académico -->
-        <div
-          class="nav-item nav-item-dropdown"
-          :class="{ 'nav-abierto': dropdownActivo === 'historial' }"
-          @mouseenter="abrirDropdown('historial')"
-          @mouseleave="cerrarDropdownConDelay"
-          @click.stop="toggleDropdown('historial')"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
-          <span>Historial Académico</span>
-          <svg class="nav-flecha" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-          </svg>
-
-          <Transition name="dropdown">
-            <div v-if="dropdownActivo === 'historial'" class="dropdown-panel dropdown-panel--lista"
-              @mouseenter="cancelarCierreDropdown" @mouseleave="cerrarDropdownConDelay" @click.stop>
-              <router-link to="/historial-academico" class="dropdown-lista-item" @click="cerrarMenus">Avance Curricular</router-link>
-            </div>
-          </Transition>
-        </div>
-      </template>
       </div>
+
+      <!-- ══ RIBBON PANEL — fuera del scroll, pegado al fondo del nav ══ -->
+      <Transition name="ribbon">
+        <div v-if="tabActivo" class="ribbon-panel" @click.stop>
+
+          <!-- ── Servicios Escolares ── -->
+          <template v-if="tabActivo === 'servicios'">
+            <router-link v-if="puedeVerItem('/servicios-escolares')" to="/servicios-escolares" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+              </div>
+              <span>Principal</span>
+            </router-link>
+            <router-link v-if="puedeVerItem('/alumnos')" to="/alumnos" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+              </div>
+              <span>Alumnos</span>
+            </router-link>
+            <router-link v-if="puedeVerItem('/evaluaciones')" to="/evaluaciones" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+              </div>
+              <span>Evaluaciones</span>
+            </router-link>
+            <router-link v-if="puedeVerItem('/calificaciones')" to="/calificaciones" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              </div>
+              <span>Calificaciones</span>
+            </router-link>
+            <router-link v-if="puedeVerItem('/inscripcion')" to="/inscripcion" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+              </div>
+              <span>Inscripción</span>
+            </router-link>
+            <router-link v-if="puedeVerItem('/gestion-grupos')" to="/gestion-grupos" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              </div>
+              <span>Grupos y Horarios</span>
+            </router-link>
+            <template v-if="puedeVerItem('/inscripciones')">
+              <div class="ribbon-separador"></div>
+              <router-link to="/inscripciones" class="ribbon-item" @click="cerrarTab">
+                <div class="ribbon-icono-wrap">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                </div>
+                <span>Insc. Detalladas</span>
+              </router-link>
+              <router-link to="/inscripciones/historial" class="ribbon-item" @click="cerrarTab">
+                <div class="ribbon-icono-wrap">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <span>Historial Insc.</span>
+              </router-link>
+            </template>
+          </template>
+
+          <!-- ── Gestión Académica ── -->
+          <template v-if="tabActivo === 'academica'">
+            <router-link to="/gestion-academica" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+              </div>
+              <span>Panel Principal</span>
+            </router-link>
+            <router-link to="/gestion-academica/carreras" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              </div>
+              <span>Carreras</span>
+            </router-link>
+            <router-link to="/gestion-academica/planes" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              </div>
+              <span>Planes de Estudio</span>
+            </router-link>
+            <router-link to="/gestion-academica/materias" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+              </div>
+              <span>Materias</span>
+            </router-link>
+            <router-link to="/gestion-academica/prerrequisitos" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+              </div>
+              <span>Prerrequisitos</span>
+            </router-link>
+            <router-link to="/gestion-academica/periodos" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              </div>
+              <span>Periodos Académicos</span>
+            </router-link>
+            <router-link to="/gestion-academica/edificios-aulas" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/></svg>
+              </div>
+              <span>Edificios y Aulas</span>
+            </router-link>
+          </template>
+
+          <!-- ── Eventos ── -->
+          <template v-if="tabActivo === 'eventos'">
+            <router-link to="/eventos" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              </div>
+              <span>Lista de Eventos</span>
+            </router-link>
+            <router-link to="/eventos/nuevo" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"/></svg>
+              </div>
+              <span>Nuevo Evento</span>
+            </router-link>
+          </template>
+
+          <!-- ── Comité Académico ── -->
+          <template v-if="tabActivo === 'comite'">
+            <router-link to="/comite" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+              </div>
+              <span>Panel Principal</span>
+            </router-link>
+            <router-link to="/comite/solicitudes" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+              </div>
+              <span>Solicitudes</span>
+            </router-link>
+            <router-link to="/comite/solicitudes/nueva" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"/></svg>
+              </div>
+              <span>Nueva Solicitud</span>
+            </router-link>
+            <router-link to="/comite/sesiones" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              </div>
+              <span>Sesiones</span>
+            </router-link>
+            <router-link to="/comite/resoluciones" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <span>Resoluciones</span>
+            </router-link>
+          </template>
+
+          <!-- ── Seguridad y Usuarios ── -->
+          <template v-if="tabActivo === 'seguridad'">
+            <router-link to="/roles" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              </div>
+              <span>Roles</span>
+            </router-link>
+            <router-link to="/permisos" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+              </div>
+              <span>Permisos</span>
+            </router-link>
+            <router-link to="/usuarios" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+              </div>
+              <span>Usuarios</span>
+            </router-link>
+            <router-link to="/bitacora" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+              </div>
+              <span>Bitácora</span>
+            </router-link>
+            <router-link to="/nuevo-usuario" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+              </div>
+              <span>Nuevo Usuario</span>
+            </router-link>
+          </template>
+
+          <!-- ── Recursos Humanos ── -->
+          <template v-if="tabActivo === 'rrhh'">
+            <router-link to="/recursos-humanos" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+              </div>
+              <span>Principal</span>
+            </router-link>
+            <router-link to="/recursos-humanos/empleados" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+              </div>
+              <span>Empleados</span>
+            </router-link>
+            <router-link to="/recursos-humanos/docentes" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
+              </div>
+              <span>Docentes</span>
+            </router-link>
+            <router-link to="/recursos-humanos/adscripciones" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+              </div>
+              <span>Adscripciones</span>
+            </router-link>
+            <router-link to="/recursos-humanos/puestos" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              </div>
+              <span>Puestos</span>
+            </router-link>
+            <router-link to="/recursos-humanos/departamentos" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              </div>
+              <span>Departamentos</span>
+            </router-link>
+          </template>
+
+          <!-- ── Personas ── -->
+          <template v-if="tabActivo === 'personas'">
+            <router-link to="/personas" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              </div>
+              <span>Catálogo</span>
+            </router-link>
+            <router-link to="/personas/nueva" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+              </div>
+              <span>Nueva Persona</span>
+            </router-link>
+          </template>
+
+          <!-- ── Asignación Docente ── -->
+          <template v-if="tabActivo === 'asignacion'">
+            <router-link v-if="rolActual === 'admin'" to="/asignacion-docente" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+              </div>
+              <span>Asignación de Grupos</span>
+            </router-link>
+            <router-link to="/asignacion-docente/carga" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+              </div>
+              <span>Carga Académica</span>
+            </router-link>
+          </template>
+
+          <!-- ── Kardex ── -->
+          <template v-if="tabActivo === 'kardex'">
+            <router-link to="/kardex" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              </div>
+              <span>Consulta de Kardex</span>
+            </router-link>
+          </template>
+
+          <!-- ── Historial Académico ── -->
+          <template v-if="tabActivo === 'historial'">
+            <router-link to="/historial-academico" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+              </div>
+              <span>Avance Curricular</span>
+            </router-link>
+          </template>
+
+        </div>
+      </Transition>
     </nav>
 
     <!-- ══ DRAWER MÓVIL ══ -->
@@ -680,7 +809,7 @@
     </Transition>
 
     <!-- ══ CONTENIDO PRINCIPAL ══ -->
-    <main class="area-contenido">
+    <main class="area-contenido" :class="{ 'con-ribbon': tabActivo !== null }">
       <slot :busquedaGlobal="busquedaGlobal" />
     </main>
 
@@ -710,6 +839,18 @@ useKeyboardShortcuts()
 import { ref, computed, watch, onMounted, onUnmounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
+const tooltips = {
+  servicios:  'Servicios Escolares → Alumnos, calificaciones, inscripciones y grupos',
+  academica:  'Gestión Académica → Planes de estudio, materias, edificios y periodos',
+  eventos:    'Eventos → Consulta y crea eventos institucionales',
+  comite:     'Comité Académico → Solicitudes, sesiones y resoluciones',
+  seguridad:  'Seguridad → Roles, permisos, usuarios y bitácora',
+  rrhh:       'Recursos Humanos → Empleados, docentes y departamentos',
+  personas:   'Personas → Catálogo y registro de personas',
+  asignacion: 'Asignación Docente → Grupos y carga académica',
+  kardex:     'Kardex → Consulta el historial de calificaciones',
+  historial:  'Historial Académico → Avance curricular del alumno',
+}
 const router = useRouter()
 const route  = useRoute()
 
@@ -731,30 +872,17 @@ if (typeof window !== 'undefined') window.addEventListener('resize', onResize, {
 onUnmounted(() => {
   if (typeof window !== 'undefined') window.removeEventListener('resize', onResize)
   if (resizeTimer) clearTimeout(resizeTimer)
-  if (dropdownTimer) clearTimeout(dropdownTimer)
 })
 
-// ── Dropdown horizontal (desktop) ────────────────────────────────────
-const dropdownActivo = ref(null)
-const SIDEBAR_SCROLL_KEY = 'sice_sidebar_scroll'
-const sidebarRef = ref(null)
-const navScrollRef = ref(null)          // ← Nueva referencia para scroll horizontal
-let dropdownTimer = null
+// ── Tab activo (estilo Word) ──────────────────────────────────────────
+const tabActivo = ref(null)
 
-const abrirDropdown = (nombre) => {
-  if (esMobil.value) return
-  if (dropdownTimer) { clearTimeout(dropdownTimer); dropdownTimer = null }
-  dropdownActivo.value = nombre
+const toggleTab = (nombre) => {
+  tabActivo.value = tabActivo.value === nombre ? null : nombre
 }
-const cerrarDropdownConDelay = () => {
-  if (esMobil.value) return
-  dropdownTimer = setTimeout(() => { dropdownActivo.value = null }, 200)
-}
-const cancelarCierreDropdown = () => {
-  if (dropdownTimer) { clearTimeout(dropdownTimer); dropdownTimer = null }
-}
-const toggleDropdown = (nombre) => {
-  dropdownActivo.value = dropdownActivo.value === nombre ? null : nombre
+
+const cerrarTab = () => {
+  tabActivo.value = null
 }
 
 // ── Drawer móvil ──────────────────────────────────────────────────────
@@ -819,7 +947,7 @@ const puedeVerItem = computed(() => (ruta) => {
 const cerrarMenus = () => {
   mostrarMenuUsuario.value    = false
   mostrarNotificaciones.value = false
-  dropdownActivo.value        = null
+  tabActivo.value = null        // ← Modificado
 }
 
 const toggleMenuUsuario = () => {
@@ -862,44 +990,22 @@ watch(esMobil, (ahoraMobil) => {
   if (!ahoraMobil) drawerAbierto.value = false
 })
 
-
 onMounted(() => {
-  const saved = parseInt(sessionStorage.getItem(SIDEBAR_SCROLL_KEY) || '0', 10)
-  if (saved > 0) {
-  }
-
   // Scroll horizontal con rueda del ratón en el nav
-  if (navScrollRef.value) {
-    navScrollRef.value.addEventListener('wheel', (e) => {
+  const navScroll = document.querySelector('.nav-scroll-inner')
+  if (navScroll) {
+    navScroll.addEventListener('wheel', (e) => {
       if (e.deltaY !== 0) {
         e.preventDefault()
-        navScrollRef.value.scrollLeft += e.deltaY
+        navScroll.scrollLeft += e.deltaY
       }
     }, { passive: false })
   }
 })
 
 onBeforeUnmount(() => {
-  if (sidebarRef.value) {
-    sessionStorage.setItem(SIDEBAR_SCROLL_KEY, String(sidebarRef.value.scrollTop))
-  }
+  // Limpieza si es necesario
 })
-
-watch(drawerAbierto, (abierto) => {
-  if (abierto) {
-    const saved = parseInt(sessionStorage.getItem(SIDEBAR_SCROLL_KEY) || '0', 10)
-    if (saved > 0) {
-      setTimeout(() => {
-        if (sidebarRef.value) sidebarRef.value.scrollTop = saved
-      }, 320)
-    }
-  } else {
-    if (sidebarRef.value) {
-      sessionStorage.setItem(SIDEBAR_SCROLL_KEY, String(sidebarRef.value.scrollTop))
-    }
-  }
-})
-
 
 const RUTAS_PRINCIPALES = new Set([
   '/inicio', '/dashboard', '/servicios-escolares', '/alumnos', '/evaluaciones',
@@ -935,6 +1041,7 @@ const regresarPagina = () => router.back()
   --gris:           #6B7280;
   --header-h:       62px;
   --nav-h:          50px;
+  --ribbon-h:       0px;           /* Se ajusta dinámicamente */
   --total-h:        calc(var(--header-h) + var(--nav-h));
 
   font-family: 'Montserrat', sans-serif;
@@ -1094,13 +1201,9 @@ const regresarPagina = () => router.back()
   padding: 0 1rem;
   overflow-x: auto;
   overflow-y: clip;
-  scrollbar-width: thin;
-  scrollbar-color: #D1D5DB transparent;
+  scrollbar-width: none;
 }
-.nav-scroll-inner::-webkit-scrollbar { display: block; height: 2px; }
-.nav-scroll-inner::-webkit-scrollbar-track { background: transparent; }
-.nav-scroll-inner::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 2px; }
-.nav-scroll-inner::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+.nav-scroll-inner::-webkit-scrollbar { display: none; }
 
 /* Item base */
 .nav-item {
@@ -1122,15 +1225,33 @@ const regresarPagina = () => router.back()
 }
 .nav-item:hover { color: var(--azul); background: #F8FAFC; }
 .nav-item.nav-activo { color: var(--azul); font-weight: 600; border-bottom-color: var(--azul); }
-.nav-item.nav-abierto { color: var(--azul); background: #F0F4FF; border-bottom-color: var(--azul); }
 
-.nav-icono { width: 16px; height: 16px; stroke: currentColor; flex-shrink: 0; }
-.nav-flecha {
-  width: 12px; height: 12px; stroke: currentColor; flex-shrink: 0;
-  transition: transform 0.22s;
-  margin-left: 2px;
+/* Nueva clase para pestañas */
+.nav-item-tab {
+  cursor: pointer;
+  user-select: none;
 }
-.nav-item.nav-abierto .nav-flecha { transform: rotate(180deg); }
+.nav-item-tab:hover {
+  color: var(--azul);
+  background: #F0F4FF;
+}
+.nav-item-tab.nav-activo {
+  color: var(--azul);
+  font-weight: 600;
+  border-bottom-color: var(--azul);
+  background: #EFF6FF;
+}
+
+.nav-icono { 
+  width: 18px; 
+  height: 18px; 
+  stroke: currentColor; 
+  flex-shrink: 0; 
+}
+.nav-label {
+  font-size: 0.78rem;
+  font-weight: 500;
+}
 
 /* Separador admin en la barra */
 .nav-separador-admin {
@@ -1149,120 +1270,86 @@ const regresarPagina = () => router.back()
 }
 
 /* ══════════════════════════════════════
-   DROPDOWN PANEL
+   RIBBON PANEL (Nuevo)
 ══════════════════════════════════════ */
-.dropdown-panel {
+.ribbon-panel {
   position: fixed;
   top: var(--total-h);
   left: 0;
   right: 0;
-  background: #fff;
+  background: #ffffff;
   border-top: 2px solid var(--azul);
-  border-bottom: 1px solid var(--borde);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-  z-index: 3000;
-  padding: 0;
-  min-width: unset;
-}
-
-/* Puente de hover */
-.dropdown-panel::before {
-  content: '';
-  position: absolute;
-  top: -14px;
-  left: 0;
-  right: 0;
-  height: 14px;
-}
-
-.dropdown-panel--lista {
-  padding: 12px 2rem;
+  border-bottom: 1px solid #E5E7EB;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  z-index: 980;
   display: flex;
-  flex-direction: row;
   flex-wrap: wrap;
-  gap: 4px 8px;
-  align-items: flex-start;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 1.5rem;
+  min-height: 70px;
 }
 
-.dropdown-panel:not(.dropdown-panel--lista) {
-  min-width: unset;
+.ribbon-item {
   display: flex;
   flex-direction: column;
-}
-
-.dropdown-iconos-grid {
-  display: flex;
-  flex-wrap: nowrap;          /* una sola fila */
-  padding: 10px 2rem;
-  gap: 4px;
-  background: #FAFBFF;
   align-items: center;
-  overflow-x: auto;           /* scroll si no caben */
-}
-
-.dropdown-panel:not(.dropdown-panel--lista) .dropdown-lista {
-  display: flex;
-  flex-wrap: wrap;
-  padding: 10px 2rem;
-  gap: 2px 6px;
-}
-
-.dropdown-panel:not(.dropdown-panel--lista) .dropdown-lista-item {
-  padding: 7px 12px;
-  font-size: 0.83rem;
-  border-radius: 6px;
-}
-
-/* Íconos más pequeños */
-.icono-grande-wrap {
-  width: 26px; height: 26px;
-  background: #F0F4FF; border-radius: 6px;
-  display: flex; align-items: center; justify-content: center;
-  transition: background 0.15s; flex-shrink: 0;
-}
-.icono-grande-wrap svg { width: 13px; height: 13px; stroke: var(--azul); }
-
-.dropdown-icono-item {
-  display: flex; flex-direction: column; align-items: center;
-  gap: 3px; padding: 6px 8px;
-  border-radius: 7px; cursor: pointer;
+  gap: 4px;
+  padding: 8px 14px;
+  border-radius: 8px;
   text-decoration: none;
-  color: #374151; font-size: 0.65rem; font-weight: 500;
+  color: #374151;
+  font-size: 0.72rem;
+  font-weight: 500;
+  cursor: pointer;
   transition: background 0.15s, color 0.15s;
   white-space: nowrap;
-  text-align: center;
-  min-width: unset; max-width: unset; width: auto;
+  min-width: 64px;
+}
+.ribbon-item:hover {
+  background: #DBEAFE;
+  color: var(--azul);
+}
+.ribbon-item.router-link-active {
+  background: #EFF6FF;
+  color: var(--azul);
+  font-weight: 600;
 }
 
-/* Items de lista */
-.dropdown-lista-item {
-  display: block;
-  padding: 9px 18px;
-  font-size: 0.85rem; font-weight: 400;
-  color: #374151; text-decoration: none;
-  transition: background 0.14s, color 0.14s;
-  cursor: pointer;
-  white-space: nowrap;
+.ribbon-icono-wrap {
+  width: 32px;
+  height: 32px;
+  background: #F0F4FF;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
 }
-.dropdown-lista-item:hover { background: var(--azul-suave); color: var(--azul); }
-.dropdown-lista-item.router-link-active { color: var(--azul); font-weight: 600; background: #EFF6FF; }
-.dropdown-lista-item--anidado { padding-left: 30px; font-size: 0.82rem; color: #6B7280; }
-.dropdown-lista-item--anidado:hover { color: var(--azul); }
-.dropdown-lista-separador {
-  padding: 6px 18px 3px;
-  font-size: 0.72rem; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 0.06em;
-  color: #9CA3AF;
-  border-top: 1px solid var(--borde); margin-top: 4px;
+.ribbon-icono-wrap svg {
+  width: 18px;
+  height: 18px;
+  stroke: var(--azul);
+}
+.ribbon-item:hover .ribbon-icono-wrap {
+  background: #DBEAFE;
 }
 
-/* Transición dropdown */
-.dropdown-enter-active { transition: opacity 0.16s ease, transform 0.16s ease; }
-.dropdown-leave-active { transition: opacity 0.12s ease, transform 0.12s ease; }
-.dropdown-enter-from, .dropdown-leave-to { opacity: 0; transform: translateY(-6px); }
+/* Animación Ribbon */
+.ribbon-enter-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.ribbon-leave-active {
+  transition: opacity 0.13s ease, transform 0.13s ease;
+}
+.ribbon-enter-from,
+.ribbon-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
 
 /* ══════════════════════════════════════
-   ÁREA DE CONTENIDO
+   ÁREA DE CONTENIDO (con ribbon)
 ══════════════════════════════════════ */
 .area-contenido {
   margin-top: var(--total-h);
@@ -1271,6 +1358,10 @@ const regresarPagina = () => router.back()
   background: var(--fondo);
   min-height: calc(100vh - var(--total-h));
   box-sizing: border-box;
+  transition: margin-top 0.18s ease;
+}
+.area-contenido.con-ribbon {
+  margin-top: calc(var(--total-h) + 70px);
 }
 
 /* ══════════════════════════════════════
@@ -1419,7 +1510,6 @@ const regresarPagina = () => router.back()
 @media (max-width: 768px) {
   .sistema-layout { --header-h: 56px; --nav-h: 0px; }
 
-  /* Mostrar hamburguesa, ocultar nav horizontal */
   .btn-hamburguesa { display: flex; }
   .barra-nav-horizontal { display: none; }
 
@@ -1509,5 +1599,3 @@ h3 { font-size: clamp(1rem, 2.5vw, 1.2rem); }
   .modal-footer button, .modal-pie button { width: 100% !important; justify-content: center; }
 }
 </style>
-
-.nav-item {
