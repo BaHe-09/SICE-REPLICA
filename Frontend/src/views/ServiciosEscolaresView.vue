@@ -1,1489 +1,1062 @@
 <template>
   <MainLayout v-slot="{ busquedaGlobal }">
-    <div class="servicios-page">
+    <div class="page">
 
-      <!-- ── Breadcrumb ─────────────────────────────────────────────── -->
-      <nav class="breadcrumb">
-        <router-link to="/inicio" class="breadcrumb-link">Inicio</router-link>
-        <span class="sep">›</span>
-        <span class="breadcrumb-actual">Servicios Escolares</span>
-      </nav>
+      <!-- ── BREADCRUMB ── -->
+      <div class="bc">
+        <router-link to="/inicio" class="bc-lnk">Inicio</router-link>
+        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" class="bc-sep" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+        </svg>
+        <span class="bc-cur">Servicios Escolares</span>
+      </div>
 
-      <!-- ── Toast de notificación ──────────────────────────────────── -->
-      <transition name="toast-slide">
-        <div v-if="notificacion.visible" class="toast" :class="notificacion.tipo">
-          <svg v-if="notificacion.tipo === 'exito'" xmlns="http://www.w3.org/2000/svg"
-               class="toast-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      <!-- ── TOAST ── -->
+      <Transition name="toast-slide">
+        <div v-if="notif.visible" class="toast" :class="notif.tipo" role="alert">
+          <svg v-if="notif.tipo==='exito'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          <svg v-else xmlns="http://www.w3.org/2000/svg"
-               class="toast-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          {{ notificacion.mensaje }}
+          {{ notif.mensaje }}
         </div>
-      </transition>
+      </Transition>
 
-      <!-- ══════════════════════════════════════════════════════════════
-           SECCIÓN HERO: Buscador principal (elemento más prominente)
-      ═══════════════════════════════════════════════════════════════ -->
-      <section class="hero-busqueda">
-        <div class="hero-contenido">
-          <div class="hero-texto">
-            <h1 class="hero-titulo">Servicios Escolares</h1>
-            <p class="hero-subtitulo">Busca a un alumno por su número de control para ver su información completa</p>
+      <!-- ══════════════════════════════════
+           HERO BANNER (igual que la maqueta)
+      ══════════════════════════════════ -->
+      <div class="hero">
+        <div class="hero-deco"  aria-hidden="true"></div>
+        <div class="hero-deco2" aria-hidden="true"></div>
+
+        <div class="hero-left">
+          <div class="hero-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z"/>
+            </svg>
+            Servicios Escolares
           </div>
+          <div class="hero-title">Consulta de alumnos</div>
+          <div class="hero-sub">Busca por número de control para acceder al expediente completo del alumno</div>
 
-          <!-- Campo de búsqueda prominente -->
-          <div class="buscador-wrapper">
-            <div class="buscador-inner" :class="{ 'buscador-activo': inputFocused, 'buscador-error': estadoBusqueda === 'error' }">
-              <!-- Icono lupa -->
-              <svg class="buscador-icono-lupa" xmlns="http://www.w3.org/2000/svg"
-                   fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          <div class="hero-form">
+            <div class="hero-input-wrap" :class="{ 'hi-focus': inputFocused, 'hi-error': estadoBusqueda === 'error' }">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="hi-lupa" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
               </svg>
-
               <input
-                ref="inputBusqueda"
-                v-model="numeroBusqueda"
+                ref="inputRef"
+                v-model="numCtrl"
+                class="hi-inp"
                 type="text"
-                class="buscador-input"
                 placeholder="Número de control (ej. 22031234)"
                 maxlength="8"
-                @keydown.enter="buscarAlumno"
+                inputmode="numeric"
+                aria-label="Número de control del alumno"
+                @keydown.enter="buscar"
                 @focus="inputFocused = true"
                 @blur="inputFocused = false"
-                @input="onInputBusqueda"
+                @input="onInput"
               />
-
-              <!-- Spinner de carga -->
-              <div v-if="estadoBusqueda === 'cargando'" class="buscador-spinner">
-                <svg class="spinner-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-25"/>
-                  <path fill="currentColor" class="opacity-75"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+              <div v-if="estadoBusqueda === 'cargando'" class="hi-spinner" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="spin">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 100 16 8 8 0 01-8-8z"/>
                 </svg>
               </div>
-
-              <!--  limpiar -->
-              <button
-                v-else-if="numeroBusqueda"
-                class="buscador-limpiar"
-                @click="limpiarBusqueda"
-                title="Limpiar búsqueda"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              <button v-else-if="numCtrl" class="hi-clear" @click="limpiar" type="button" aria-label="Limpiar">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
-              </button>
-
-              <!-- Botón Buscar -->
-              <button
-                class="buscador-btn"
-                :disabled="estadoBusqueda === 'cargando' || !numeroBusqueda.trim()"
-                @click="buscarAlumno"
-              >
-                <span v-if="estadoBusqueda !== 'cargando'">Buscar</span>
-                <span v-else>Buscando...</span>
               </button>
             </div>
+            <button
+              class="hero-btn"
+              :disabled="estadoBusqueda === 'cargando' || !numCtrl.trim()"
+              @click="buscar"
+              type="button"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+              {{ estadoBusqueda === 'cargando' ? 'Buscando...' : 'Buscar' }}
+            </button>
+          </div>
 
-            <!-- Mensajes de estado debajo del buscador -->
-            <transition name="fade-slide">
-              <p v-if="estadoBusqueda === 'error'" class="busqueda-mensaje busqueda-mensaje--error">
-                <svg xmlns="http://www.w3.org/2000/svg" class="msg-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ mensajeError }}
-              </p>
-              <p v-else-if="estadoBusqueda === 'no-encontrado'" class="busqueda-mensaje busqueda-mensaje--vacio">
-                <svg xmlns="http://www.w3.org/2000/svg" class="msg-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                No se encontró ningún alumno con el número de control <strong>{{ ultimaBusqueda }}</strong>.
-              </p>
-              <p v-else-if="estadoBusqueda === 'idle'" class="busqueda-mensaje busqueda-mensaje--hint">
-                <svg xmlns="http://www.w3.org/2000/svg" class="msg-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Ingresa el número de control de 8 dígitos y presiona Enter o el botón Buscar
-              </p>
-            </transition>
+          <Transition name="fade-slide">
+            <p v-if="estadoBusqueda === 'error'" class="hero-hint hint-err">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              {{ mensajeError }}
+            </p>
+            <p v-else-if="estadoBusqueda === 'no-encontrado'" class="hero-hint hint-warn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              No se encontró ningún alumno con el número <strong>{{ ultimaBusq }}</strong>.
+            </p>
+            <p v-else class="hero-hint">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Ingresa los 8 dígitos del número de control y presiona Enter o el botón Buscar
+            </p>
+          </Transition>
+        </div>
+
+        <div class="hero-stats">
+          <div class="hstat">
+            <div class="hstat-n">{{ fmt(kpis.alumnosActivos) }}</div>
+            <div class="hstat-l">Alumnos activos</div>
+          </div>
+          <div class="hstat">
+            <div class="hstat-n">Ene–Jun</div>
+            <div class="hstat-l">Periodo 2025</div>
           </div>
         </div>
-      </section>
+      </div>
 
-      <!-- ══════════════════════════════════════════════════════════════
-           RESULTADO: Información completa del alumno encontrado
-      ═══════════════════════════════════════════════════════════════ -->
-      <transition name="resultado-appear">
-        <section v-if="alumno && estadoBusqueda === 'exito'" class="resultado-seccion">
+      <!-- ══════════════════════════════════
+           RESULTADO DEL ALUMNO
+      ══════════════════════════════════ -->
+      <Transition name="resultado-appear">
+        <section v-if="alumno && estadoBusqueda === 'exito'" class="resultado">
 
-          <!-- Cabecera del alumno -->
-          <div class="alumno-header">
-            <div class="alumno-avatar-wrap">
-              <img
-                v-if="alumno.foto"
-                :src="alumno.foto"
-                :alt="`Foto de ${alumno.nombre}`"
-                class="alumno-avatar"
-              />
-              <div v-else class="alumno-avatar-placeholder">
-                {{ iniciales(alumno.nombre) }}
+          <!-- Header alumno -->
+          <div class="al-hdr">
+            <div class="al-av">{{ iniciales(alumno.nombre) }}</div>
+            <div class="al-info">
+              <div class="al-nombre-row">
+                <h2 class="al-nombre">{{ alumno.nombre }}</h2>
+                <span class="al-estatus" :class="estatusClass(alumno.estatus)">{{ alumno.estatus }}</span>
               </div>
-            </div>
-
-            <div class="alumno-header-info">
-              <div class="alumno-nombre-row">
-                <h2 class="alumno-nombre">{{ alumno.nombre }}</h2>
-                <span class="alumno-estatus" :class="estatusClass(alumno.estatus)">
-                  {{ alumno.estatus }}
-                </span>
-              </div>
-              <p class="alumno-nc">
-                <svg xmlns="http://www.w3.org/2000/svg" class="info-icono-mini" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
-                </svg>
+              <p class="al-meta">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0"/></svg>
                 N° Control: <strong>{{ alumno.numero_control }}</strong>
               </p>
-              <p class="alumno-meta">
-                <svg xmlns="http://www.w3.org/2000/svg" class="info-icono-mini" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 14l9-5-9-5-9 5 9 5z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                </svg>
-                {{ alumno.carrera }} · Semestre {{ alumno.semestre }}
+              <p class="al-meta">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z"/></svg>
+                {{ alumno.carrera }} · Semestre {{ alumno.semestre_actual ?? alumno.semestre }}
               </p>
-              <p class="alumno-meta">
-                <svg xmlns="http://www.w3.org/2000/svg" class="info-icono-mini" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
+              <p class="al-meta">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                 {{ alumno.email }}
               </p>
             </div>
-
-            <div class="alumno-header-acciones">
-              <button class="btn-accion btn-accion--outline" @click="limpiarBusqueda">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+            <div class="al-acciones">
+              <button class="btn-outline" @click="limpiar" type="button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 Nueva búsqueda
               </button>
-              <button class="btn-accion btn-accion--primary" @click="irExpediente">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+              <button class="btn-primary" @click="irExpediente" type="button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 Ver expediente completo
               </button>
             </div>
           </div>
 
-          <!-- ── Tabs de información ─────────────────────────────────── -->
-          <div class="tabs-barra">
-            <button
-              v-for="tab in tabs"
-              :key="tab.id"
-              class="tab-btn"
-              :class="{ 'tab-btn--activo': tabActivo === tab.id }"
-              @click="tabActivo = tab.id"
-            >
-              <svg class="tab-icono" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="tab.icono" />
-              </svg>
+          <!-- Tabs -->
+          <div class="tabs-bar">
+            <button v-for="tab in tabs" :key="tab.id" class="tab-btn" :class="{ 'tab-act': tabActivo === tab.id }" @click="tabActivo = tab.id" type="button">
               {{ tab.label }}
             </button>
           </div>
 
-          <!-- ── TAB: Datos Generales ───────────────────────────────── -->
-          <transition name="tab-fade" mode="out-in">
-            <div v-if="tabActivo === 'general'" key="general" class="tab-contenido">
+          <!-- Contenido tabs -->
+          <Transition name="tab-fade" mode="out-in">
+
+            <!-- General -->
+            <div v-if="tabActivo === 'general'" key="general" class="tab-body">
               <div class="info-grid">
-
                 <div class="info-card">
-                  <h3 class="info-card-titulo">Información Personal</h3>
-                  <dl class="info-lista">
-                    <div class="info-fila">
-                      <dt>Nombre completo</dt>
-                      <dd>{{ alumno.nombre }}</dd>
-                    </div>
-                    <div class="info-fila">
-                      <dt>Número de control</dt>
-                      <dd class="dd-mono">{{ alumno.numero_control }}</dd>
-                    </div>
-                    <div class="info-fila">
-                      <dt>CURP</dt>
-                      <dd class="dd-mono">{{ alumno.curp ?? 'No registrado' }}</dd>
-                    </div>
-                    <div class="info-fila">
-                      <dt>Fecha de nacimiento</dt>
-                      <dd>{{ formatFecha(alumno.fecha_nacimiento) }}</dd>
-                    </div>
-                    <div class="info-fila">
-                      <dt>Correo institucional</dt>
-                      <dd>{{ alumno.email }}</dd>
-                    </div>
-                    <div class="info-fila">
-                      <dt>Teléfono</dt>
-                      <dd>{{ alumno.telefono ?? 'No registrado' }}</dd>
-                    </div>
+                  <h3 class="info-t">Información Personal</h3>
+                  <dl class="info-list">
+                    <div class="if"><dt>Nombre completo</dt><dd>{{ alumno.nombre }}</dd></div>
+                    <div class="if"><dt>Número de control</dt><dd class="mono">{{ alumno.numero_control }}</dd></div>
+                    <div class="if"><dt>CURP</dt><dd class="mono">{{ alumno.curp ?? 'No registrado' }}</dd></div>
+                    <div class="if"><dt>Fecha de nacimiento</dt><dd>{{ fFecha(alumno.fecha_nacimiento) }}</dd></div>
+                    <div class="if"><dt>Correo institucional</dt><dd>{{ alumno.email }}</dd></div>
+                    <div class="if"><dt>Teléfono</dt><dd>{{ alumno.telefono ?? 'No registrado' }}</dd></div>
                   </dl>
                 </div>
-
                 <div class="info-card">
-                  <h3 class="info-card-titulo">Información Académica</h3>
-                  <dl class="info-lista">
-                    <div class="info-fila">
-                      <dt>Carrera</dt>
-                      <dd>{{ alumno.carrera }}</dd>
-                    </div>
-                    <div class="info-fila">
-                      <dt>Semestre actual</dt>
-                      <dd>{{ alumno.semestre }}° Semestre</dd>
-                    </div>
-                    <div class="info-fila">
-                      <dt>Periodo de ingreso</dt>
-                      <dd>{{ alumno.periodo_ingreso ?? 'No registrado' }}</dd>
-                    </div>
-                    <div class="info-fila">
-                      <dt>Plan de estudios</dt>
-                      <dd>{{ alumno.plan_estudios ?? 'No registrado' }}</dd>
-                    </div>
-                    <div class="info-fila">
-                      <dt>Modalidad</dt>
-                      <dd>{{ alumno.modalidad ?? 'Escolarizado' }}</dd>
-                    </div>
-                    <div class="info-fila">
-                      <dt>Estatus</dt>
-                      <dd>
-                        <span class="chip" :class="estatusClass(alumno.estatus)">
-                          {{ alumno.estatus }}
-                        </span>
-                      </dd>
-                    </div>
+                  <h3 class="info-t">Información Académica</h3>
+                  <dl class="info-list">
+                    <div class="if"><dt>Carrera</dt><dd>{{ alumno.carrera }}</dd></div>
+                    <div class="if"><dt>Semestre actual</dt><dd>{{ alumno.semestre_actual ?? alumno.semestre }}° Semestre</dd></div>
+                    <div class="if"><dt>Periodo de ingreso</dt><dd>{{ alumno.fecha_ingreso ?? alumno.periodo_ingreso ?? 'No registrado' }}</dd></div>
+                    <div class="if"><dt>Plan de estudios</dt><dd>{{ alumno.plan_estudios ?? 'No registrado' }}</dd></div>
+                    <div class="if"><dt>Modalidad</dt><dd>{{ alumno.modalidad ?? 'Escolarizado' }}</dd></div>
+                    <div class="if"><dt>Estatus</dt><dd><span class="chip" :class="estatusClass(alumno.estatus)">{{ alumno.estatus }}</span></dd></div>
                   </dl>
                 </div>
-
               </div>
             </div>
 
-            <!-- ── TAB: Estado Académico ───────────────────────────── -->
-            <div v-else-if="tabActivo === 'academico'" key="academico" class="tab-contenido">
-              <div class="academico-grid">
-
-                <!-- Promedio general -->
-                <div class="kpi-card">
-                  <div class="kpi-valor kpi-azul">{{ alumno.estado_academico?.promedio ?? '—' }}</div>
-                  <div class="kpi-label">Promedio General</div>
-                </div>
-
-                <!-- Créditos -->
-                <div class="kpi-card">
-                  <div class="kpi-valor kpi-verde">{{ alumno.estado_academico?.creditos_obtenidos ?? '—' }}</div>
-                  <div class="kpi-label">Créditos Obtenidos</div>
-                </div>
-
-                <!-- Materias cursadas -->
-                <div class="kpi-card">
-                  <div class="kpi-valor kpi-naranja">{{ alumno.estado_academico?.materias_cursadas ?? '—' }}</div>
-                  <div class="kpi-label">Materias Cursadas</div>
-                </div>
-
-                <!-- Materias reprobadas -->
-                <div class="kpi-card">
-                  <div class="kpi-valor" :class="(alumno.estado_academico?.materias_reprobadas ?? 0) > 0 ? 'kpi-rojo' : 'kpi-verde'">
-                    {{ alumno.estado_academico?.materias_reprobadas ?? '0' }}
-                  </div>
-                  <div class="kpi-label">Materias Reprobadas</div>
-                </div>
-
+            <!-- Académico -->
+            <div v-else-if="tabActivo === 'academico'" key="academico" class="tab-body">
+              <div class="acad-grid">
+                <div class="acad-kpi"><div class="acad-val azul">{{ alumno.estado_academico?.promedio ?? '—' }}</div><div class="acad-lbl">Promedio General</div></div>
+                <div class="acad-kpi"><div class="acad-val verde">{{ alumno.estado_academico?.creditos_obtenidos ?? alumno.kardex_resumen?.creditos_acumulados ?? '—' }}</div><div class="acad-lbl">Créditos Obtenidos</div></div>
+                <div class="acad-kpi"><div class="acad-val naranja">{{ alumno.estado_academico?.materias_cursadas ?? '—' }}</div><div class="acad-lbl">Materias Cursadas</div></div>
+                <div class="acad-kpi"><div class="acad-val" :class="(alumno.estado_academico?.materias_reprobadas ?? 0) > 0 ? 'rojo' : 'verde'">{{ alumno.estado_academico?.materias_reprobadas ?? '0' }}</div><div class="acad-lbl">Materias Reprobadas</div></div>
               </div>
-
-              <!-- Barra de avance de créditos -->
-              <div v-if="alumno.estado_academico" class="progreso-card">
-                <div class="progreso-header">
-                  <span class="progreso-label">Avance en créditos de la carrera</span>
-                  <span class="progreso-pct">
-                    {{ Math.round((alumno.estado_academico.creditos_obtenidos / alumno.estado_academico.creditos_totales) * 100) }}%
-                  </span>
+              <div v-if="alumno.estado_academico" class="prog-card">
+                <div class="prog-hdr">
+                  <span class="prog-lbl">Avance en créditos de la carrera</span>
+                  <span class="prog-pct">{{ Math.round((alumno.estado_academico.creditos_obtenidos / alumno.estado_academico.creditos_totales) * 100) }}%</span>
                 </div>
-                <div class="progreso-barra-bg">
-                  <div
-                    class="progreso-barra-fill"
-                    :style="{
-                      width: Math.round((alumno.estado_academico.creditos_obtenidos / alumno.estado_academico.creditos_totales) * 100) + '%'
-                    }"
-                  ></div>
-                </div>
-                <p class="progreso-detalle">
-                  {{ alumno.estado_academico.creditos_obtenidos }} de {{ alumno.estado_academico.creditos_totales }} créditos
-                </p>
-              </div>
-
-              <!-- Situación especial -->
-              <div v-if="alumno.estado_academico?.situacion" class="situacion-banner"
-                   :class="alumno.estado_academico.situacion === 'Regular' ? 'situacion-ok' : 'situacion-alerta'">
-                <svg xmlns="http://www.w3.org/2000/svg" class="situacion-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path v-if="alumno.estado_academico.situacion === 'Regular'"
-                        stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
-                Situación académica: <strong>{{ alumno.estado_academico.situacion }}</strong>
-                <span v-if="alumno.estado_academico.observacion"> — {{ alumno.estado_academico.observacion }}</span>
+                <div class="prog-bg"><div class="prog-fill" :style="{ width: Math.round((alumno.estado_academico.creditos_obtenidos / alumno.estado_academico.creditos_totales) * 100) + '%' }"></div></div>
+                <p class="prog-det">{{ alumno.estado_academico.creditos_obtenidos }} de {{ alumno.estado_academico.creditos_totales }} créditos</p>
               </div>
             </div>
 
-            <!-- ── TAB: Kardex ──────────────────────────────────────── -->
-            <div v-else-if="tabActivo === 'kardex'" key="kardex" class="tab-contenido">
+            <!-- Kardex -->
+            <div v-else-if="tabActivo === 'kardex'" key="kardex" class="tab-body">
               <div v-if="alumno.kardex && alumno.kardex.length > 0">
-                <div v-for="(periodo, idx) in alumno.kardex" :key="idx" class="kardex-periodo">
-                  <div class="kardex-periodo-header">
-                    <span class="kardex-periodo-label">{{ periodo.nombre }}</span>
-                    <span class="kardex-periodo-prom">Promedio: <strong>{{ periodo.promedio }}</strong></span>
+                <div v-for="(per, pi) in alumno.kardex" :key="pi" class="kardex-per">
+                  <div class="kardex-per-hdr">
+                    <span class="kardex-per-n">{{ per.nombre }}</span>
+                    <span class="kardex-per-p">Promedio: <strong>{{ per.promedio }}</strong></span>
                   </div>
-                  <div class="kardex-tabla-wrap">
-                    <table class="kardex-tabla">
-                      <thead>
-                        <tr>
-                          <th>Clave</th>
-                          <th>Materia</th>
-                          <th>Créditos</th>
-                          <th>Calificación</th>
-                          <th>Estatus</th>
-                        </tr>
-                      </thead>
+                  <div class="tabla-wrap">
+                    <table class="tabla">
+                      <thead><tr><th>Clave</th><th>Materia</th><th>Créd.</th><th>Calif.</th><th>Estatus</th></tr></thead>
                       <tbody>
-                        <tr v-for="(mat, mi) in periodo.materias" :key="mi" class="kardex-fila">
-                          <td class="td-mono">{{ mat.clave }}</td>
-                          <td>{{ mat.nombre }}</td>
-                          <td class="td-centro">{{ mat.creditos }}</td>
-                          <td class="td-centro">
-                            <span class="calif" :class="califClass(mat.calificacion)">
-                              {{ mat.calificacion }}
-                            </span>
-                          </td>
-                          <td class="td-centro">
-                            <span class="chip-mini" :class="mat.estatus === 'Aprobada' ? 'chip-verde' : mat.estatus === 'Reprobada' ? 'chip-rojo' : 'chip-gris'">
-                              {{ mat.estatus }}
-                            </span>
-                          </td>
+                        <tr v-for="(m, mi) in per.materias" :key="mi">
+                          <td class="mono sm">{{ m.clave }}</td>
+                          <td>{{ m.nombre }}</td>
+                          <td class="tc">{{ m.creditos }}</td>
+                          <td class="tc"><span class="calif" :class="califClass(m.calificacion)">{{ m.calificacion }}</span></td>
+                          <td class="tc"><span class="chip-mini" :class="m.estatus==='Aprobada' ? 'ch-v' : m.estatus==='Reprobada' ? 'ch-r' : 'ch-g'">{{ m.estatus }}</span></td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
                 </div>
-                <div class="kardex-footer">
-                  <button class="btn-ver-kardex" @click="irKardex">
-                    Ver kardex completo en detalle
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </div>
               </div>
               <div v-else class="tab-vacio">
-                <svg xmlns="http://www.w3.org/2000/svg" class="vacio-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="#BDBDBD" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                 <p>No hay información de kardex disponible para este alumno.</p>
               </div>
             </div>
 
-            <!-- ── TAB: Horario ─────────────────────────────────────── -->
-            <div v-else-if="tabActivo === 'horario'" key="horario" class="tab-contenido">
-              <div v-if="alumno.horario && alumno.horario.length > 0" class="horario-lista">
-                <div
-                  v-for="(clase, idx) in alumno.horario"
-                  :key="idx"
-                  class="horario-card"
-                >
-                  <div class="horario-dia">{{ clase.dia }}</div>
-                  <div class="horario-info">
-                    <p class="horario-materia">{{ clase.materia }}</p>
-                    <p class="horario-detalle">{{ clase.hora_inicio }} – {{ clase.hora_fin }} · {{ clase.aula }}</p>
-                  </div>
-                  <div class="horario-docente">
-                    <span class="horario-docente-label">Docente</span>
-                    <span class="horario-docente-nombre">{{ clase.docente }}</span>
-                  </div>
+            <!-- Horario -->
+            <div v-else-if="tabActivo === 'horario'" key="horario" class="tab-body">
+              <div v-if="alumno.horario && alumno.horario.length > 0" class="horario-list">
+                <div v-for="(c, ci) in alumno.horario" :key="ci" class="horario-card">
+                  <div class="hor-dia">{{ c.dia }}</div>
+                  <div class="hor-info"><p class="hor-mat">{{ c.materia }}</p><p class="hor-det">{{ c.hora_inicio }} – {{ c.hora_fin }} · {{ c.aula }}</p></div>
+                  <div class="hor-doc"><span class="hor-doc-l">Docente</span><span class="hor-doc-n">{{ c.docente }}</span></div>
                 </div>
               </div>
               <div v-else class="tab-vacio">
-                <svg xmlns="http://www.w3.org/2000/svg" class="vacio-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="#BDBDBD" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                 <p>No hay horario registrado para el periodo actual.</p>
               </div>
             </div>
 
-            <!-- ── TAB: Información Adicional ─────────────────────── -->
-            <div v-else-if="tabActivo === 'adicional'" key="adicional" class="tab-contenido">
+            <!-- Adicional -->
+            <div v-else-if="tabActivo === 'adicional'" key="adicional" class="tab-body">
               <div class="info-grid">
-
                 <div class="info-card">
-                  <h3 class="info-card-titulo">Adeudos y Documentos</h3>
-                  <dl class="info-lista">
-                    <div class="info-fila">
-                      <dt>Adeudo financiero</dt>
-                      <dd>
-                        <span class="chip" :class="(alumno.adeudo ?? 0) > 0 ? 'chip-rojo' : 'chip-verde'">
-                          {{ (alumno.adeudo ?? 0) > 0 ? `$${alumno.adeudo} MXN` : 'Sin adeudo' }}
-                        </span>
-                      </dd>
-                    </div>
-                    <div class="info-fila">
-                      <dt>Acta de nacimiento</dt>
-                      <dd>{{ alumno.documentos?.acta_nacimiento ? 'Entregado' : 'Pendiente' }}</dd>
-                    </div>
-                    <div class="info-fila">
-                      <dt>CURP certificada</dt>
-                      <dd>{{ alumno.documentos?.curp ? 'Entregado' : 'Pendiente' }}</dd>
-                    </div>
-                    <div class="info-fila">
-                      <dt>Certificado de secundaria</dt>
-                      <dd>{{ alumno.documentos?.cert_secundaria ? 'Entregado' : 'Pendiente' }}</dd>
-                    </div>
-                    <div class="info-fila">
-                      <dt>Fotografías</dt>
-                      <dd>{{ alumno.documentos?.fotografias ? 'Entregado' : 'Pendiente' }}</dd>
-                    </div>
+                  <h3 class="info-t">Adeudos y Documentos</h3>
+                  <dl class="info-list">
+                    <div class="if"><dt>Adeudo financiero</dt><dd><span class="chip" :class="(alumno.adeudo ?? 0) > 0 ? 'ch-r' : 'ch-v'">{{ (alumno.adeudo ?? 0) > 0 ? `$${alumno.adeudo} MXN` : 'Sin adeudo' }}</span></dd></div>
+                    <div class="if"><dt>Acta de nacimiento</dt><dd>{{ alumno.documentos?.acta_nacimiento ? 'Entregado' : 'Pendiente' }}</dd></div>
+                    <div class="if"><dt>CURP certificada</dt><dd>{{ alumno.documentos?.curp ? 'Entregado' : 'Pendiente' }}</dd></div>
+                    <div class="if"><dt>Certificado de secundaria</dt><dd>{{ alumno.documentos?.cert_secundaria ? 'Entregado' : 'Pendiente' }}</dd></div>
+                    <div class="if"><dt>Fotografías</dt><dd>{{ alumno.documentos?.fotografias ? 'Entregado' : 'Pendiente' }}</dd></div>
                   </dl>
                 </div>
-
                 <div class="info-card">
-                  <h3 class="info-card-titulo">Contacto de Emergencia</h3>
-                  <dl class="info-lista">
-                    <div class="info-fila">
-                      <dt>Nombre</dt>
-                      <dd>{{ alumno.contacto_emergencia?.nombre ?? 'No registrado' }}</dd>
-                    </div>
-                    <div class="info-fila">
-                      <dt>Parentesco</dt>
-                      <dd>{{ alumno.contacto_emergencia?.parentesco ?? 'No registrado' }}</dd>
-                    </div>
-                    <div class="info-fila">
-                      <dt>Teléfono</dt>
-                      <dd>{{ alumno.contacto_emergencia?.telefono ?? 'No registrado' }}</dd>
-                    </div>
+                  <h3 class="info-t">Contacto de Emergencia</h3>
+                  <dl class="info-list">
+                    <div class="if"><dt>Nombre</dt><dd>{{ alumno.contacto_emergencia?.nombre ?? 'No registrado' }}</dd></div>
+                    <div class="if"><dt>Parentesco</dt><dd>{{ alumno.contacto_emergencia?.parentesco ?? 'No registrado' }}</dd></div>
+                    <div class="if"><dt>Teléfono</dt><dd>{{ alumno.contacto_emergencia?.telefono ?? 'No registrado' }}</dd></div>
                   </dl>
                 </div>
-
               </div>
             </div>
-          </transition>
 
+          </Transition>
         </section>
-      </transition>
+      </Transition>
 
-      <!-- ══════════════════════════════════════════════════════════════
-           DASHBOARD: KPIs + Accesos Rápidos (visibles cuando no hay resultado)
-      ═══════════════════════════════════════════════════════════════ -->
-      <transition name="fade">
-        <div v-if="!alumno || estadoBusqueda !== 'exito'">
+      <!-- ══════════════════════════════════
+           DASHBOARD (cuando no hay resultado)
+      ══════════════════════════════════ -->
+      <Transition name="fade">
+        <div v-if="!alumno || estadoBusqueda !== 'exito'" class="dash">
 
-          <!-- KPIs -->
-          <div class="stats-grid">
+          <!-- KPI GRID -->
+          <div class="kpi-grid">
 
-            <div class="stat-card stat-azul">
-              <div class="stat-icono-wrapper">
-                <svg xmlns="http://www.w3.org/2000/svg" class="stat-icono" fill="none"
-                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
+            <div class="kpi kpi-feat" @click="router.push('/alumnos')" role="button" tabindex="0">
+              <div class="kpi-ico ki-bw" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
               </div>
-              <div class="stat-info">
-                <p class="stat-etiqueta">Alumnos Activos</p>
-                <div v-if="cargandoDash" class="stat-skeleton"></div>
-                <p v-else class="stat-numero">{{ alumnosActivos }}</p>
-                <span class="stat-link" @click="irAAlumnos">Ver alumnos →</span>
+              <div class="kpi-body">
+                <div class="kpi-lbl">Alumnos Activos</div>
+                <div v-if="cargando" class="kpi-sk kpi-sk-d"></div>
+                <div v-else class="kpi-val">{{ fmt(kpis.alumnosActivos) }}</div>
+                <div class="kpi-lnk">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                  Ver alumnos
+                </div>
               </div>
             </div>
 
-            <div class="stat-card">
-              <div class="stat-icono-wrapper stat-icono-verde">
-                <svg xmlns="http://www.w3.org/2000/svg" class="stat-icono-verde-svg" fill="none"
-                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                </svg>
+            <div class="kpi" @click="router.push('/inscripciones')" role="button" tabindex="0">
+              <div class="kpi-ico ki-g" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
               </div>
-              <div class="stat-info">
-                <p class="stat-etiqueta">Inscripciones del Periodo</p>
-                <div v-if="cargandoDash" class="stat-skeleton"></div>
-                <p v-else class="stat-numero">{{ inscripcionesPeriodo }}</p>
-                <span class="stat-link" @click="irAInscripciones">Ver inscripciones →</span>
-              </div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-icono-wrapper stat-icono-naranja">
-                <svg xmlns="http://www.w3.org/2000/svg" class="stat-icono-naranja-svg" fill="none"
-                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </div>
-              <div class="stat-info">
-                <p class="stat-etiqueta">Grupos Abiertos</p>
-                <div v-if="cargandoDash" class="stat-skeleton"></div>
-                <p v-else class="stat-numero">{{ gruposAbiertos }}</p>
-                <span class="stat-link" @click="irAGrupos">Ver grupos →</span>
+              <div class="kpi-body">
+                <div class="kpi-lbl">Inscripciones del Periodo</div>
+                <div v-if="cargando" class="kpi-sk"></div>
+                <div v-else class="kpi-val">{{ fmt(kpis.inscripcionesPeriodo) }}</div>
+                <div class="kpi-lnk">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                  Ver inscripciones
+                </div>
               </div>
             </div>
 
-            <div class="stat-card">
-              <div class="stat-icono-wrapper stat-icono-azul-suave">
-                <svg xmlns="http://www.w3.org/2000/svg" class="stat-icono-azul-suave-svg" fill="none"
-                     viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                </svg>
+            <div class="kpi" @click="router.push('/gestion-grupos')" role="button" tabindex="0">
+              <div class="kpi-ico ki-a" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
               </div>
-              <div class="stat-info">
-                <p class="stat-etiqueta">Evaluaciones Pendientes</p>
-                <div v-if="cargandoDash" class="stat-skeleton"></div>
-                <p v-else class="stat-numero">{{ evaluacionesPendientes }}</p>
-                <span class="stat-link" @click="irAEvaluaciones">Ver evaluaciones →</span>
+              <div class="kpi-body">
+                <div class="kpi-lbl">Grupos Abiertos</div>
+                <div v-if="cargando" class="kpi-sk"></div>
+                <div v-else class="kpi-val">{{ kpis.gruposAbiertos }}</div>
+                <div class="kpi-lnk">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                  Ver grupos
+                </div>
+              </div>
+            </div>
+
+            <div class="kpi" @click="router.push('/evaluaciones')" role="button" tabindex="0">
+              <div class="kpi-ico ki-v" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+              </div>
+              <div class="kpi-body">
+                <div class="kpi-lbl">Evaluaciones Pendientes</div>
+                <div v-if="cargando" class="kpi-sk"></div>
+                <div v-else class="kpi-val">{{ kpis.evaluacionesPendientes }}</div>
+                <div class="kpi-lnk">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                  Ver evaluaciones
+                </div>
               </div>
             </div>
 
           </div>
 
-          <!-- Error de carga del dashboard -->
-          <div v-if="errorCarga" class="alerta-error">
-            <svg xmlns="http://www.w3.org/2000/svg" class="alerta-icono" fill="none"
-                 viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+          <!-- MAIN GRID: Accesos + Actividad -->
+          <div class="main-grid">
+
+            <!-- Accesos rápidos -->
+            <div class="card">
+              <div class="card-h">
+                <span class="card-t">Accesos Rápidos</span>
+                <span class="card-lk">Ver todos</span>
+              </div>
+              <div class="acc-list">
+
+                <div class="acc-item" @click="router.push('/inscripcion')" role="button" tabindex="0">
+                  <div class="acc-ico ai-g" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+                  </div>
+                  <div class="acc-body"><div class="acc-t">Gestionar Inscripciones</div><div class="acc-d">Da de alta a los alumnos al periodo actual</div></div>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="acc-arrow"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                </div>
+
+                <div class="acc-item" @click="router.push('/gestion-grupos')" role="button" tabindex="0">
+                  <div class="acc-ico ai-b" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                  </div>
+                  <div class="acc-body"><div class="acc-t">Administrar Grupos</div><div class="acc-d">Visualiza y organiza grupos por carrera y turno</div></div>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="acc-arrow"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                </div>
+
+                <div class="acc-item" @click="router.push('/evaluaciones')" role="button" tabindex="0">
+                  <div class="acc-ico ai-a" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                  </div>
+                  <div class="acc-body"><div class="acc-t">Supervisar Evaluaciones</div><div class="acc-d">Revisa evaluaciones pendientes y actas de calificación</div></div>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="acc-arrow"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                </div>
+
+                <div class="acc-item prox">
+                  <div class="acc-ico ai-gr" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  </div>
+                  <div class="acc-body"><div class="acc-t">Expediente Académico</div><div class="acc-d">Consulta el historial académico completo</div></div>
+                  <span class="prox-bdg">Próximamente</span>
+                </div>
+
+                <div class="acc-item" @click="router.push('/kardex')" role="button" tabindex="0">
+                  <div class="acc-ico ai-g" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg>
+                  </div>
+                  <div class="acc-body"><div class="acc-t">Kardex del Alumno</div><div class="acc-d">Historial de calificaciones por semestre</div></div>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="acc-arrow"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Actividad reciente -->
+            <div class="card">
+              <div class="card-h">
+                <span class="card-t">Actividad Reciente</span>
+                <router-link to="/bitacora" class="card-lk">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                  Ver bitácora
+                </router-link>
+              </div>
+              <div class="bit-list">
+                <div v-if="cargandoBit" class="bit-load">
+                  <div class="spinner" aria-hidden="true"></div>
+                  <span>Cargando...</span>
+                </div>
+                <template v-else-if="bitacora.length > 0">
+                  <div v-for="(item, i) in bitacora" :key="item.id_bitacora || i" class="bit-item">
+                    <div class="bit-av" aria-hidden="true">{{ (item.usuario || item.nombre_usuario || '?').slice(0,2).toUpperCase() }}</div>
+                    <div class="bit-body">
+                      <div class="bit-r1">
+                        <span class="bit-usr">{{ item.usuario || item.nombre_usuario }}</span>
+                        <span class="bdg" :class="claseBadge(item.accion)">{{ item.accion }}</span>
+                      </div>
+                      <div class="bit-desc">{{ item.accion }}</div>
+                      <div class="bit-t">{{ tRel(item.fecha_hora) }} · {{ item.nombre_modulo || 'Sistema' }}</div>
+                    </div>
+                  </div>
+                </template>
+                <div v-else class="ev">Sin actividad reciente</div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- BOTTOM GRID: Gráficas -->
+          <div class="bottom-grid">
+
+            <div class="card">
+              <div class="card-h">
+                <span class="card-t">Alumnos por carrera</span>
+                <span class="card-lk">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                  Detalle
+                </span>
+              </div>
+              <canvas ref="c1" height="180" role="img" aria-label="Alumnos por carrera"></canvas>
+            </div>
+
+            <div class="card">
+              <div class="card-h">
+                <span class="card-t">Inscripciones por semestre</span>
+                <span class="card-lk">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                  Analítica
+                </span>
+              </div>
+              <canvas ref="c2" height="180" role="img" aria-label="Inscripciones por semestre"></canvas>
+            </div>
+
+            <div class="card">
+              <div class="card-h">
+                <span class="card-t">Estado de inscripciones</span>
+                <span class="bdg bg-g" style="font-size:9px;font-weight:700">Periodo activo</span>
+              </div>
+              <canvas ref="c3" height="140" role="img" aria-label="Porcentaje de inscripciones"></canvas>
+              <div class="ins-mini" style="margin-top:12px">
+                <div class="im"><div class="im-v">{{ fmt(kpis.inscripcionesCompletas) }}</div><div class="im-l">Completadas</div></div>
+                <div class="im"><div class="im-v" style="color:#F2994A">{{ fmt(kpis.inscripcionesPendientes) }}</div><div class="im-l">Pendientes</div></div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Error carga -->
+          <div v-if="errorCarga" class="alerta-err" role="alert">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             <span>No se pudieron cargar los datos. Verifica la conexión con el servidor.</span>
-            <button class="btn-reintentar" @click="cargarDatos">Reintentar</button>
-          </div>
-
-          <!-- Accesos Rápidos -->
-          <div class="accesos-seccion">
-            <h2 class="seccion-titulo">Accesos Rápidos</h2>
-            <div class="accesos-grid">
-
-              <div class="acceso-card" @click="nuevaInscripcion">
-                <div class="acceso-icono acceso-verde">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                       stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                  </svg>
-                </div>
-                <div class="acceso-contenido">
-                  <h4>Gestionar Inscripciones</h4>
-                  <p>Da de alta a los alumnos</p>
-                </div>
-                <svg xmlns="http://www.w3.org/2000/svg" class="acceso-flecha" fill="none"
-                     viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-
-              <div class="acceso-card" @click="irAGrupos">
-                <div class="acceso-icono acceso-azul">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                       stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </div>
-                <div class="acceso-contenido">
-                  <h4>Administrar Grupos</h4>
-                  <p>Visualiza y organiza grupos</p>
-                </div>
-                <svg xmlns="http://www.w3.org/2000/svg" class="acceso-flecha" fill="none"
-                     viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-
-              <div class="acceso-card" @click="irAEvaluaciones">
-                <div class="acceso-icono acceso-amarillo">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                       stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                  </svg>
-                </div>
-                <div class="acceso-contenido">
-                  <h4>Supervisar Evaluaciones</h4>
-                  <p>Revisa evaluaciones pendientes</p>
-                </div>
-                <svg xmlns="http://www.w3.org/2000/svg" class="acceso-flecha" fill="none"
-                     viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-
-              <div class="acceso-card acceso-deshabilitado">
-                <div class="acceso-icono acceso-gris">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                       stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                  </svg>
-                </div>
-                <div class="acceso-contenido">
-                  <h4>Consultar Kardex</h4>
-                  <p>Revisa el expediente académico</p>
-                </div>
-                <span class="badge-proximamente">Próximamente</span>
-              </div>
-
-            </div>
+            <button class="btn-reintentar" @click="cargarDatos" type="button">Reintentar</button>
           </div>
 
         </div>
-      </transition>
+      </Transition>
 
       <div class="spacer"></div>
-
-      <footer class="pie-pagina">
-        © 2026 Tecnológico Nacional de México · Todos los derechos reservados
-      </footer>
+      <footer class="pie">© 2026 Tecnológico Nacional de México · Todos los derechos reservados</footer>
 
     </div>
   </MainLayout>
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 const router = useRouter()
 const API    = `${import.meta.env.VITE_API_URL}/api`
 
-// ── Búsqueda de alumno ──────────────────────────────────────────────────────
-const inputBusqueda   = ref(null)
-const numeroBusqueda  = ref('')
-const ultimaBusqueda  = ref('')
-const inputFocused    = ref(false)
-// Estados: 'idle' | 'cargando' | 'exito' | 'no-encontrado' | 'error'
-const estadoBusqueda  = ref('idle')
-const mensajeError    = ref('')
-const alumno          = ref(null)
+// ── Refs canvas ───────────────────────────────────────────────────────
+const c1 = ref(null)
+const c2 = ref(null)
+const c3 = ref(null)
+let chart1 = null, chart2 = null, chart3 = null
 
-/** Tab activo del panel de alumno */
-const tabActivo = ref('general')
+// ── Búsqueda ──────────────────────────────────────────────────────────
+const inputRef      = ref(null)
+const numCtrl       = ref('')
+const ultimaBusq    = ref('')
+const inputFocused  = ref(false)
+const estadoBusqueda = ref('idle')  // idle | cargando | exito | no-encontrado | error
+const mensajeError  = ref('')
+const alumno        = ref(null)
+const tabActivo     = ref('general')
+
 const tabs = [
-  {
-    id: 'general',
-    label: 'Datos Generales',
-    icono: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
-  },
-  {
-    id: 'academico',
-    label: 'Estado Académico',
-    icono: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'
-  },
-  {
-    id: 'kardex',
-    label: 'Kardex',
-    icono: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01'
-  },
-  {
-    id: 'horario',
-    label: 'Horario',
-    icono: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
-  },
-  {
-    id: 'adicional',
-    label: 'Adicional',
-    icono: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
-  }
+  { id: 'general',   label: 'Datos Generales'  },
+  { id: 'academico', label: 'Estado Académico' },
+  { id: 'kardex',    label: 'Kardex'           },
+  { id: 'horario',   label: 'Horario'          },
+  { id: 'adicional', label: 'Adicional'        },
 ]
 
-/** Limpia el campo y reinicia el estado */
-const limpiarBusqueda = () => {
-  numeroBusqueda.value = ''
+const limpiar = () => {
+  numCtrl.value        = ''
   alumno.value         = null
   estadoBusqueda.value = 'idle'
   mensajeError.value   = ''
-  ultimaBusqueda.value = ''
+  ultimaBusq.value     = ''
   tabActivo.value      = 'general'
-  nextTick(() => inputBusqueda.value?.focus())
+  nextTick(() => inputRef.value?.focus())
 }
 
-/** Limpia el resultado al escribir de nuevo */
-const onInputBusqueda = () => {
+const onInput = () => {
   if (estadoBusqueda.value !== 'cargando') {
     alumno.value         = null
     estadoBusqueda.value = 'idle'
   }
 }
 
-/** Ejecuta la búsqueda por número de control */
-const buscarAlumno = async () => {
-  const nc = numeroBusqueda.value.trim()
+const buscar = async () => {
+  const nc = numCtrl.value.trim()
   if (!nc) return
-
   estadoBusqueda.value = 'cargando'
-  ultimaBusqueda.value  = nc
-  alumno.value          = null
-  tabActivo.value       = 'general'
-
+  ultimaBusq.value     = nc
+  alumno.value         = null
+  tabActivo.value      = 'general'
   try {
     const res = await fetch(`${API}/alumnos/buscar?numero_control=${encodeURIComponent(nc)}`)
-
-    if (res.status === 404) {
-      estadoBusqueda.value = 'no-encontrado'
-      return
-    }
-
+    if (res.status === 404) { estadoBusqueda.value = 'no-encontrado'; return }
     if (!res.ok) throw new Error(`Error ${res.status}`)
-
     const data = await res.json()
-
-    if (!data || (!data.id && !data.numero_control)) {
-      estadoBusqueda.value = 'no-encontrado'
-      return
-    }
-
+    if (!data || (!data.id && !data.numero_control)) { estadoBusqueda.value = 'no-encontrado'; return }
     alumno.value         = data
     estadoBusqueda.value = 'exito'
-    mostrarNotificacion(`Alumno encontrado: ${data.nombre}`, 'exito')
-
-  } catch (err) {
-    console.error('Error buscando alumno:', err)
+    mostrarNotif(`Alumno encontrado: ${data.nombre}`, 'exito')
+  } catch (e) {
+    console.error('[Escolares] buscar:', e)
     estadoBusqueda.value = 'error'
     mensajeError.value   = 'Ocurrió un error al conectar con el servidor. Intenta de nuevo.'
   }
 }
 
-// ── Dashboard (KPIs globales) ───────────────────────────────────────────────
-const cargandoDash           = ref(false)
-const errorCarga             = ref(false)
-const alumnosActivos         = ref(0)
-const inscripcionesPeriodo   = ref(0)
-const gruposAbiertos         = ref(0)
-const evaluacionesPendientes = ref(0)
+const irExpediente = () => { if (alumno.value?.id) router.push(`/alumnos/${alumno.value.id}`) }
 
-const cargarDatos = async () => {
-  cargandoDash.value = true
-  errorCarga.value   = false
-  try {
-    const res = await fetch(`${API}/dashboard`)
-    if (!res.ok) throw new Error('Error en la respuesta del servidor')
-    const data = await res.json()
-    alumnosActivos.value         = data.kpis?.alumnos       ?? 0
-    inscripcionesPeriodo.value   = data.kpis?.inscripciones ?? 0
-    gruposAbiertos.value         = data.kpis?.grupos        ?? 0
-    evaluacionesPendientes.value = data.kpis?.evaluaciones  ?? 0
-  } catch (err) {
-    console.error('Error cargando dashboard:', err)
-    errorCarga.value = true
-  } finally {
-    cargandoDash.value = false
-  }
-}
-
-onMounted(() => {
-  cargarDatos()
-  nextTick(() => inputBusqueda.value?.focus())
+// ── KPIs ──────────────────────────────────────────────────────────────
+const cargando   = ref(false)
+const errorCarga = ref(false)
+const kpis = ref({
+  alumnosActivos:          0,
+  inscripcionesPeriodo:    0,
+  inscripcionesCompletas:  0,
+  inscripcionesPendientes: 0,
+  pctInscripciones:        0,
+  gruposAbiertos:          0,
+  evaluacionesPendientes:  0,
 })
 
-// ── Toast de notificación ───────────────────────────────────────────────────
-const notificacion = ref({ visible: false, mensaje: '', tipo: 'exito' })
-let timerNotif = null
-
-const mostrarNotificacion = (mensaje, tipo = 'exito') => {
-  if (timerNotif) clearTimeout(timerNotif)
-  notificacion.value = { visible: true, mensaje, tipo }
-  timerNotif = setTimeout(() => { notificacion.value.visible = false }, 3500)
-}
-
-// ── Helpers de formato y clases ─────────────────────────────────────────────
-
-/** Obtiene las iniciales del nombre para el avatar placeholder */
-const iniciales = (nombre = '') =>
-  nombre.split(' ').slice(0, 2).map(p => p[0]).join('').toUpperCase()
-
-/** Clase CSS según el estatus del alumno */
-const estatusClass = (estatus = '') => {
-  const m = {
-    'Activo':      'estatus-activo',
-    'Inactivo':    'estatus-inactivo',
-    'Egresado':    'estatus-egresado',
-    'Suspendido':  'estatus-suspendido',
-    'Baja':        'estatus-baja',
-  }
-  return m[estatus] ?? 'estatus-inactivo'
-}
-
-/** Clase CSS según la calificación (semáforo) */
-const califClass = (cal) => {
-  if (cal === null || cal === undefined) return 'calif-nd'
-  if (cal >= 80) return 'calif-verde'
-  if (cal >= 70) return 'calif-amarillo'
-  return 'calif-rojo'
-}
-
-/** Formatea una fecha ISO a formato legible */
-const formatFecha = (iso) => {
-  if (!iso) return 'No registrado'
+const cargarDatos = async () => {
+  cargando.value   = true
+  errorCarga.value = false
   try {
-    return new Date(iso).toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' })
-  } catch { return iso }
+    const res  = await fetch(`${API}/dashboard`)
+    if (!res.ok) throw new Error()
+    const data = await res.json()
+    kpis.value.alumnosActivos          = data.kpis?.alumnos       ?? 0
+    kpis.value.inscripcionesPeriodo    = data.kpis?.inscripciones ?? 0
+    kpis.value.gruposAbiertos          = data.kpis?.grupos        ?? 0
+    kpis.value.evaluacionesPendientes  = data.kpis?.evaluaciones  ?? 0
+    kpis.value.inscripcionesCompletas  = data.kpis?.ins_completas ?? Math.round((data.kpis?.inscripciones ?? 0) * 0.89)
+    kpis.value.inscripcionesPendientes = data.kpis?.ins_pendientes ?? Math.round((data.kpis?.inscripciones ?? 0) * 0.11)
+    kpis.value.pctInscripciones        = data.kpis?.pct_ins       ?? 89
+  } catch {
+    errorCarga.value = true
+    // Fallback
+    kpis.value = { alumnosActivos:1235, inscripcionesPeriodo:7020, inscripcionesCompletas:1147, inscripcionesPendientes:137, pctInscripciones:89, gruposAbiertos:72, evaluacionesPendientes:0 }
+  } finally {
+    cargando.value = false
+    nextTick(() => inicializarCharts())
+  }
 }
 
-// ── Navegación ──────────────────────────────────────────────────────────────
-const irAAlumnos       = () => router.push('/alumnos')
-const irAInscripciones = () => router.push('/inscripcion')
-const irAGrupos        = () => router.push('/gestion-grupos')
-const irAEvaluaciones  = () => router.push('/evaluaciones')
-const nuevaInscripcion = () => router.push('/inscripcion')
+// ── Bitácora ──────────────────────────────────────────────────────────
+const bitacora   = ref([])
+const cargandoBit = ref(false)
 
-const irExpediente = () => {
-  if (alumno.value?.id) router.push(`/alumnos/${alumno.value.id}`)
+const cargarBitacora = async () => {
+  cargandoBit.value = true
+  try {
+    const res  = await fetch(`${API}/bitacora?limit=5`)
+    if (!res.ok) throw new Error()
+    const data = await res.json()
+    bitacora.value = Array.isArray(data) ? data : (data.bitacora ?? [])
+  } catch { /* silencioso */ }
+  finally { cargandoBit.value = false }
 }
-const irKardex = () => {
-  if (alumno.value?.id) router.push(`/alumnos/${alumno.value.id}/kardex`)
+
+// ── Charts con Chart.js CDN ───────────────────────────────────────────
+const inicializarCharts = () => {
+  if (typeof window === 'undefined' || !window.Chart) return
+
+  const ChartJS = window.Chart
+  ChartJS.defaults.font.family = "'Montserrat', system-ui, sans-serif"
+  ChartJS.defaults.font.size   = 11
+  ChartJS.defaults.color       = '#828282'
+
+  // Chart 1: Barras por carrera
+  if (c1.value) {
+    if (chart1) chart1.destroy()
+    chart1 = new ChartJS(c1.value, {
+      type: 'bar',
+      data: {
+        labels: ['ISC', 'Industrial', 'Eléctrica', 'Bioquímica', 'Mecánica', 'Empresarial'],
+        datasets: [{
+          data: [312, 268, 198, 176, 174, 156],
+          backgroundColor: ['#132B4F','#1A4184','#1D52B7','#2F80ED','#27AE60','#F2994A'],
+          borderRadius: 6,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' ' + c.parsed.y + ' alumnos' } } },
+        scales: {
+          x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 10 } } },
+          y: { grid: { color: '#F4F6F9' }, border: { display: false }, ticks: { font: { size: 10 } } },
+        }
+      }
+    })
+  }
+
+  // Chart 2: Línea por semestre
+  if (c2.value) {
+    if (chart2) chart2.destroy()
+    chart2 = new ChartJS(c2.value, {
+      type: 'line',
+      data: {
+        labels: ['1°','2°','3°','4°','5°','6°','7°','8°'],
+        datasets: [{
+          data: [180, 165, 158, 144, 152, 138, 175, 172],
+          borderColor: '#1D52B7',
+          backgroundColor: 'rgba(29,82,183,0.07)',
+          borderWidth: 2.5,
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#fff',
+          pointBorderColor: '#1D52B7',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' ' + c.parsed.y + ' alumnos' } } },
+        scales: {
+          x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 10 } } },
+          y: { grid: { color: '#F4F6F9' }, border: { display: false }, min: 100, ticks: { font: { size: 10 } } },
+        }
+      }
+    })
+  }
+
+  // Chart 3: Donut inscripciones
+  if (c3.value) {
+    if (chart3) chart3.destroy()
+    const pct = kpis.value.pctInscripciones || 89
+    chart3 = new ChartJS(c3.value, {
+      type: 'doughnut',
+      data: {
+        labels: [`Completadas ${pct}%`, `Pendientes ${100 - pct}%`],
+        datasets: [{
+          data: [pct, 100 - pct],
+          backgroundColor: ['#1D52B7', 'rgba(242,153,74,0.15)'],
+          borderColor: ['#1D52B7', '#F2994A'],
+          borderWidth: 1,
+          hoverOffset: 4,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        cutout: '72%',
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: c => ' ' + c.label } },
+        }
+      }
+    })
+  }
 }
+
+// ── Toast ─────────────────────────────────────────────────────────────
+const notif = ref({ visible: false, mensaje: '', tipo: 'exito' })
+let timerNotif = null
+const mostrarNotif = (mensaje, tipo = 'exito') => {
+  if (timerNotif) clearTimeout(timerNotif)
+  notif.value = { visible: true, mensaje, tipo }
+  timerNotif = setTimeout(() => { notif.value.visible = false }, 3500)
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────
+const fmt      = (n) => n?.toLocaleString('es-MX') ?? '0'
+const iniciales = (n = '') => n.split(' ').slice(0,2).map(p => p[0]).join('').toUpperCase()
+
+const fFecha = (iso) => {
+  if (!iso) return 'No registrado'
+  try { return new Date(iso).toLocaleDateString('es-MX', { day:'2-digit', month:'long', year:'numeric' }) }
+  catch { return iso }
+}
+
+const estatusClass = (e = '') => {
+  const m = { 'Activo':'es-act','Inactivo':'es-ina','Egresado':'es-egr','Suspendido':'es-sus','Baja':'es-baj' }
+  return m[e] ?? 'es-ina'
+}
+
+const califClass = (c) => {
+  if (c === null || c === undefined) return 'ca-nd'
+  if (c >= 80) return 'ca-v'
+  if (c >= 70) return 'ca-a'
+  return 'ca-r'
+}
+
+const tRel = (f) => {
+  if (!f) return ''
+  const m = Math.floor((Date.now() - new Date(f).getTime()) / 60000)
+  if (m < 1)  return 'Ahora'
+  if (m < 60) return `Hace ${m} min`
+  const h = Math.floor(m/60)
+  if (h < 24) return `Hace ${h} h`
+  return `Hace ${Math.floor(h/24)} día(s)`
+}
+
+const claseBadge = (a = '') => {
+  const s = a.toLowerCase()
+  if (s.includes('inscri') || s.includes('cre') || s.includes('alta')) return 'bg-g'
+  if (s.includes('edit') || s.includes('actualiz'))                      return 'bg-a'
+  if (s.includes('elim') || s.includes('baja'))                          return 'bg-r'
+  return 'bg-b'
+}
+
+// ── Lifecycle ─────────────────────────────────────────────────────────
+onMounted(() => {
+  cargarDatos()
+  cargarBitacora()
+  nextTick(() => inputRef.value?.focus())
+
+  // Cargar Chart.js desde CDN si no está disponible
+  if (!window.Chart) {
+    const script = document.createElement('script')
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js'
+    script.onload = () => nextTick(() => inicializarCharts())
+    document.head.appendChild(script)
+  } else {
+    nextTick(() => inicializarCharts())
+  }
+})
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
-
-/* ── Variables globales de la vista ──────────────────────────────────────── */
-.servicios-page {
-  --azul:        #1B396A;
-  --azul-hover:  #1D4ED8;
-  --azul-suave:  #DBEAFE;
-  --azul-light:  #EFF6FF;
-  --borde:       #E5E7EB;
-  --fondo:       #F5F5F5;
-  --texto:       #1A1A1A;
-  --gris:        #6B7280;
-  --verde:       #16A34A;
-  --verde-suave: #DCFCE7;
-  --rojo:        #DC2626;
-  --rojo-suave:  #FEF2F2;
-  --amarillo:    #F59E0B;
-  --amarillo-suave: #FEF3C7;
-
-  width: 100%;
-  min-height: 100%;
+/* ══════════════════════════════════════════════════════
+   BASE
+══════════════════════════════════════════════════════ */
+.page {
+  font-family: 'Montserrat', system-ui, sans-serif;
+  background: #F4F6F9;
   display: flex;
   flex-direction: column;
-  background: var(--fondo);
-  font-family: 'Montserrat', sans-serif;
+  gap: 14px;
+  min-height: 100%;
+  padding-bottom: 2rem;
 }
-
 .spacer { flex: 1; }
 
-/* ── Breadcrumb ──────────────────────────────────────────────────────────── */
-.breadcrumb {
-  display: flex; align-items: center; gap: 0.4rem;
-  color: var(--gris); font-size: 0.88rem; margin-bottom: 0.75rem;
-}
-.breadcrumb .sep    { color: #E5E7EB; }
-.breadcrumb-link    { color: var(--gris); text-decoration: none; transition: color 0.15s; }
-.breadcrumb-link:hover { color: var(--azul); }
-.breadcrumb-actual  { color: var(--azul); font-weight: 600; }
-
-/* ── Toast ───────────────────────────────────────────────────────────────── */
-.toast {
-  position: fixed; bottom: 2rem; right: 2rem;
-  display: flex; align-items: center; gap: 10px;
-  padding: 0.9rem 1.4rem; border-radius: 10px;
-  color: white; font-weight: 700; font-size: 0.9rem;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 3000;
-  font-family: 'Montserrat', sans-serif; max-width: 380px;
-}
-.toast.exito { background: var(--azul); }
-.toast.error { background: var(--rojo); }
-.toast-icono { width: 20px; height: 20px; flex-shrink: 0; }
-.toast-slide-enter-active, .toast-slide-leave-active { transition: all 0.3s ease; }
-.toast-slide-enter-from, .toast-slide-leave-to { opacity: 0; transform: translateX(100%); }
-
-/* ══════════════════════════════════════════════════════════════════════════
-   HERO BUSCADOR
-══════════════════════════════════════════════════════════════════════════ */
-.hero-busqueda {
-  background: linear-gradient(135deg, var(--azul) 0%, #1e4b8f 60%, #2563EB 100%);
-  border-radius: 16px;
-  padding: 2.5rem 2rem;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 8px 32px rgba(27, 57, 106, 0.25);
-  position: relative;
-  overflow: hidden;
-}
-
-/* Decoración de fondo del hero */
-.hero-busqueda::before {
-  content: '';
-  position: absolute; inset: 0;
-  background-image: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08) 0%, transparent 50%),
-                    radial-gradient(circle at 10% 80%, rgba(255,255,255,0.05) 0%, transparent 40%);
-  pointer-events: none;
-}
-
-.hero-contenido { position: relative; z-index: 1; }
-
-.hero-texto { margin-bottom: 1.5rem; }
-.hero-titulo {
-  color: #FFFFFF; font-size: 1.75rem; font-weight: 700;
-  margin: 0 0 0.4rem; letter-spacing: -0.02em;
-}
-.hero-subtitulo {
-  color: rgba(255,255,255,0.75); font-size: 0.95rem; margin: 0;
-}
-
-/* ── Caja del buscador ─────────────────────────────────────────────────── */
-.buscador-wrapper { max-width: 680px; }
-
-.buscador-inner {
-  display: flex; align-items: center;
-  background: #FFFFFF; border-radius: 12px;
-  border: 2px solid transparent;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-  transition: border-color 0.2s, box-shadow 0.2s;
-  overflow: hidden;
-}
-.buscador-activo {
-  border-color: rgba(255,255,255,0.5);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.2), 0 0 0 3px rgba(255,255,255,0.15);
-}
-.buscador-error { border-color: var(--rojo) !important; }
-
-.buscador-icono-lupa {
-  width: 22px; height: 22px; stroke: var(--gris);
-  flex-shrink: 0; margin-left: 1rem;
-}
-
-.buscador-input {
-  flex: 1; border: none; outline: none;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 1rem; font-weight: 500; color: var(--texto);
-  padding: 0.95rem 0.75rem;
-  background: transparent;
-  letter-spacing: 0.01em;
-}
-.buscador-input::placeholder { color: #9CA3AF; font-weight: 400; }
-
-.buscador-spinner {
-  padding: 0.5rem; flex-shrink: 0;
-}
-.spinner-svg {
-  width: 22px; height: 22px; animation: spin 0.8s linear infinite;
-  stroke: var(--azul);
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.buscador-limpiar {
-  padding: 0.5rem; background: none; border: none; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--gris); flex-shrink: 0; border-radius: 6px;
-  transition: color 0.15s, background 0.15s;
-}
-.buscador-limpiar:hover { color: var(--rojo); background: var(--rojo-suave); }
-.buscador-limpiar svg { width: 18px; height: 18px; }
-
-.buscador-btn {
-  background: var(--azul); color: #FFFFFF;
-  border: none; cursor: pointer;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.95rem; font-weight: 700;
-  padding: 0 1.5rem; height: 100%; min-height: 52px;
-  transition: background 0.15s;
-  white-space: nowrap; flex-shrink: 0;
-}
-.buscador-btn:hover:not(:disabled) { background: var(--azul-hover); }
-.buscador-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-/* ── Mensajes de estado ────────────────────────────────────────────────── */
-.busqueda-mensaje {
-  display: flex; align-items: center; gap: 8px;
-  margin-top: 0.75rem; font-size: 0.88rem; font-weight: 500;
-}
-.busqueda-mensaje--error   { color: #FCA5A5; }
-.busqueda-mensaje--vacio   { color: rgba(255,255,255,0.8); }
-.busqueda-mensaje--hint    { color: rgba(255,255,255,0.6); }
-.msg-icono { width: 17px; height: 17px; flex-shrink: 0; }
-
-.fade-slide-enter-active, .fade-slide-leave-active { transition: all 0.25s ease; }
-.fade-slide-enter-from, .fade-slide-leave-to { opacity: 0; transform: translateY(-6px); }
-
-/* ══════════════════════════════════════════════════════════════════════════
-   RESULTADO: PANEL DEL ALUMNO
-══════════════════════════════════════════════════════════════════════════ */
-.resultado-seccion {
-  background: #FFFFFF;
-  border-radius: 16px;
-  border: 1px solid var(--borde);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-  margin-bottom: 1.5rem;
-  overflow: hidden;
-}
-
-.resultado-appear-enter-active { transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
-.resultado-appear-enter-from   { opacity: 0; transform: translateY(20px); }
-
-/* ── Cabecera del alumno ─────────────────────────────────────────────── */
-.alumno-header {
-  display: flex; align-items: flex-start; gap: 1.5rem;
-  padding: 1.75rem 2rem;
-  background: linear-gradient(to right, var(--azul-light), #FFFFFF);
-  border-bottom: 1px solid var(--borde);
-  flex-wrap: wrap;
-}
-
-.alumno-avatar-wrap { flex-shrink: 0; }
-.alumno-avatar {
-  width: 80px; height: 80px; border-radius: 50%;
-  object-fit: cover; border: 3px solid #FFFFFF;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-}
-.alumno-avatar-placeholder {
-  width: 80px; height: 80px; border-radius: 50%;
-  background: var(--azul); color: #FFFFFF;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.6rem; font-weight: 700;
-  border: 3px solid #FFFFFF;
-  box-shadow: 0 4px 12px rgba(27,57,106,0.25);
-}
-
-.alumno-header-info { flex: 1; min-width: 0; }
-.alumno-nombre-row { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
-.alumno-nombre {
-  font-size: 1.35rem; font-weight: 700; color: var(--texto); margin: 0;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.alumno-nc, .alumno-meta {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 0.88rem; color: var(--gris); margin: 0 0 0.2rem;
-}
-.alumno-nc strong { color: var(--texto); }
-.info-icono-mini { width: 15px; height: 15px; stroke: var(--gris); flex-shrink: 0; }
-
-.alumno-estatus {
-  font-size: 0.78rem; font-weight: 700; padding: 3px 12px;
-  border-radius: 20px; white-space: nowrap; flex-shrink: 0;
-}
-
-.alumno-header-acciones {
-  display: flex; flex-direction: column; gap: 0.6rem;
-  flex-shrink: 0; align-items: flex-end;
-}
-
-.btn-accion {
-  display: flex; align-items: center; gap: 6px;
-  padding: 0.55rem 1.1rem; border-radius: 8px;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.85rem; font-weight: 600;
-  cursor: pointer; transition: all 0.15s; white-space: nowrap;
-  border: none;
-}
-.btn-accion svg { width: 16px; height: 16px; }
-.btn-accion--primary { background: var(--azul); color: #FFFFFF; }
-.btn-accion--primary:hover { background: var(--azul-hover); }
-.btn-accion--outline {
-  background: transparent; color: var(--azul);
-  border: 1.5px solid var(--azul);
-}
-.btn-accion--outline:hover { background: var(--azul-light); }
-
-/* ── Estatus chips ─────────────────────────────────────────────────────── */
-.estatus-activo     { background: var(--verde-suave); color: var(--verde); }
-.estatus-inactivo   { background: #F3F4F6; color: var(--gris); }
-.estatus-egresado   { background: var(--azul-suave); color: var(--azul); }
-.estatus-suspendido { background: var(--amarillo-suave); color: var(--amarillo); }
-.estatus-baja       { background: var(--rojo-suave); color: var(--rojo); }
-
-/* ── Tabs ──────────────────────────────────────────────────────────────── */
-.tabs-barra {
-  display: flex; overflow-x: auto; gap: 0;
-  border-bottom: 1px solid var(--borde);
-  padding: 0 1.5rem;
-  scrollbar-width: none;
-}
-.tabs-barra::-webkit-scrollbar { display: none; }
-
-.tab-btn {
-  display: flex; align-items: center; gap: 7px;
-  padding: 0.85rem 1.1rem; border: none; background: none;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.88rem; font-weight: 600;
-  color: var(--gris); cursor: pointer; white-space: nowrap;
-  border-bottom: 3px solid transparent; margin-bottom: -1px;
-  transition: color 0.15s, border-color 0.15s;
-}
-.tab-btn:hover { color: var(--azul); }
-.tab-btn--activo { color: var(--azul); border-bottom-color: var(--azul); }
-.tab-icono { width: 16px; height: 16px; }
-
-.tab-contenido { padding: 1.75rem 2rem; }
-
-.tab-fade-enter-active, .tab-fade-leave-active { transition: opacity 0.18s ease, transform 0.18s ease; }
-.tab-fade-enter-from { opacity: 0; transform: translateY(6px); }
-.tab-fade-leave-to   { opacity: 0; transform: translateY(-4px); }
-
-/* ── Info grid (2 columnas) ─────────────────────────────────────────── */
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.25rem;
-}
-
-.info-card {
-  background: var(--fondo); border-radius: 12px;
-  border: 1px solid var(--borde); padding: 1.25rem;
-}
-.info-card-titulo {
-  font-size: 0.88rem; font-weight: 700;
-  color: var(--azul); margin: 0 0 1rem;
-  text-transform: uppercase; letter-spacing: 0.05em;
-}
-
-.info-lista { margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.65rem; }
-.info-fila { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
-.info-fila dt { font-size: 0.83rem; color: var(--gris); font-weight: 500; flex-shrink: 0; }
-.info-fila dd { font-size: 0.88rem; color: var(--texto); font-weight: 600; text-align: right; margin: 0; }
-.dd-mono { font-family: monospace; letter-spacing: 0.05em; }
-
-/* ── Estado académico ────────────────────────────────────────────────── */
-.academico-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr);
-  gap: 1rem; margin-bottom: 1.25rem;
-}
-
-.kpi-card {
-  background: var(--fondo); border: 1px solid var(--borde);
-  border-radius: 12px; padding: 1.25rem 1rem;
-  text-align: center;
-}
-.kpi-valor {
-  font-size: 2.25rem; font-weight: 700; line-height: 1;
-  margin-bottom: 0.4rem;
-}
-.kpi-label { font-size: 0.8rem; color: var(--gris); font-weight: 500; }
-.kpi-azul    { color: var(--azul); }
-.kpi-verde   { color: var(--verde); }
-.kpi-naranja { color: var(--amarillo); }
-.kpi-rojo    { color: var(--rojo); }
-
-.progreso-card {
-  background: var(--fondo); border: 1px solid var(--borde);
-  border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem;
-}
-.progreso-header {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 0.75rem;
-}
-.progreso-label { font-size: 0.88rem; font-weight: 600; color: var(--texto); }
-.progreso-pct { font-size: 1.1rem; font-weight: 700; color: var(--azul); }
-.progreso-barra-bg {
-  height: 10px; background: var(--borde); border-radius: 99px; overflow: hidden;
-}
-.progreso-barra-fill {
-  height: 100%; background: linear-gradient(to right, var(--azul), #2563EB);
-  border-radius: 99px; transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.progreso-detalle { font-size: 0.82rem; color: var(--gris); margin: 0.5rem 0 0; }
-
-.situacion-banner {
-  display: flex; align-items: center; gap: 10px;
-  padding: 0.9rem 1.1rem; border-radius: 10px;
-  font-size: 0.9rem; font-weight: 500;
-}
-.situacion-ok     { background: var(--verde-suave); color: var(--verde); }
-.situacion-alerta { background: var(--amarillo-suave); color: #92400E; }
-.situacion-icono  { width: 20px; height: 20px; flex-shrink: 0; }
-
-/* ── Kardex ──────────────────────────────────────────────────────────── */
-.kardex-periodo { margin-bottom: 1.5rem; }
-.kardex-periodo-header {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 0.6rem;
-}
-.kardex-periodo-label { font-size: 0.95rem; font-weight: 700; color: var(--texto); }
-.kardex-periodo-prom  { font-size: 0.88rem; color: var(--gris); }
-.kardex-periodo-prom strong { color: var(--azul); }
-
-.kardex-tabla-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--borde); }
-.kardex-tabla {
-  width: 100%; border-collapse: collapse; min-width: 480px;
-}
-.kardex-tabla th {
-  background: var(--fondo); padding: 0.65rem 1rem;
-  font-size: 0.8rem; font-weight: 700;
-  color: var(--gris); text-align: left;
-  border-bottom: 1px solid var(--borde);
-}
-.kardex-fila td {
-  padding: 0.6rem 1rem; font-size: 0.875rem; color: var(--texto);
-  border-bottom: 1px solid #F9FAFB;
-}
-.kardex-fila:last-child td { border-bottom: none; }
-.kardex-fila:hover td { background: var(--azul-light); }
-.td-mono   { font-family: monospace; font-size: 0.82rem; color: var(--gris); }
-.td-centro { text-align: center; }
-
-.calif {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 38px; height: 28px; border-radius: 6px;
-  font-size: 0.85rem; font-weight: 700;
-}
-.calif-verde    { background: var(--verde-suave); color: var(--verde); }
-.calif-amarillo { background: var(--amarillo-suave); color: #92400E; }
-.calif-rojo     { background: var(--rojo-suave); color: var(--rojo); }
-.calif-nd       { background: #F3F4F6; color: var(--gris); }
-
-.chip-mini {
-  display: inline-flex; padding: 2px 10px; border-radius: 20px;
-  font-size: 0.75rem; font-weight: 700; white-space: nowrap;
-}
-.chip-verde { background: var(--verde-suave); color: var(--verde); }
-.chip-rojo  { background: var(--rojo-suave); color: var(--rojo); }
-.chip-gris  { background: #F3F4F6; color: var(--gris); }
-
-.kardex-footer { padding-top: 1rem; display: flex; justify-content: center; }
-.btn-ver-kardex {
-  display: flex; align-items: center; gap: 6px;
-  background: var(--azul-light); color: var(--azul);
-  border: 1.5px solid var(--azul-suave); border-radius: 8px;
-  padding: 0.65rem 1.25rem; cursor: pointer;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 0.88rem; font-weight: 700;
-  transition: background 0.15s, border-color 0.15s;
-}
-.btn-ver-kardex:hover { background: var(--azul-suave); border-color: var(--azul); }
-.btn-ver-kardex svg { width: 16px; height: 16px; }
-
-/* ── Horario ──────────────────────────────────────────────────────────── */
-.horario-lista { display: flex; flex-direction: column; gap: 0.75rem; }
-.horario-card {
-  display: flex; align-items: center; gap: 1.25rem;
-  background: var(--fondo); border: 1px solid var(--borde);
-  border-radius: 10px; padding: 1rem 1.25rem;
-  transition: border-color 0.15s;
-}
-.horario-card:hover { border-color: var(--azul-suave); }
-
-.horario-dia {
-  font-size: 0.78rem; font-weight: 700; color: var(--azul);
-  background: var(--azul-light); padding: 4px 10px;
-  border-radius: 6px; white-space: nowrap; flex-shrink: 0;
-  min-width: 60px; text-align: center;
-}
-.horario-info { flex: 1; min-width: 0; }
-.horario-materia { font-size: 0.93rem; font-weight: 700; color: var(--texto); margin: 0 0 2px; }
-.horario-detalle { font-size: 0.82rem; color: var(--gris); margin: 0; }
-
-.horario-docente {
-  display: flex; flex-direction: column; align-items: flex-end;
-  text-align: right; flex-shrink: 0;
-}
-.horario-docente-label { font-size: 0.72rem; color: var(--gris); font-weight: 500; margin-bottom: 2px; }
-.horario-docente-nombre { font-size: 0.83rem; font-weight: 600; color: var(--texto); }
-
-/* ── Estado vacío en tabs ───────────────────────────────────────────── */
-.tab-vacio {
-  display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: 0.75rem;
-  padding: 3rem 1rem; color: var(--gris); text-align: center;
-}
-.vacio-icono { width: 48px; height: 48px; stroke: #D1D5DB; }
-.tab-vacio p { font-size: 0.9rem; margin: 0; }
-
-/* ── Chip genérico ──────────────────────────────────────────────────── */
-.chip {
-  display: inline-flex; align-items: center;
-  padding: 3px 12px; border-radius: 20px;
-  font-size: 0.78rem; font-weight: 700; white-space: nowrap;
-}
-
-/* ══════════════════════════════════════════════════════════════════════════
-   DASHBOARD: KPIs
-══════════════════════════════════════════════════════════════════════════ */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1rem; margin-bottom: 1.5rem;
-}
-
-.stat-card {
-  background: #FFFFFF; border-radius: 12px;
-  padding: 1.3rem 1.4rem; display: flex;
-  align-items: center; gap: 1rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  border: 1px solid var(--borde);
-  transition: transform 0.2s, box-shadow 0.2s; min-width: 0;
-}
-.stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.09); }
-
-.stat-azul { background: var(--azul); border-color: var(--azul); }
-.stat-azul .stat-etiqueta    { color: rgba(255,255,255,0.8); }
-.stat-azul .stat-numero      { color: #FFFFFF; }
-.stat-azul .stat-link        { color: rgba(255,255,255,0.85); }
-.stat-azul .stat-icono-wrapper { background: rgba(255,255,255,0.2); }
-.stat-azul .stat-icono-wrapper svg { stroke: #FFFFFF; }
-
-.stat-icono-wrapper {
-  width: 46px; height: 46px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; background: var(--azul-suave);
-}
-.stat-icono-wrapper svg { width: 22px; height: 22px; stroke: var(--azul); }
-.stat-icono-verde          { background: var(--verde-suave); }
-.stat-icono-verde-svg      { width: 22px; height: 22px; stroke: var(--verde); }
-.stat-icono-naranja        { background: var(--amarillo-suave); }
-.stat-icono-naranja-svg    { width: 22px; height: 22px; stroke: var(--amarillo); }
-.stat-icono-azul-suave     { background: var(--azul-suave); }
-.stat-icono-azul-suave-svg { width: 22px; height: 22px; stroke: var(--azul); }
-
-.stat-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.stat-etiqueta {
-  font-size: 0.83rem; color: var(--gris); font-weight: 500; margin: 0;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.stat-numero { font-size: 2rem; font-weight: 700; color: var(--texto); margin: 2px 0; line-height: 1; }
-.stat-link {
-  font-size: 0.82rem; color: var(--azul); font-weight: 600;
-  cursor: pointer; transition: color 0.15s; white-space: nowrap;
-}
-.stat-link:hover { color: var(--azul-hover); }
-
-.stat-skeleton {
-  width: 80px; height: 32px;
-  background: linear-gradient(90deg, #E5E7EB 25%, #F3F4F6 50%, #E5E7EB 75%);
-  background-size: 200% 100%; animation: shimmer 1.4s infinite;
-  border-radius: 6px; margin: 2px 0;
-}
-.stat-azul .stat-skeleton {
-  background: linear-gradient(90deg,
-    rgba(255,255,255,0.2) 25%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.2) 75%);
-  background-size: 200% 100%;
-}
-@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-
-/* ── Alerta de error ──────────────────────────────────────────────────── */
-.alerta-error {
-  display: flex; align-items: center; gap: 10px;
-  background: var(--rojo-suave); border: 1px solid #FECACA;
-  border-radius: 10px; padding: 12px 16px; margin-bottom: 1.4rem;
-  font-size: 0.9rem; color: var(--rojo); font-weight: 500;
-}
-.alerta-icono { width: 20px; height: 20px; flex-shrink: 0; stroke: var(--rojo); }
-.btn-reintentar {
-  margin-left: auto; background: var(--rojo); color: white; border: none;
-  padding: 6px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem;
-  cursor: pointer; font-family: 'Montserrat', sans-serif;
-  transition: background 0.15s; white-space: nowrap;
-}
-.btn-reintentar:hover { background: #B91C1C; }
-
-/* ── Accesos rápidos ─────────────────────────────────────────────────── */
-.accesos-seccion { margin-bottom: 2rem; }
-.seccion-titulo  { font-size: 1.05rem; font-weight: 700; color: var(--texto); margin: 0 0 1rem; }
-
-.accesos-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1rem;
-}
-
-.acceso-card {
-  background: #FFFFFF; border-radius: 12px; padding: 1.2rem 1.4rem;
-  display: flex; align-items: center; gap: 1rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid var(--borde);
-  cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; min-width: 0;
-}
-.acceso-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); border-color: var(--azul); }
-.acceso-deshabilitado { cursor: not-allowed; opacity: 0.6; }
-.acceso-deshabilitado:hover { transform: none; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border-color: var(--borde); }
-
-.acceso-icono { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.acceso-icono svg { width: 22px; height: 22px; }
-
-.acceso-verde    { background: var(--verde-suave); }
-.acceso-verde svg    { stroke: var(--verde); }
-.acceso-azul     { background: var(--azul-suave); }
-.acceso-azul svg     { stroke: var(--azul); }
-.acceso-amarillo { background: var(--amarillo-suave); }
-.acceso-amarillo svg { stroke: var(--amarillo); }
-.acceso-gris     { background: #F3F4F6; }
-.acceso-gris svg     { stroke: var(--gris); }
-
-.acceso-contenido { flex: 1; min-width: 0; }
-.acceso-contenido h4 {
-  font-size: 0.93rem; font-weight: 700; color: var(--texto); margin: 0 0 3px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.acceso-contenido p { font-size: 0.82rem; color: var(--gris); margin: 0; }
-
-.acceso-flecha { width: 18px; height: 18px; stroke: #9CA3AF; flex-shrink: 0; transition: stroke 0.15s; }
-.acceso-card:not(.acceso-deshabilitado):hover .acceso-flecha { stroke: var(--azul); }
-
-.badge-proximamente {
-  background: #F3F4F6; color: var(--gris); font-size: 0.72rem; font-weight: 700;
-  padding: 3px 10px; border-radius: 20px; white-space: nowrap;
-  border: 1px solid var(--borde); flex-shrink: 0;
-}
-
-/* ── Fade transition para bloque dashboard ──────────────────────────── */
-.fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
-.fade-enter-from, .fade-leave-to       { opacity: 0; }
-
-/* ── Footer ──────────────────────────────────────────────────────────── */
-.pie-pagina {
-  text-align: center; color: #9CA3AF; font-size: 0.82rem;
-  padding: 2rem 0; border-top: 1px solid var(--borde); margin-top: 0;
-}
-
-/* ══════════════════════════════════════════════════════════════════════════
-   RESPONSIVE
-══════════════════════════════════════════════════════════════════════════ */
-@media (max-width: 1024px) {
-  .stats-grid    { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .accesos-grid  { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .academico-grid { grid-template-columns: repeat(2, 1fr); }
-  .info-grid     { grid-template-columns: 1fr; }
-}
-
-@media (max-width: 768px) {
-  .hero-busqueda { padding: 2rem 1.25rem; }
-  .hero-titulo   { font-size: 1.4rem; }
-
-  .alumno-header { flex-direction: column; gap: 1rem; padding: 1.25rem; }
-  .alumno-header-acciones { flex-direction: row; align-items: center; width: 100%; }
-
-  .tabs-barra { padding: 0 0.75rem; }
-  .tab-btn    { padding: 0.75rem 0.9rem; font-size: 0.82rem; }
-  .tab-contenido { padding: 1.25rem; }
-
-  .horario-card { flex-wrap: wrap; gap: 0.75rem; }
-  .horario-docente { align-items: flex-start; text-align: left; }
-}
-
-@media (max-width: 640px) {
-  .stats-grid    { grid-template-columns: 1fr; }
-  .accesos-grid  { grid-template-columns: 1fr; }
-  .academico-grid { grid-template-columns: repeat(2, 1fr); }
-
-  .buscador-btn { padding: 0 1rem; font-size: 0.88rem; min-height: 48px; }
-
-  .alumno-nombre { font-size: 1.15rem; }
-  .alumno-header-acciones { flex-direction: column; }
-  .btn-accion { width: 100%; justify-content: center; }
-}
+/* Breadcrumb */
+.bc { display:flex; align-items:center; gap:5px; font-size:11px; color:#828282; }
+.bc-sep { color:#BDBDBD; }
+.bc-lnk { color:#828282; text-decoration:none; transition:color .15s; }
+.bc-lnk:hover { color:#1D52B7; }
+.bc-cur { color:#1D52B7; font-weight:600; }
+
+/* Toast */
+.toast { position:fixed; bottom:2rem; right:2rem; display:flex; align-items:center; gap:10px; padding:.9rem 1.4rem; border-radius:10px; color:#FFFFFF; font-weight:700; font-size:.9rem; box-shadow:0 8px 24px rgba(0,0,0,.15); z-index:3000; font-family:'Montserrat',sans-serif; max-width:380px; }
+.toast.exito { background:#0B2545; }
+.toast.error { background:#EB5757; }
+.toast svg { flex-shrink:0; stroke:#FFFFFF; }
+.toast-slide-enter-active,.toast-slide-leave-active { transition:all .3s ease; }
+.toast-slide-enter-from,.toast-slide-leave-to { opacity:0; transform:translateX(100%); }
+
+/* ══ HERO ══ */
+.hero { background:#0B2545; border-radius:14px; padding:22px 26px; display:flex; align-items:center; gap:20px; position:relative; overflow:hidden; }
+.hero-deco  { position:absolute; right:-40px; top:-40px; width:220px; height:220px; border-radius:50%; background:rgba(29,82,183,.08); pointer-events:none; }
+.hero-deco2 { position:absolute; right:60px; bottom:-60px; width:140px; height:140px; border-radius:50%; background:rgba(29,82,183,.05); pointer-events:none; }
+.hero-left  { flex:1; position:relative; }
+
+.hero-badge { display:inline-flex; align-items:center; gap:5px; background:rgba(47,128,237,.18); border:1px solid rgba(47,128,237,.3); border-radius:20px; padding:3px 10px; font-size:10px; font-weight:600; color:#2F80ED; margin-bottom:10px; letter-spacing:.03em; }
+.hero-badge svg { stroke:#2F80ED; }
+.hero-title { font-size:24px; font-weight:700; color:#FFFFFF; margin-bottom:5px; line-height:1.2; font-family:'Montserrat',sans-serif; }
+.hero-sub   { font-size:12px; color:rgba(255,255,255,.5); margin-bottom:16px; font-weight:300; font-family:'Montserrat',sans-serif; }
+
+.hero-form { display:flex; gap:8px; max-width:520px; }
+.hero-input-wrap { flex:1; display:flex; align-items:center; background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.18); border-radius:9px; padding:0 12px; transition:border-color .15s; }
+.hi-focus  { border-color:rgba(29,82,183,.7); background:rgba(29,82,183,.15); }
+.hi-error  { border-color:#EB5757 !important; }
+.hi-lupa   { stroke:#828282; flex-shrink:0; margin-right:8px; }
+.hi-inp    { flex:1; background:transparent; border:none; outline:none; font-family:'Montserrat',sans-serif; font-size:13px; color:#FFFFFF; padding:10px 0; }
+.hi-inp::placeholder { color:#828282; }
+.hi-spinner,.hi-clear { flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+.hi-clear { background:none; border:none; cursor:pointer; color:#828282; padding:4px; border-radius:4px; transition:color .15s; }
+.hi-clear:hover { color:#EB5757; }
+.hi-clear svg { stroke:currentColor; }
+.spin { animation:girar .8s linear infinite; stroke:#1D52B7; }
+@keyframes girar { to { transform:rotate(360deg); } }
+
+.hero-btn { background:#1D52B7; border:none; border-radius:9px; padding:10px 20px; color:#FFFFFF; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px; font-family:'Montserrat',sans-serif; white-space:nowrap; transition:background .15s; }
+.hero-btn:hover:not(:disabled) { background:#1A4184; }
+.hero-btn:disabled { opacity:.5; cursor:not-allowed; }
+.hero-btn svg { stroke:#FFFFFF; }
+
+.hero-hint { font-size:10px; color:#828282; margin-top:8px; display:flex; align-items:center; gap:4px; font-weight:400; font-family:'Montserrat',sans-serif; }
+.hero-hint svg { stroke:#828282; flex-shrink:0; }
+.hint-err  { color:rgba(235,87,87,.8) !important; }
+.hint-err svg { stroke:rgba(235,87,87,.8); }
+.hint-warn { color:rgba(255,255,255,.8) !important; }
+
+.hero-stats { display:flex; flex-direction:column; gap:10px; position:relative; }
+.hstat { background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:10px; padding:12px 16px; min-width:130px; text-align:center; }
+.hstat-n { font-size:20px; font-weight:700; color:#FFFFFF; font-family:'Montserrat',sans-serif; }
+.hstat-l { font-size:10px; color:#828282; margin-top:2px; font-family:'Montserrat',sans-serif; }
+
+/* ══ RESULTADO ALUMNO ══ */
+.resultado { background:#FFFFFF; border-radius:14px; border:1px solid #E0E0E0; box-shadow:0 4px 20px rgba(0,0,0,.06); overflow:hidden; }
+.resultado-appear-enter-active { transition:all .35s cubic-bezier(.16,1,.3,1); }
+.resultado-appear-enter-from   { opacity:0; transform:translateY(20px); }
+
+.al-hdr { display:flex; align-items:flex-start; gap:1.5rem; padding:1.75rem 2rem; background:linear-gradient(to right,rgba(29,82,183,.05),#FFFFFF); border-bottom:1px solid #E0E0E0; flex-wrap:wrap; }
+.al-av  { width:80px; height:80px; border-radius:50%; background:#0B2545; color:#FFFFFF; display:flex; align-items:center; justify-content:center; font-size:1.6rem; font-weight:700; flex-shrink:0; border:3px solid #FFFFFF; box-shadow:0 4px 12px rgba(11,37,69,.25); font-family:'Montserrat',sans-serif; }
+.al-info { flex:1; min-width:0; }
+.al-nombre-row { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; margin-bottom:.4rem; }
+.al-nombre { font-size:1.35rem; font-weight:700; color:#333333; margin:0; font-family:'Montserrat',sans-serif; }
+.al-estatus { font-size:.78rem; font-weight:700; padding:3px 12px; border-radius:20px; white-space:nowrap; flex-shrink:0; }
+.al-meta { display:flex; align-items:center; gap:5px; font-size:.88rem; color:#828282; margin:0 0 .2rem; font-family:'Montserrat',sans-serif; }
+.al-meta svg { stroke:#828282; flex-shrink:0; }
+.al-meta strong { color:#333333; }
+.al-acciones { display:flex; flex-direction:column; gap:.6rem; flex-shrink:0; align-items:flex-end; }
+
+.btn-primary { display:flex; align-items:center; gap:6px; padding:.55rem 1.1rem; border-radius:8px; font-family:'Montserrat',sans-serif; font-size:.85rem; font-weight:600; cursor:pointer; transition:all .15s; white-space:nowrap; background:#0B2545; color:#FFFFFF; border:none; }
+.btn-primary:hover { background:#1A4184; }
+.btn-outline { display:flex; align-items:center; gap:6px; padding:.55rem 1.1rem; border-radius:8px; font-family:'Montserrat',sans-serif; font-size:.85rem; font-weight:600; cursor:pointer; transition:all .15s; white-space:nowrap; background:transparent; color:#0B2545; border:1.5px solid #0B2545; }
+.btn-outline:hover { background:rgba(29,82,183,.05); }
+.btn-primary svg,.btn-outline svg { stroke:currentColor; }
+
+/* Estatus chips */
+.es-act { background:rgba(39,174,96,.10);  color:#27AE60; }
+.es-ina { background:#F2F4F7; color:#828282; }
+.es-egr { background:rgba(47,128,237,.10); color:#1D52B7; }
+.es-sus { background:rgba(242,153,74,.10); color:#F2994A; }
+.es-baj { background:rgba(235,87,87,.10);  color:#EB5757; }
+
+/* Tabs */
+.tabs-bar { display:flex; overflow-x:auto; border-bottom:1px solid #E0E0E0; padding:0 1.5rem; scrollbar-width:none; }
+.tabs-bar::-webkit-scrollbar { display:none; }
+.tab-btn { display:flex; align-items:center; padding:.85rem 1.1rem; border:none; background:none; font-family:'Montserrat',sans-serif; font-size:.88rem; font-weight:600; color:#828282; cursor:pointer; white-space:nowrap; border-bottom:3px solid transparent; margin-bottom:-1px; transition:color .15s,border-color .15s; }
+.tab-btn:hover { color:#1D52B7; }
+.tab-act { color:#1D52B7; border-bottom-color:#1D52B7; }
+.tab-body { padding:1.75rem 2rem; }
+.tab-fade-enter-active,.tab-fade-leave-active { transition:opacity .18s ease,transform .18s ease; }
+.tab-fade-enter-from { opacity:0; transform:translateY(6px); }
+.tab-fade-leave-to   { opacity:0; transform:translateY(-4px); }
+
+/* Info cards */
+.info-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:1.25rem; }
+.info-card { background:#F4F6F9; border-radius:12px; border:1px solid #E0E0E0; padding:1.25rem; }
+.info-t    { font-size:.88rem; font-weight:700; color:#1D52B7; margin:0 0 1rem; text-transform:uppercase; letter-spacing:.05em; font-family:'Montserrat',sans-serif; }
+.info-list { margin:0; padding:0; display:flex; flex-direction:column; gap:.65rem; }
+.if  { display:flex; justify-content:space-between; align-items:baseline; gap:.5rem; }
+.if dt { font-size:.83rem; color:#828282; font-weight:500; flex-shrink:0; font-family:'Montserrat',sans-serif; }
+.if dd { font-size:.88rem; color:#333333; font-weight:600; text-align:right; margin:0; font-family:'Montserrat',sans-serif; }
+.mono { font-family:monospace; letter-spacing:.05em; }
+.sm { font-size:.82rem; color:#828282; }
+
+/* Académico */
+.acad-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:1.25rem; }
+.acad-kpi  { background:#F4F6F9; border:1px solid #E0E0E0; border-radius:12px; padding:1.25rem 1rem; text-align:center; }
+.acad-val  { font-size:2.25rem; font-weight:700; line-height:1; margin-bottom:.4rem; font-family:'Montserrat',sans-serif; }
+.acad-lbl  { font-size:.8rem; color:#828282; font-weight:500; font-family:'Montserrat',sans-serif; }
+.azul    { color:#1D52B7; } .verde   { color:#27AE60; } .naranja { color:#F2994A; } .rojo { color:#EB5757; }
+
+.prog-card { background:#F4F6F9; border:1px solid #E0E0E0; border-radius:12px; padding:1.25rem; }
+.prog-hdr  { display:flex; justify-content:space-between; align-items:center; margin-bottom:.75rem; }
+.prog-lbl  { font-size:.88rem; font-weight:600; color:#333333; font-family:'Montserrat',sans-serif; }
+.prog-pct  { font-size:1.1rem; font-weight:700; color:#1D52B7; font-family:'Montserrat',sans-serif; }
+.prog-bg   { height:10px; background:#E0E0E0; border-radius:99px; overflow:hidden; }
+.prog-fill { height:100%; background:linear-gradient(to right,#0B2545,#1D52B7); border-radius:99px; transition:width .6s; }
+.prog-det  { font-size:.82rem; color:#828282; margin:.5rem 0 0; font-family:'Montserrat',sans-serif; }
+
+/* Kardex */
+.kardex-per { margin-bottom:1.5rem; }
+.kardex-per-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:.6rem; }
+.kardex-per-n { font-size:.95rem; font-weight:700; color:#333333; font-family:'Montserrat',sans-serif; }
+.kardex-per-p { font-size:.88rem; color:#828282; font-family:'Montserrat',sans-serif; }
+.kardex-per-p strong { color:#1D52B7; }
+.tabla-wrap { overflow-x:auto; border-radius:10px; border:1px solid #E0E0E0; }
+.tabla { width:100%; border-collapse:collapse; min-width:480px; }
+.tabla th { background:#F4F6F9; padding:.65rem 1rem; font-size:.8rem; font-weight:700; color:#828282; text-align:left; border-bottom:1px solid #E0E0E0; font-family:'Montserrat',sans-serif; }
+.tabla tbody tr td { padding:.6rem 1rem; font-size:.875rem; color:#333333; border-bottom:1px solid #F4F6F9; font-family:'Montserrat',sans-serif; }
+.tabla tbody tr:last-child td { border-bottom:none; }
+.tabla tbody tr:hover td { background:rgba(29,82,183,.05); }
+.tc { text-align:center; }
+.calif { display:inline-flex; align-items:center; justify-content:center; width:38px; height:28px; border-radius:6px; font-size:.85rem; font-weight:700; }
+.ca-v  { background:rgba(39,174,96,.10);  color:#27AE60; }
+.ca-a  { background:rgba(242,153,74,.10); color:#F2994A; }
+.ca-r  { background:rgba(235,87,87,.10);  color:#EB5757; }
+.ca-nd { background:#F2F4F7; color:#828282; }
+.chip-mini { display:inline-flex; padding:2px 10px; border-radius:20px; font-size:.75rem; font-weight:700; white-space:nowrap; font-family:'Montserrat',sans-serif; }
+.ch-v { background:rgba(39,174,96,.10);  color:#27AE60; }
+.ch-r { background:rgba(235,87,87,.10);  color:#EB5757; }
+.ch-g { background:#F2F4F7; color:#828282; }
+
+/* Horario */
+.horario-list { display:flex; flex-direction:column; gap:.75rem; }
+.horario-card { display:flex; align-items:center; gap:1.25rem; background:#F4F6F9; border:1px solid #E0E0E0; border-radius:10px; padding:1rem 1.25rem; transition:border-color .15s; }
+.horario-card:hover { border-color:#1D52B7; }
+.hor-dia { font-size:.78rem; font-weight:700; color:#1D52B7; background:rgba(29,82,183,.08); padding:4px 10px; border-radius:6px; white-space:nowrap; flex-shrink:0; min-width:60px; text-align:center; font-family:'Montserrat',sans-serif; }
+.hor-info { flex:1; min-width:0; }
+.hor-mat { font-size:.93rem; font-weight:700; color:#333333; margin:0 0 2px; font-family:'Montserrat',sans-serif; }
+.hor-det { font-size:.82rem; color:#828282; margin:0; font-family:'Montserrat',sans-serif; }
+.hor-doc { display:flex; flex-direction:column; align-items:flex-end; text-align:right; flex-shrink:0; }
+.hor-doc-l { font-size:.72rem; color:#828282; margin-bottom:2px; font-family:'Montserrat',sans-serif; }
+.hor-doc-n { font-size:.83rem; font-weight:600; color:#333333; font-family:'Montserrat',sans-serif; }
+
+/* Tab vacío */
+.tab-vacio { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.75rem; padding:3rem 1rem; color:#828282; text-align:center; }
+.tab-vacio p { font-size:.9rem; margin:0; font-family:'Montserrat',sans-serif; }
+
+/* Chip genérico */
+.chip { display:inline-flex; align-items:center; padding:3px 12px; border-radius:20px; font-size:.78rem; font-weight:700; white-space:nowrap; font-family:'Montserrat',sans-serif; }
+
+/* ══ DASHBOARD ══ */
+.dash { display:flex; flex-direction:column; gap:14px; }
+
+/* KPI Grid */
+.kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.kpi { background:#FFFFFF; border:1px solid #E0E0E0; border-radius:12px; padding:16px 18px; display:flex; align-items:flex-start; gap:13px; cursor:pointer; transition:all .15s; box-shadow:0 2px 8px rgba(29,82,183,.05); }
+.kpi:hover { border-color:#2F80ED; box-shadow:0 0 0 3px rgba(29,82,183,.07); }
+.kpi-feat { background:#0B2545; border-color:#0B2545; }
+.kpi-ico { width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.kpi-ico svg { stroke:currentColor; }
+.ki-bw { background:rgba(255,255,255,.1);  color:#2F80ED; }
+.ki-g  { background:rgba(39,174,96,.10);   color:#27AE60; }
+.ki-a  { background:rgba(242,153,74,.10);  color:#F2994A; }
+.ki-v  { background:rgba(47,128,237,.10);  color:#1A4184; }
+.kpi-body { flex:1; min-width:0; }
+.kpi-lbl  { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.07em; color:#828282; margin-bottom:4px; font-family:'Montserrat',sans-serif; }
+.kpi-feat .kpi-lbl { color:rgba(255,255,255,.5); }
+.kpi-val  { font-size:32px; font-weight:700; color:#333333; line-height:1; font-family:'Montserrat',sans-serif; }
+.kpi-feat .kpi-val { color:#FFFFFF; }
+.kpi-lnk  { font-size:11px; font-weight:500; color:#2F80ED; margin-top:5px; display:flex; align-items:center; gap:3px; font-family:'Montserrat',sans-serif; }
+.kpi-lnk svg { stroke:#2F80ED; }
+.kpi-sk   { width:80px; height:32px; border-radius:6px; background:linear-gradient(90deg,#E0E0E0 25%,#F2F4F7 50%,#E0E0E0 75%); background-size:200% 100%; animation:shimmer 1.4s infinite; }
+.kpi-sk-d { background:linear-gradient(90deg,rgba(255,255,255,.1) 25%,rgba(255,255,255,.2) 50%,rgba(255,255,255,.1) 75%); background-size:200% 100%; }
+@keyframes shimmer { 0%{background-position:200% 0}100%{background-position:-200% 0} }
+
+/* Main grid */
+.main-grid { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr); gap:14px; }
+.card   { background:#FFFFFF; border:1px solid #E0E0E0; border-radius:12px; padding:18px; box-shadow:0 2px 8px rgba(29,82,183,.05); }
+.card-h { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.card-t { font-size:14px; font-weight:600; color:#333333; font-family:'Montserrat',sans-serif; }
+.card-lk { font-size:11px; font-weight:600; color:#2F80ED; cursor:pointer; display:flex; align-items:center; gap:3px; text-decoration:none; font-family:'Montserrat',sans-serif; }
+.card-lk:hover { color:#1A4184; }
+
+/* Accesos rápidos */
+.acc-list { display:flex; flex-direction:column; gap:8px; }
+.acc-item { display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:10px; border:1px solid #E0E0E0; background:#F2F4F7; cursor:pointer; transition:all .15s; }
+.acc-item:hover { border-color:#2F80ED; background:rgba(29,82,183,.05); }
+.acc-item.prox  { opacity:.55; cursor:default; }
+.acc-item.prox:hover { border-color:#E0E0E0; background:#F2F4F7; }
+.acc-ico  { width:38px; height:38px; border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.acc-ico svg { stroke:currentColor; }
+.ai-g  { background:rgba(39,174,96,.10);  color:#27AE60; }
+.ai-b  { background:rgba(47,128,237,.10); color:#1D52B7; }
+.ai-a  { background:rgba(242,153,74,.10); color:#F2994A; }
+.ai-gr { background:#F2F4F7; color:#828282; }
+.acc-body { flex:1; min-width:0; }
+.acc-t { font-size:12px; font-weight:600; color:#333333; margin-bottom:2px; font-family:'Montserrat',sans-serif; }
+.acc-d { font-size:11px; color:#4F4F4F; font-family:'Montserrat',sans-serif; }
+.acc-arrow { stroke:#BDBDBD; flex-shrink:0; transition:stroke .15s; }
+.acc-item:not(.prox):hover .acc-arrow { stroke:#1D52B7; }
+.prox-bdg { font-size:9px; font-weight:700; color:#828282; background:#F2F4F7; border-radius:20px; padding:2px 8px; flex-shrink:0; letter-spacing:.04em; border:1px solid #E0E0E0; }
+
+/* Bitácora */
+.bit-list { display:flex; flex-direction:column; }
+.bit-load { display:flex; align-items:center; gap:8px; padding:1rem 0; color:#828282; font-size:11px; }
+.spinner  { width:15px; height:15px; border:2px solid #E0E0E0; border-top-color:#1D52B7; border-radius:50%; animation:girar .75s linear infinite; flex-shrink:0; }
+.bit-item { display:flex; align-items:flex-start; gap:10px; padding:10px 0; border-bottom:1px solid #F4F6F9; }
+.bit-item:last-child { border-bottom:none; padding-bottom:0; }
+.bit-av  { width:30px; height:30px; border-radius:50%; background:#0B2545; color:#FFFFFF; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-family:'Montserrat',sans-serif; }
+.bit-body { flex:1; min-width:0; }
+.bit-r1  { display:flex; align-items:center; gap:6px; margin-bottom:2px; flex-wrap:wrap; }
+.bit-usr  { font-size:12px; font-weight:600; color:#333333; font-family:'Montserrat',sans-serif; }
+.bit-desc { font-size:11px; color:#4F4F4F; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-family:'Montserrat',sans-serif; }
+.bit-t    { font-size:10px; color:#828282; margin-top:2px; font-family:'Montserrat',sans-serif; }
+.bdg  { font-size:9px; font-weight:700; padding:2px 8px; border-radius:20px; letter-spacing:.02em; font-family:'Montserrat',sans-serif; }
+.bg-g { background:rgba(39,174,96,.10);  color:#27AE60; }
+.bg-b { background:rgba(47,128,237,.10); color:#1D52B7; }
+.bg-a { background:rgba(242,153,74,.10); color:#F2994A; }
+.bg-r { background:rgba(235,87,87,.10);  color:#EB5757; }
+
+/* Bottom grid */
+.bottom-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); gap:14px; }
+.ev { display:flex; align-items:center; justify-content:center; padding:2rem; color:#828282; font-size:11px; font-family:'Montserrat',sans-serif; }
+
+/* Inscripciones mini */
+.ins-mini { display:flex; gap:8px; }
+.im      { flex:1; background:#F4F6F9; border:1px solid #E0E0E0; border-radius:8px; padding:10px; text-align:center; }
+.im-v    { font-size:16px; font-weight:700; color:#333333; font-family:'Montserrat',sans-serif; }
+.im-l    { font-size:10px; color:#4F4F4F; margin-top:2px; font-family:'Montserrat',sans-serif; }
+
+/* Alerta error */
+.alerta-err { display:flex; align-items:center; gap:10px; background:#FFF0F0; border:1px solid rgba(235,87,87,.20); border-radius:10px; padding:12px 16px; font-size:.9rem; color:#EB5757; font-weight:500; font-family:'Montserrat',sans-serif; }
+.alerta-err svg { stroke:#EB5757; flex-shrink:0; }
+.btn-reintentar { margin-left:auto; background:#EB5757; color:#FFFFFF; border:none; padding:6px 16px; border-radius:6px; font-weight:600; font-size:.85rem; cursor:pointer; font-family:'Montserrat',sans-serif; transition:background .15s; white-space:nowrap; }
+.btn-reintentar:hover { background:#c0392b; }
+
+/* Footer */
+.pie { text-align:center; color:#BDBDBD; font-size:.82rem; padding:2rem 0; border-top:1px solid #E0E0E0; font-family:'Montserrat',sans-serif; }
+
+/* Transiciones */
+.fade-enter-active,.fade-leave-active { transition:opacity .2s ease; }
+.fade-enter-from,.fade-leave-to { opacity:0; }
+.fade-slide-enter-active,.fade-slide-leave-active { transition:all .25s ease; }
+.fade-slide-enter-from,.fade-slide-leave-to { opacity:0; transform:translateY(-6px); }
+
+/* ══ RESPONSIVE ══ */
+@media (max-width:1024px) { .kpi-grid { grid-template-columns:repeat(2,1fr); } .info-grid,.acad-grid { grid-template-columns:1fr; } .bottom-grid { grid-template-columns:1fr 1fr; } .main-grid { grid-template-columns:1fr; } }
+@media (max-width:768px)  { .hero { flex-direction:column; align-items:flex-start; gap:14px; } .hero-stats { flex-direction:row; } .hero-title { font-size:18px; } .hero-form { flex-direction:column; } .hero-btn { width:100%; justify-content:center; } .bottom-grid { grid-template-columns:1fr; } .al-hdr { flex-direction:column; gap:1rem; padding:1.25rem; } .al-acciones { flex-direction:row; width:100%; } .tab-body { padding:1.25rem; } }
+@media (max-width:640px)  { .kpi-grid { grid-template-columns:1fr; } .al-acciones { flex-direction:column; } .btn-primary,.btn-outline { width:100%; justify-content:center; } .acad-grid { grid-template-columns:repeat(2,1fr); } }
 </style>
