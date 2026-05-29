@@ -333,15 +333,6 @@ const props = defineProps({
 const cargando = ref(true)
 const error    = ref(null)
 
-// ── Búsqueda rápida de alumno ───────────────────────────────────────────
-const busquedaControl = ref('')
-
-const irAKardex = () => {
-  const nc = busquedaControl.value.trim()
-  if (nc.length < 8) return
-  router.push(`/kardex/${nc}`)
-}
-
 // ── Sincronizar búsqueda global con el componente (si se necesita) ──────
 // Por ahora no hacemos nada con busquedaGlobal, pero está disponible
 watch(() => props.busquedaGlobal, (nuevaBusqueda) => {
