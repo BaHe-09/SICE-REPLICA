@@ -153,9 +153,7 @@ class GrupoController extends Controller
                 ], 422);
             }
 
-            // =========================
             // MATERIA
-            // =========================
 
             $id_materia = DB::table('materia')
                 ->where('nombre', $request->nombre_materia)
@@ -169,9 +167,7 @@ class GrupoController extends Controller
                 ], 422);
             }
 
-            // =========================
             // AULA
-            // =========================
 
             $id_aula = DB::table('aula')
                 ->where('nombre', $request->aula)
@@ -185,9 +181,7 @@ class GrupoController extends Controller
                 ], 422);
             }
 
-            // =========================
             // DOCENTE
-            // =========================
 
             $id_docente = null;
 
@@ -235,10 +229,7 @@ class GrupoController extends Controller
                     ], 422);
                 }
             }
-
-            // =========================
             // PERIODO
-            // =========================
 
             $id_periodo = $request->id_periodo
                 ?? DB::table('periodo')
@@ -246,9 +237,7 @@ class GrupoController extends Controller
                 ->orderByDesc('id_periodo')
                 ->value('id_periodo');
 
-            // =========================
             // CLAVE
-            // =========================
 
             $clave_grupo = $request->clave_grupo
                 ?? strtoupper(
@@ -263,9 +252,7 @@ class GrupoController extends Controller
                     )
                 ) . '-' . now()->format('mdHi');
 
-            // =========================
             // INSERT
-            // =========================
 
             $id = DB::table('grupo')->insertGetId([
 
@@ -355,9 +342,7 @@ class GrupoController extends Controller
                 ], 422);
             }
 
-            // =========================
             // MATERIA
-            // =========================
 
             $id_materia = $grupo->id_materia;
 
@@ -376,9 +361,7 @@ class GrupoController extends Controller
                 }
             }
 
-            // =========================
             // AULA
-            // =========================
 
             $id_aula = $grupo->id_aula;
 
@@ -397,9 +380,7 @@ class GrupoController extends Controller
                 }
             }
 
-            // =========================
             // DOCENTE
-            // =========================
 
             $id_docente = $grupo->id_docente;
 
