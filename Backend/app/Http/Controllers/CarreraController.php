@@ -24,7 +24,7 @@ class CarreraController extends Controller
                 'n.nombre_nivel',
 
                 // 1. Alumnos Activos totales inscritos en esta carrera
-                DB::raw('(SELECT COUNT(*) FROM alumno as a 
+                DB::raw('(SELECT COUNT(*) FROM alumno as a
                           WHERE a.id_carrera = c.id_carrera AND a.estatus = "Activo") as total_alumnos'),
 
                 // 2. Grupos abiertos que pertenecen al plan de estudios de esta carrera
@@ -157,35 +157,35 @@ class CarreraController extends Controller
 
         $grupos = DB::table('grupo as g')
             ->join('materia as m', 'g.id_materia', '=', 'm.id_materia')
-            ->leftJoin('docente as d', 'g.id_docente', '=', 'd.id_docente')      // <-- LEFT
-            ->leftJoin('empleado as e', 'd.id_empleado', '=', 'e.id_empleado')   // <-- LEFT
-            ->leftJoin('persona as p', 'e.id_persona', '=', 'p.id_persona')      // <-- LEFT
-            ->leftJoin('turno as t', 'g.id_turno', '=', 't.id_turno')
+            ->leftJoin('docente as d', 'g.id_docente', '=', 'd.id_docente')
+            ->leftJoin('empleado as e', 'd.id_empleado', '=', 'e.id_empleado')
+            ->leftJoin('persona as p', 'e.id_persona', '=', 'p.id_persona')
             ->whereIn('g.id_materia', $idMaterias)
             ->where('g.estatus', 1)
             ->select(
                 'g.id_grupo',
                 'g.clave_grupo',
                 'm.nombre as materia',
-                DB::raw("IF(p.id_persona IS NOT NULL,
-                    UPPER(CONCAT(p.apellido_paterno, ' ', p.apellido_materno, ' ', p.nombre)),
-                    'Sin asignar'
-                ) as docente"),
-                't.nombre_turno as turno',
-                'g.dia',
-                DB::raw("TIME_FORMAT(g.hora_inicio, '%H:%i') as hora_inicio"),
-                DB::raw("TIME_FORMAT(g.hora_fin, '%H:%i') as hora_fin"),
+                DB::raw("IF(
+            p.id_persona IS NOT NULL,
+            UPPER(CONCAT(
+                p.apellido_paterno,
+                ' ',
+                p.apellido_materno,
+                ' ',
+                p.nombre
+            )),
+            'Sin asignar'
+        ) as docente"),
                 'g.capacidad',
                 DB::raw("(
-                    SELECT COUNT(*)
-                    FROM inscripcion AS i
-                    WHERE i.id_grupo = g.id_grupo
-                      AND i.estatus = 'Activo'
-                ) as inscritos")
+            SELECT COUNT(*)
+            FROM inscripcion AS i
+            WHERE i.id_grupo = g.id_grupo
+              AND i.estatus = 'Activo'
+        ) as inscritos")
             )
             ->orderBy('m.nombre')
-            ->orderBy('g.dia')
-            ->orderBy('g.hora_inicio')
             ->get();
 
         return response()->json([
@@ -194,3 +194,4 @@ class CarreraController extends Controller
         ]);
     }
 }
+
