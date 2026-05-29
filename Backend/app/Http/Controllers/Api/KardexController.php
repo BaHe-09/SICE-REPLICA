@@ -15,30 +15,72 @@ class KardexController extends Controller
     public function buscarPorNombre()
     {
         try {
-            $busqueda = request()->query('q', '');
-            
-            if (strlen(trim($busqueda)) < 3) {
+            $busqueda = trim(request()->query('q', ''));
+
+            // Eliminar espacios repetidos
+            $busqueda = preg_replace('/\s+/', ' ', $busqueda);
+
+            if (strlen($busqueda) < 3) {
                 return response()->json([
                     'error' => 'La búsqueda debe contener al menos 3 caracteres',
                     'resultados' => []
                 ], 400);
             }
 
-            $termino = '%' . trim($busqueda) . '%';
+            $termino = '%' . $busqueda . '%';
 
             $alumnos = DB::table('alumno as a')
                 ->join('persona as p', 'a.id_persona', '=', 'p.id_persona')
                 ->join('carrera as c', 'a.id_carrera', '=', 'c.id_carrera')
                 ->where(function ($query) use ($termino) {
+
+                    // Nombre
                     $query->where('p.nombre', 'LIKE', $termino)
-                          ->orWhere('p.apellido_paterno', 'LIKE', $termino)
-                          ->orWhere('p.apellido_materno', 'LIKE', $termino);
+
+                        // Apellido paterno
+                        ->orWhere('p.apellido_paterno', 'LIKE', $termino)
+
+                        // Apellido materno
+                        ->orWhere('p.apellido_materno', 'LIKE', $termino)
+
+                        // Nombre completo
+                        ->orWhereRaw(
+                            "CONCAT(
+                                p.nombre,
+                                ' ',
+                                p.apellido_paterno,
+                                ' ',
+                                COALESCE(p.apellido_materno,'')
+                            ) LIKE ?",
+                            [$termino]
+                        )
+
+                        // Nombre + Apellido paterno
+                        ->orWhereRaw(
+                            "CONCAT(
+                                p.nombre,
+                                ' ',
+                                p.apellido_paterno
+                            ) LIKE ?",
+                            [$termino]
+                        );
                 })
                 ->select(
                     'a.numero_control',
-                    DB::raw("CONCAT(p.nombre,' ',p.apellido_paterno,' ',COALESCE(p.apellido_materno,'')) as nombre_completo"),
+                    DB::raw("
+                        CONCAT(
+                            p.nombre,
+                            ' ',
+                            p.apellido_paterno,
+                            ' ',
+                            COALESCE(p.apellido_materno,'')
+                        ) as nombre_completo
+                    "),
                     'c.nombre as carrera'
                 )
+                ->orderBy('p.apellido_paterno')
+                ->orderBy('p.apellido_materno')
+                ->orderBy('p.nombre')
                 ->limit(10)
                 ->get();
 
@@ -54,7 +96,10 @@ class KardexController extends Controller
             ], 200);
 
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            return response()->json([
+                'error' => $e->getMessage(),
+                'resultados' => []
+            ], 500);
         }
     }
 
