@@ -37,7 +37,7 @@ Route::delete('/calificaciones/{id}', [ServiciosEscolaresController::class, 'eli
 Route::get('/alumnos-full', [ServiciosEscolaresController::class, 'getAlumnos']);
 Route::post('/alumnos', [ServiciosEscolaresController::class, 'store']);
 Route::get('/buscar-alumno', [ServiciosEscolaresController::class, 'buscarAlumnoInscripcion']);
-
+Route::get('/horario/{numero_control}', [AlumnoController::class, 'horario']);
 Route::get('/alumnos/buscar-control', [EventoController::class, 'buscarAlumno']);
 
 // === CRUD COMPLETO DE ALUMNOS ===
