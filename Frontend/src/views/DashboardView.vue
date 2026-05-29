@@ -2,12 +2,10 @@
   <MainLayout v-slot="{ busquedaGlobal }">
     <div class="dashboard-page">
 
-      <!-- Barra de carga top -->
       <div class="barra-carga" :class="{ activa: state.cargando }" aria-hidden="true">
         <div class="barra-progreso"></div>
       </div>
 
-      <!-- BREADCRUMB -->
       <div class="bc">
         <span>SICE</span>
         <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" class="bc-sep" aria-hidden="true">
@@ -16,7 +14,6 @@
         <b>INICIO</b>
       </div>
 
-      <!-- GREETING -->
       <div class="greeting">
         <div class="gr-left">
           <h2>{{ saludo }}, {{ nombreUsuario }}</h2>
@@ -30,16 +27,12 @@
         </div>
       </div>
 
-      <!-- KPI STATS GRID -->
       <StatsGrid
         :stats="statsConfig"
         :cargando="state.cargando"
         @navegar="router.push($event)"
       />
 
-      <!-- ═══════════════════════════════════
-           SECCION CARRERAS
-      ═══════════════════════════════════ -->
       <div class="carreras-seccion">
 
         <div class="sec-header">
@@ -55,7 +48,6 @@
           </router-link>
         </div>
 
-        <!-- FILTROS CON ICONOS -->
         <CareerFilters
           :carreras="state.carreras"
           :carrera-activa="state.carreraActiva"
@@ -63,10 +55,8 @@
           @filtrar="setCarreraActiva"
         />
 
-        <!-- CARDS GRANDES POR CARRERA -->
         <div class="carreras-wrap">
 
-          <!-- Skeletons carga -->
           <template v-if="state.cargando">
             <div v-for="i in 6" :key="'sk-'+i" class="cc-sk" aria-hidden="true">
               <div class="sk-barra"></div>
@@ -77,7 +67,6 @@
             </div>
           </template>
 
-          <!-- Cards -->
           <template v-else>
             <CareerCard
               v-for="(carrera, i) in carrerasMostradas"
@@ -90,7 +79,6 @@
             />
           </template>
 
-          <!-- Vacío -->
           <div v-if="!state.cargando && state.carreras.length === 0" class="carreras-vacio">
             <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="#BDBDBD" stroke-width="1.5" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z"/>
@@ -102,10 +90,8 @@
         </div>
       </div>
 
-      <!-- FILA GRAFICAS + BITACORA -->
       <div class="row-graficas">
 
-        <!-- Alumnos por carrera -->
         <div class="card">
           <div class="ch">
             <span class="ct">ALUMNOS POR CARRERA</span>
@@ -126,7 +112,6 @@
           <div v-else class="ev">SIN DATOS DISPONIBLES</div>
         </div>
 
-        <!-- Por semestre -->
         <div class="card">
           <div class="ch">
             <span class="ct">DISTRIBUCION POR SEMESTRE</span>
@@ -142,7 +127,6 @@
           <div v-else class="ev">SIN DATOS DISPONIBLES</div>
         </div>
 
-        <!-- Bitácora -->
         <div class="card card-bit">
           <div class="ch">
             <span class="ct">ACTIVIDAD RECIENTE</span>
@@ -190,10 +174,8 @@
 
       </div>
 
-      <!-- FILA BUSQUEDA + ACCIONES + INSCRIPCIONES -->
       <div class="row-bottom">
 
-        <!-- Hero búsqueda -->
         <div class="hero">
           <div class="hero-top">
             <div class="hero-ico" aria-hidden="true">
@@ -229,7 +211,6 @@
           </div>
         </div>
 
-        <!-- Acciones rápidas -->
         <div class="card">
           <div class="ch"><span class="ct">ACCIONES RAPIDAS</span></div>
           <div class="acc-grid">
@@ -238,18 +219,17 @@
               :key="acc.label"
               class="acc"
               :class="{ 'acc--prim': acc.primario }"
-              @click="router.push(acc.ruta)"
+              @click="router.push(acc.ruta || '')"
               type="button"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path :d="acc.d" stroke-linecap="round" stroke-linejoin="round"/>
+                <path :d="acc.iconPath" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
               <span class="acc-lbl">{{ acc.label?.toUpperCase() }}</span>
             </button>
           </div>
         </div>
 
-        <!-- Estado inscripciones -->
         <div class="card">
           <div class="ch">
             <span class="ct">ESTADO DE INSCRIPCIONES</span>
@@ -271,7 +251,6 @@
 
       </div>
 
-      <!-- ALERTA ERROR -->
       <Transition name="fade">
         <div v-if="state.error" class="alerta-error" role="alert">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -281,7 +260,6 @@
         </div>
       </Transition>
 
-      <!-- MODAL BITACORA -->
       <Teleport to="body">
         <Transition name="fade">
           <div v-if="modalItem" class="modal-overlay" @click.self="modalItem = null">
@@ -314,40 +292,72 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
+
+// ── Importa tus componentes hijos ──────────────────────────────────────
+import StatsGrid     from '@/components/dashboard/StatsGrid.vue'
+import CareerFilters from '@/components/dashboard/CareerFilters.vue'
+import CareerCard    from '@/components/dashboard/CareerCard.vue'
 
 const router  = useRouter()
 const API_URL = import.meta.env.VITE_API_URL
 
-// ── Recibir búsqueda global del layout ───────────────────────────────────
+// ── Props ──────────────────────────────────────────────────────────────
 const props = defineProps({
-  busquedaGlobal: {
-    type: String,
-    default: ''
-  }
+  busquedaGlobal: { type: String, default: '' }
 })
 
-// ── Estado general ──────────────────────────────────────────────────────
-const cargando = ref(true)
-const error    = ref(null)
-
-// ── Sincronizar búsqueda global con el componente (si se necesita) ──────
-// Por ahora no hacemos nada con busquedaGlobal, pero está disponible
-watch(() => props.busquedaGlobal, (nuevaBusqueda) => {
-  // Aquí puedes agregar lógica si quieres que la búsqueda global afecte al dashboard
-  // Por ejemplo, filtrar algo en el dashboard si es necesario
-  console.log('[Dashboard] Búsqueda global:', nuevaBusqueda)
+// ── Estado UNIFICADO (el template usa state.xxx) ───────────────────────
+const state = reactive({
+  cargando:              true,
+  cargandoBitacora:      false,
+  error:                 null,
+  errorBitacora:         false,
+  carreras:              [],
+  carreraActiva:         null,
+  carreraData:           [],
+  semestreData:          [],
+  bitacora:              [],
+  kpis: {
+    totalAlumnos:          0,
+    nuevosAlumnos:         0,
+    inscripciones:         0,
+    inscripcionesCompletas:0,
+    inscripcionesPendientes:0,
+    pctInscripciones:      0,
+    gruposActivos:         0,
+    numCarreras:           0,
+    adeudosPendientes:     0,
+    consultasHoy:          0,
+    periodoActivo:         'N/D',
+  },
 })
 
-// ── Fechas ──────────────────────────────────────────────────────────────
-const fechaHoy = computed(() =>
-  new Date().toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+// ── Colores por carrera ────────────────────────────────────────────────
+const COLORES_CARRERA = [
+  '#1D52B7','#27AE60','#F2994A','#EB5757','#9B51E0','#2F80ED',
+]
+
+// ── Info usuario / fecha ───────────────────────────────────────────────
+const nombreUsuario = ref('USUARIO')
+const horaAcceso    = ref('')
+const fechaCorta    = computed(() =>
+  new Date().toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' }).toUpperCase()
 )
-const fechaISO = computed(() => new Date().toISOString().split('T')[0])
+const saludo = computed(() => {
+  const h = new Date().getHours()
+  if (h < 12) return 'BUENOS DÍAS'
+  if (h < 19) return 'BUENAS TARDES'
+  return 'BUENAS NOCHES'
+})
 
-// ── StatsGrid config ──────────────────────────────────────────────────
+watch(() => props.busquedaGlobal, (v) => {
+  console.log('[Dashboard] Búsqueda global:', v)
+})
+
+// ── StatsGrid config ───────────────────────────────────────────────────
 const statsConfig = computed(() => [
   {
     key:'alumnos', featured:true, label:'TOTAL ALUMNOS',
@@ -375,12 +385,16 @@ const statsConfig = computed(() => [
   },
 ])
 
-// ── Cards filtradas ───────────────────────────────────────────────────
+// ── Carreras filtradas ─────────────────────────────────────────────────
 const carrerasMostradas = computed(() =>
   state.carreraActiva === null
     ? state.carreras
     : state.carreras.filter(c => c.id_carrera === state.carreraActiva)
 )
+
+const setCarreraActiva = (id) => {
+  state.carreraActiva = state.carreraActiva === id ? null : id
+}
 
 const getIcono = (nombre = '') => {
   const n = nombre.toLowerCase()
@@ -392,77 +406,104 @@ const getIcono = (nombre = '') => {
   return 'flask'
 }
 
-// ── Gráficas ──────────────────────────────────────────────────────────
+// ── Gráfica semestres ──────────────────────────────────────────────────
 const calcPctSem = (cant) => {
   const max = Math.max(...state.semestreData.map(s => s.cantidad), 1)
   return Math.round((cant / max) * 100)
 }
 
-// ── Búsqueda ──────────────────────────────────────────────────────────
-const busquedaControl = ref('')
-const buscando = ref(false)
+// ── Helpers formato ────────────────────────────────────────────────────
+const formatNum = (n) => Number(n || 0).toLocaleString('es-MX')
 
-// Validar si la búsqueda es válida (número de 8 dígitos o texto de 3+ caracteres)
-const esValidaBusqueda = computed(() => {
-  const termino = busquedaControl.value.trim()
-  if (!termino) return false
-  
-  // Si es número, debe ser exactamente 8 dígitos
-  if (/^\d+$/.test(termino)) {
-    return termino.length === 8
+const claseBadge = (accion = '') => {
+  const a = accion.toLowerCase()
+  if (a.includes('insert') || a.includes('crear') || a.includes('nuevo')) return 'bdg bg-g'
+  if (a.includes('update') || a.includes('edit')  || a.includes('modif')) return 'bdg bg-b'
+  if (a.includes('delet')  || a.includes('elim'))                          return 'bdg bg-r'
+  return 'bdg bg-a'
+}
+
+const tiempoRelativo = (fecha) => {
+  if (!fecha) return '—'
+  const diff = Date.now() - new Date(fecha).getTime()
+  const min  = Math.floor(diff / 60000)
+  if (min < 1)  return 'HACE UN MOMENTO'
+  if (min < 60) return `HACE ${min} MIN`
+  const h = Math.floor(min / 60)
+  if (h  < 24)  return `HACE ${h} H`
+  return `HACE ${Math.floor(h / 24)} DÍAS`
+}
+
+const formatFecha = (f) => {
+  if (!f) return '—'
+  return new Date(f).toLocaleString('es-MX', {
+    year:'numeric', month:'long', day:'numeric',
+    hour:'2-digit', minute:'2-digit',
+  }).toUpperCase()
+}
+
+// ── Carga de datos ─────────────────────────────────────────────────────
+const cargarDashboard = async () => {
+  state.cargando = true
+  state.error    = null
+  try {
+    const [resKpis, resCarreras, resSem] = await Promise.all([
+      fetch(`${API_URL}/dashboard/kpis`).then(r => r.json()),
+      fetch(`${API_URL}/dashboard/carreras`).then(r => r.json()),
+      fetch(`${API_URL}/dashboard/semestres`).then(r => r.json()),
+    ])
+    Object.assign(state.kpis, resKpis)
+    state.carreras     = resCarreras.carreras    ?? resCarreras  ?? []
+    state.carreraData  = resCarreras.carreraData ?? []
+    state.semestreData = resSem.semestres        ?? resSem       ?? []
+  } catch (e) {
+    state.error = 'Error al cargar datos del dashboard'
+    console.error(e)
+  } finally {
+    state.cargando = false
   }
-  
-  // Si es texto, debe tener al menos 3 caracteres
-  return termino.length >= 3
+}
+
+const cargarBitacora = async () => {
+  state.cargandoBitacora = true
+  state.errorBitacora    = false
+  try {
+    const res = await fetch(`${API_URL}/bitacora?limit=8`)
+    const data = await res.json()
+    state.bitacora = data.registros ?? data ?? []
+  } catch (e) {
+    state.errorBitacora = true
+    console.error(e)
+  } finally {
+    state.cargandoBitacora = false
+  }
+}
+
+// ── Búsqueda ───────────────────────────────────────────────────────────
+const busquedaControl = ref('')
+const buscando        = ref(false)
+
+const esValidaBusqueda = computed(() => {
+  const t = busquedaControl.value.trim()
+  if (!t) return false
+  return /^\d+$/.test(t) ? t.length === 8 : t.length >= 3
 })
 
-// Detectar si es búsqueda por número o por nombre
-const esNumeroControl = (termino) => {
-  return /^\d{8}$/.test(termino)
-}
-
-// Buscar alumno por nombre/apellido
-const buscarPorNombre = async (nombre) => {
-  try {
-    const response = await api.get('/kardex/buscar-por-nombre', {
-      params: { q: nombre }
-    })
-    if (response.data.resultados && response.data.resultados.length > 0) {
-      return response.data.resultados[0].numero_control
-    }
-    state.error = 'No se encontraron alumnos con ese nombre'
-    return null
-  } catch (e) {
-    if (e.response?.status === 404) {
-      state.error = 'Alumno no encontrado'
-    } else {
-      state.error = 'Error al buscar alumno: ' + (e.response?.data?.error || e.message)
-    }
-    return null
-  }
-}
-
-// Navegar a Kardex
 const irAKardex = async () => {
   if (!esValidaBusqueda.value) return
-  
   buscando.value = true
-  state.error = null
-  
+  state.error    = null
   try {
-    const termino = busquedaControl.value.trim()
-    let numeroControl = termino
-    
-    // Si no es número de control, buscar por nombre
-    if (!esNumeroControl(termino)) {
-      numeroControl = await buscarPorNombre(termino)
-      if (!numeroControl) {
-        buscando.value = false
-        return
-      }
+    const t = busquedaControl.value.trim()
+    if (/^\d{8}$/.test(t)) {
+      router.push(`/kardex/${t}`)
+      return
     }
-    
-    router.push(`/kardex/${numeroControl}`)
+    const res  = await fetch(`${API_URL}/kardex/buscar-por-nombre?q=${encodeURIComponent(t)}`)
+    const data = await res.json()
+    const nc   = data.resultados?.[0]?.numero_control
+    if (nc) router.push(`/kardex/${nc}`)
+    else state.error = 'No se encontraron alumnos con ese nombre'
   } catch (e) {
     state.error = 'Error: ' + e.message
   } finally {
@@ -470,51 +511,29 @@ const irAKardex = async () => {
   }
 }
 
-// ── Modal ─────────────────────────────────────────────────────────────
+// ── Modal bitácora ─────────────────────────────────────────────────────
 const modalItem = ref(null)
-const formatFecha = (f) => {
-  if (!f) return '—'
-  return new Date(f).toLocaleString('es-MX', {
-    year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit',
-  }).toUpperCase()
-}
 
-// ── Acciones rápidas (ACTUALIZADO con Lista de Carreras) ─────────────────
+// ── Acciones rápidas ───────────────────────────────────────────────────
 const accionesRapidas = [
-  {
-    label:       'Nueva inscripción',
-    descripcion: 'Registrar un nuevo alumno en el sistema.',
-    primario:    true,
-    iconPath:    'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z',
-    handler:     () => router.push('/formulario-alumno')
-  },
-  {
-    label:       'Lista de alumnos',
-    descripcion: 'Ver el listado completo de alumnos registrados.',
-    iconPath:    'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
-    handler:     () => router.push('/alumnos')
-  },
-  {
-    label:       'Lista de Carreras',
-    descripcion: 'Ver y gestionar todas las carreras del sistema.',
-    iconPath:    'M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z',
-    handler:     () => router.push('/gestion-academica/carreras')
-  },
-  {
-    label:       'Gestión de grupos',
-    descripcion: 'Administrar grupos y horarios del periodo actual.',
-    iconPath:    'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z',
-    handler:     () => router.push('/gestion-grupos')
-  },
-  {
-    label:       'Cargar calificaciones',
-    descripcion: 'Registrar o actualizar calificaciones de alumnos.',
-    iconPath:    'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
-    handler:     () => router.push('/calificaciones')
-  }
+  { label:'Nueva inscripción', primario:true,
+    d:'M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z',
+    ruta:'/formulario-alumno' },
+  { label:'Lista de alumnos',
+    d:'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
+    ruta:'/alumnos' },
+  { label:'Lista de Carreras',
+    d:'M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z',
+    ruta:'/gestion-academica/carreras' },
+  { label:'Gestión de grupos',
+    d:'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z',
+    ruta:'/gestion-grupos' },
+  { label:'Cargar calificaciones',
+    d:'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
+    ruta:'/calificaciones' },
 ]
 
-// ── Lifecycle ─────────────────────────────────────────────────────────
+// ── Lifecycle ──────────────────────────────────────────────────────────
 onMounted(() => {
   cargarDashboard()
   cargarBitacora()
