@@ -746,7 +746,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 import { useCatalogos } from '@/composables/useCatalogos'
 import { getCalificacionesGrupo, guardarCalificaciones } from '../api/calificaciones'
-import axios from 'axios'
+import api from '../api/axios'
 
 // --- VISTA CARRERA: GRUPOS CARGADOS DESDE EL BACKEND ---
 const gruposDeCarrera = ref([])
@@ -756,7 +756,7 @@ async function cargarGruposCarrera(idCarrera) {
   cargandoGruposCarrera.value = true
   gruposDeCarrera.value = []
   try {
-    const { data } = await axios.get(`/api/carreras/${idCarrera}/grupos`)
+    const { data } = await api.get(`/carreras/${idCarrera}/grupos`)
     console.log('Respuesta backend:', data)          // ← temporal para verificar
     gruposDeCarrera.value = data.grupos ?? []
     console.log('Grupos cargados:', gruposDeCarrera.value.length)
