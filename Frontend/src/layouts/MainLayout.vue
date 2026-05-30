@@ -2,6 +2,7 @@
   
   <div class="sistema-layout" @click="cerrarMenus">
 
+    <!-- ══ ENCABEZADO FIJO ══ -->
     <header class="encabezado-superior">
       <div class="encabezado-izquierda">
         <button
@@ -24,24 +25,7 @@
   <BuscadorGlobal tema="header" @seleccionar="onSeleccionarResultado" />
 </div>
 
-        <div class="grupo-busqueda">
-          <svg xmlns="http://www.w3.org/2000/svg" class="icono-busqueda" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Buscar por número de control..."
-            v-model="busquedaGlobal"
-            @keydown.escape="busquedaGlobal = ''"
-            @click.stop
-            aria-label="Búsqueda global"
-            :tabindex="busquedaOculta ? -1 : 0"
-            :readonly="busquedaOculta"
-            autocomplete="off"
-          >
-        </div>
-
+        <!-- Campana -->
         <div class="campana-notificaciones" @click.stop="toggleNotificaciones" aria-label="Notificaciones" title="Notificaciones">
           <svg xmlns="http://www.w3.org/2000/svg" class="icono-campana" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -78,6 +62,7 @@
           </div>
         </div>
 
+        <!-- Menú usuario -->
         <div class="menu-usuario" @click.stop="toggleMenuUsuario" aria-label="Menú de usuario">
           <svg xmlns="http://www.w3.org/2000/svg" class="icono-usuario" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -104,9 +89,11 @@
       </div>
     </header>
 
+    <!-- ══ BARRA DE NAVEGACIÓN HORIZONTAL (solo desktop) ══ -->
     <nav class="barra-nav-horizontal" @click.stop @mouseenter="cancelarCierreTab" @mouseleave="cerrarTabConRetardo" aria-label="Menú principal">
       <div class="nav-scroll-inner" ref="navScrollRef">
 
+        <!-- Inicio (siempre visible) -->
         <router-link
           to="/inicio"
           class="nav-item nav-item-link"
@@ -121,6 +108,9 @@
           <span class="nav-label">INICIO</span>
         </router-link>
 
+        <!-- ════════════════════════════════════════════ -->
+        <!-- SI ES SERVICIOS ESCOLARES: TABS DIRECTOS  -->
+        <!-- ════════════════════════════════════════════ -->
         <template v-if="rolActual === 'servicios-escolares'">
         
           <!-- DASHBOARD -->
@@ -305,7 +295,11 @@
         
         </template>
 
+        <!-- ════════════════════════════════════════════ -->
+        <!-- OTROS ROLES: COMPORTAMIENTO ORIGINAL       -->
+        <!-- ════════════════════════════════════════════ -->
         <template v-else>
+          <!-- ── ESCOLARES ── -->
           <template v-if="puedeVer.serviciosEscolares">
             <div
               class="nav-item nav-item-tab"
@@ -329,6 +323,7 @@
             </div>
           </template>
 
+          <!-- ── GESTION ── -->
           <template v-if="puedeVer.gestionAcademica">
             <div
               class="nav-item nav-item-tab"
@@ -350,6 +345,7 @@
             </div>
           </template>
 
+          <!-- ── Carreras ── -->
           <template v-if="puedeVer.carreras">
             <div
               class="nav-item nav-item-tab"
@@ -368,6 +364,7 @@
             </div>
           </template>
 
+          <!-- ── EVENTOS ── -->
           <template v-if="puedeVer.eventos">
             <div
               class="nav-item nav-item-tab"
@@ -389,6 +386,7 @@
             </div>
           </template>
 
+          <!-- ── COMITE ── -->
           <template v-if="puedeVer.comite">
             <div
               class="nav-item nav-item-tab"
@@ -410,11 +408,13 @@
             </div>
           </template>
 
+          <!-- ══ ADMIN ══ -->
           <template v-if="rolActual === 'admin'">
             <div class="nav-separador-admin">
               <span class="nav-separador-admin-label">ADMIN</span>
             </div>
 
+            <!-- SEGURIDAD -->
             <div
               class="nav-item nav-item-tab"
               :class="{ 'nav-activo': tabActivo === 'seguridad' }"
@@ -434,6 +434,7 @@
               </svg>
             </div>
 
+            <!-- RECURSOS -->
             <div
               class="nav-item nav-item-tab"
               :class="{ 'nav-activo': tabActivo === 'rrhh' }"
@@ -453,6 +454,7 @@
               </svg>
             </div>
 
+            <!-- PERSONAS -->
             <div
               class="nav-item nav-item-tab"
               :class="{ 'nav-activo': tabActivo === 'personas' }"
@@ -473,27 +475,7 @@
             </div>
           </template>
 
-
-          <template v-if="rolActual === 'admin' || puedeVer.serviciosEscolares">
-            <div
-              class="nav-item nav-item-tab"
-              :class="{ 'nav-activo': tabActivo === 'aspirantes' }"
-              @mouseenter="abrirTab('aspirantes')"
-              @focus="abrirTab('aspirantes')"
-              @click.stop="abrirTab('aspirantes')"
-              tabindex="0"
-              title="Aspirantes — Nuevo ingreso"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-              </svg>
-              <span class="nav-label">ASPIRANTES</span>
-              <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'aspirantes' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-          </template>
-
+          <!-- ── ASIGNACION ── -->
           <template v-if="puedeVer.asignacionDocente">
             <div
               class="nav-item nav-item-tab"
@@ -515,7 +497,9 @@
             </div>
           </template>
 
+          <!-- KARDEX E HISTORIAL SOLO ADMIN -->
           <template v-if="rolActual === 'admin'">
+            <!-- KARDEX -->
             <div
               class="nav-item nav-item-tab"
               :class="{ 'nav-activo': tabActivo === 'kardex' }"
@@ -535,6 +519,7 @@
               </svg>
             </div>
 
+            <!-- HISTORIAL -->
             <div
               class="nav-item nav-item-tab"
               :class="{ 'nav-activo': tabActivo === 'historial' }"
@@ -554,11 +539,15 @@
               </svg>
             </div>
           </template>
-        </template> </div>
+        </template> <!-- fin v-else otros roles -->
 
+      </div>
+
+      <!-- ══ RIBBON PANEL ══ -->
       <Transition name="ribbon">
         <div v-if="tabActivo" class="ribbon-panel" @click.stop>
 
+          <!-- ── Servicios Escolares ── -->
           <template v-if="tabActivo === 'servicios'">
             <router-link v-if="puedeVerItem('/servicios-escolares')" to="/servicios-escolares" class="ribbon-item" @click="cerrarTab">
               <div class="ribbon-icono-wrap">
@@ -621,6 +610,7 @@
             </template>
           </template>
 
+          <!-- ── Gestión Académica ── -->
           <template v-if="tabActivo === 'academica'">
             <router-link to="/gestion-academica" class="ribbon-item" @click="cerrarTab">
               <div class="ribbon-icono-wrap">
@@ -668,6 +658,7 @@
             </router-link>
           </template>
 
+          <!-- ── Carreras ── -->
           <template v-if="tabActivo === 'carreras'">
             <router-link to="/gestion-academica/carreras" class="ribbon-item" @click="cerrarTab">
               <div class="ribbon-icono-wrap">
@@ -736,6 +727,7 @@
             </router-link>
           </template>
 
+          <!-- ── Eventos ── -->
           <template v-if="tabActivo === 'eventos'">
             <router-link to="/eventos" class="ribbon-item" @click="cerrarTab">
               <div class="ribbon-icono-wrap">
@@ -752,6 +744,7 @@
             </router-link>
           </template>
 
+          <!-- ── Comité Académico ── -->
           <template v-if="tabActivo === 'comite'">
             <router-link to="/comite" class="ribbon-item" @click="cerrarTab">
               <div class="ribbon-icono-wrap">
@@ -789,6 +782,7 @@
             </router-link>
           </template>
 
+          <!-- ── Seguridad y Usuarios ── -->
           <template v-if="tabActivo === 'seguridad'">
             <router-link to="/roles" class="ribbon-item" @click="cerrarTab">
               <div class="ribbon-icono-wrap">
@@ -826,6 +820,7 @@
             </router-link>
           </template>
 
+          <!-- ── Recursos Humanos ── -->
           <template v-if="tabActivo === 'rrhh'">
             <router-link to="/recursos-humanos" class="ribbon-item" @click="cerrarTab">
               <div class="ribbon-icono-wrap">
@@ -870,6 +865,7 @@
             </router-link>
           </template>
 
+          <!-- ── Personas ── -->
           <template v-if="tabActivo === 'personas'">
             <router-link to="/personas" class="ribbon-item" @click="cerrarTab">
               <div class="ribbon-icono-wrap">
@@ -886,15 +882,7 @@
             </router-link>
           </template>
 
-          <template v-if="tabActivo === 'aspirantes'">
-            <router-link to="/aspirantes" class="ribbon-item" @click="cerrarTab">
-              <div class="ribbon-icono-wrap">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
-              </div>
-              <span>PANEL PRINCIPAL</span>
-            </router-link>
-          </template>
-
+          <!-- ── Asignación Docente ── -->
           <template v-if="tabActivo === 'asignacion'">
             <router-link v-if="rolActual === 'admin'" to="/asignacion-docente" class="ribbon-item" @click="cerrarTab">
               <div class="ribbon-icono-wrap">
@@ -911,6 +899,7 @@
             </router-link>
           </template>
 
+          <!-- ── Kardex ── -->
           <template v-if="tabActivo === 'kardex'">
             <router-link to="/kardex" class="ribbon-item" @click="cerrarTab">
               <div class="ribbon-icono-wrap">
@@ -920,6 +909,7 @@
             </router-link>
           </template>
 
+          <!-- ── Historial Académico ── -->
           <template v-if="tabActivo === 'historial'">
             <router-link to="/historial-academico" class="ribbon-item" @click="cerrarTab">
               <div class="ribbon-icono-wrap">
@@ -1170,6 +1160,7 @@
       </Transition>
     </nav>
 
+    <!-- ══ DRAWER MÓVIL ══ -->
     <Transition name="drawer">
       <aside v-if="drawerAbierto" ref="sidebarRef" class="drawer-movil" @click.stop>
         <div class="drawer-encabezado">
@@ -1188,6 +1179,7 @@
             Inicio
           </router-link>
 
+          <!-- Servicios Escolares (adaptado según rol) -->
           <template v-if="rolActual === 'servicios-escolares'">
             <router-link to="/servicios-escolares" class="drawer-item" @click="drawerAbierto = false">Principal</router-link>
             <router-link to="/alumnos" class="drawer-item" @click="drawerAbierto = false">Alumnos</router-link>
@@ -1200,6 +1192,7 @@
           </template>
 
           <template v-else>
+            <!-- Servicios Escolares (desplegable) -->
             <template v-if="puedeVer.serviciosEscolares">
               <div class="drawer-grupo-titulo" @click="toggleDrawerSeccion('servicios')">
                 <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1224,6 +1217,7 @@
               </div>
             </template>
 
+            <!-- Gestión Académica -->
             <template v-if="puedeVer.gestionAcademica">
               <div class="drawer-grupo-titulo" @click="toggleDrawerSeccion('academica')">
                 <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1245,6 +1239,7 @@
               </div>
             </template>
 
+            <!-- Carreras -->
             <template v-if="puedeVer.carreras">
               <div class="drawer-grupo-titulo" @click="toggleDrawerSeccion('carreras')">
                 <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1267,6 +1262,7 @@
               </div>
             </template>
 
+            <!-- Eventos -->
             <template v-if="puedeVer.eventos">
               <div class="drawer-grupo-titulo" @click="toggleDrawerSeccion('eventos')">
                 <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1283,6 +1279,7 @@
               </div>
             </template>
 
+            <!-- Comité -->
             <template v-if="puedeVer.comite">
               <div class="drawer-grupo-titulo" @click="toggleDrawerSeccion('comite')">
                 <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1302,6 +1299,7 @@
               </div>
             </template>
 
+            <!-- Admin -->
             <template v-if="rolActual === 'admin'">
               <div class="drawer-separador"><span>ADMINISTRACIÓN</span></div>
 
@@ -1381,22 +1379,7 @@
               </div>
             </template>
 
-
-            <template v-if="rolActual === 'admin' || puedeVer.serviciosEscolares">
-              <div class="drawer-grupo-titulo" @click="toggleDrawerSeccion('aspirantes')">
-                <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-                </svg>
-                <span>Aspirantes</span>
-                <svg class="drawer-flecha" :class="{ rotada: drawerSeccionAbierta === 'aspirantes' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-              <div v-if="drawerSeccionAbierta === 'aspirantes'" class="drawer-submenu">
-                <router-link to="/aspirantes" class="drawer-subitem" @click="drawerAbierto = false">Panel Principal</router-link>
-              </div>
-            </template>
-
+            <!-- Asignación Docente -->
             <template v-if="puedeVer.asignacionDocente">
               <div class="drawer-grupo-titulo" @click="toggleDrawerSeccion('asignacion')">
                 <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1417,14 +1400,17 @@
       </aside>
     </Transition>
 
+    <!-- Overlay drawer móvil -->
     <Transition name="overlay">
       <div v-if="drawerAbierto" class="drawer-overlay" @click="drawerAbierto = false"></div>
     </Transition>
 
+    <!-- ══ CONTENIDO PRINCIPAL ══ -->
     <main class="area-contenido" :class="{ 'con-ribbon': tabActivo !== null }">
       <slot :busquedaGlobal="busquedaGlobal" />
     </main>
 
+    <!-- ══ BOTÓN REGRESAR FLOTANTE ══ -->
     <Transition name="fab-back">
       <button
         v-if="mostrarBotonRegresar"
@@ -1464,7 +1450,6 @@ const tooltips = {
   asignacion: 'Asignación Docente → Grupos y carga académica',
   kardex:     'Kardex → Consulta el historial de calificaciones',
   historial:  'Historial Académico → Avance curricular del alumno',
-  aspirantes: 'Aspirantes → Gestión de admisiones y fichas',
   // Nuevos tooltips para Servicios Escolares
   se_principal:       'Servicios Escolares → Panel principal',
   se_alumnos:         'Servicios Escolares → Gestión de alumnos',
@@ -1562,7 +1547,25 @@ const notificaciones        = ref([])
 
 // ── Datos del usuario logueado ────────────────────────────────────────
 const usuarioLogueado = ref(JSON.parse(localStorage.getItem('usuario') || 'null'))
-const rolActual       = computed(() => usuarioLogueado.value?.rol ?? 'servicios-escolares')
+
+// Normaliza el nombre_rol que viene de la BD al identificador interno del frontend.
+// BD: 'Administrador' | 'Docente' | 'Escolares'
+// Frontend: 'admin'   | 'docente' | 'servicios-escolares'
+const normalizarRol = (rol) => {
+  if (!rol) return ''
+  const mapa = {
+    'administrador':       'admin',
+    'admin':               'admin',
+    'docente':             'docente',
+    'docentes':            'docente',
+    'escolares':           'servicios-escolares',
+    'servicios escolares': 'servicios-escolares',
+    'servicios-escolares': 'servicios-escolares',
+  }
+  return mapa[rol.toLowerCase().trim()] ?? rol.toLowerCase().trim()
+}
+
+const rolActual = computed(() => normalizarRol(usuarioLogueado.value?.rol ?? ''))
 
 const ETIQUETAS_ROL = {
   'admin':               'Administrador',
@@ -1682,7 +1685,7 @@ const RUTAS_PRINCIPALES = new Set([
   '/kardex', '/historial-academico', '/asignacion-docente',
   '/roles', '/permisos', '/usuarios', '/bitacora', '/nuevo-usuario',
   '/recursos-humanos', '/personas',
-  '/gestion-academica/carreras', '/aspirantes'
+  '/gestion-academica/carreras',
 ])
 
 const mostrarBotonRegresar = computed(() => {
@@ -1693,6 +1696,7 @@ const mostrarBotonRegresar = computed(() => {
 const regresarPagina = () => router.back()
 </script>
 
+<!-- El bloque <style scoped> se mantiene exactamente igual al original -->
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
