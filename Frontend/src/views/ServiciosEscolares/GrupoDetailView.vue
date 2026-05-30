@@ -2,26 +2,18 @@
 <template>
   <MainLayout>
     <div class="grupo-detail-page">
+      
+      <div class="page-header">
+        <div style="display:flex;align-items:center;gap:12px">
+          <h1 class="page-title">Detalle de grupo</h1>
+        </div>
+      </div>
 
       <!-- Barra de carga -->
       <div class="barra-carga" :class="{ activa: cargando }">
         <div class="barra-progreso"></div>
       </div>
 
-      <!-- Breadcrumb -->
-      <div class="nav-top">
-        <button class="btn-back" @click="router.back()">
-          <ArrowLeft :size="14" />
-          VOLVER
-        </button>
-        <div class="breadcrumb-trail">
-          <span>SERVICIOS ESCOLARES</span>
-          <ChevronRight :size="10" />
-          <router-link to="/gestion-grupos" class="bc-link">GESTION DE GRUPOS</router-link>
-          <ChevronRight :size="10" />
-          <span class="bc-active">{{ grupo.nombre || 'CARGANDO...' }}</span>
-        </div>
-      </div>
 
       <!-- Header del grupo -->
       <div class="grupo-header">
@@ -579,6 +571,8 @@ onMounted(() => {
   padding-bottom: 2rem;
 }
 
+.page-title{color:#1A1A1A;font-size:1.75rem;font-weight:700;letter-spacing:-.02em;margin:3; font-family: 'Montserrat', sans-serif;}
+
 /* Barra de carga */
 .barra-carga { position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 9999; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
 .barra-carga.activa { opacity: 1; }
@@ -608,6 +602,7 @@ onMounted(() => {
   flex-wrap: wrap;
   gap: 1rem;
 }
+
 .header-left { display: flex; align-items: center; gap: 1rem; }
 .header-icon { width: 52px; height: 52px; background: var(--azul-suave); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--azul); }
 .grupo-nombre { font-size: 1.1rem; font-weight: 800; margin: 0 0 6px; letter-spacing: -0.01em; }

@@ -592,7 +592,7 @@ const handleLogin = async () => {
   font-size: 1.5rem;
   font-weight: 800;
   letter-spacing: 0.12em;
-  padding: 8px 24px;
+  padding: 4px 18px;
   border-radius: 10px;
   margin-bottom: 8px;
 }
@@ -607,11 +607,12 @@ const handleLogin = async () => {
 /* ── Título ── */
 .title {
   color: var(--azul-marino);
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 2rem;
+  font-weight: 900;
   text-align: center;
   margin: 0 0 0.6rem;
   letter-spacing: 0.02em;
+  font-family: 'Montserrat', sans-serif;
 }
 
 .subtitle-cuentas {

@@ -865,7 +865,7 @@ watch(totalPaginas, (nuevoTotal) => { if (paginaActual.value > nuevoTotal) pagin
 .breadcrumb .sep { color: #E5E7EB; } .breadcrumb .activo { color: #1B396A; font-weight: 600; }
 .breadcrumb-link { color: #6B7280; text-decoration: none; transition: color 0.15s; } .breadcrumb-link:hover { color: #1B396A; }
 .encabezado-seccion { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; }
-.titulo-pagina { color: #1A1A1A; font-size: 1.9rem; font-weight: 800; margin: 0 0 0.25rem; }
+.titulo-pagina { color: #1A1A1A; font-size: 1.9rem; font-weight: 800; margin: 0 0 0.25rem; font-family: 'Montserrat', sans-serif;}
 .subtitulo { color: #6B7280; font-size: 0.9rem; margin: 0; }
 .carreras-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
 .carrera-card { position: relative; border-radius: 20px; overflow: hidden; color: white; height: 220px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 10px 25px rgba(0,0,0,0.2); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
@@ -873,7 +873,7 @@ watch(totalPaginas, (nuevoTotal) => { if (paginaActual.value > nuevoTotal) pagin
 .carrera-card-badge { position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border-radius: 30px; padding: 4px 14px; font-size: 0.75rem; font-weight: 700; }
 .carrera-card-body { padding: 25px 20px 0; display: flex; align-items: flex-start; gap: 15px; }
 .carrera-card-icono { width: 50px; height: 50px; border-radius: 50%; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.carrera-card-nombre { font-size: 1.2rem; font-weight: 700; margin: 0 0 8px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+.carrera-card-nombre { font-size: 1.2rem; font-weight: 700; margin: 0 0 8px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); font-family: 'Montserrat', sans-serif;}
 .carrera-card-stats { font-size: 0.85rem; display: flex; gap: 8px; flex-wrap: wrap; opacity: 0.9; }
 .stat-sep { opacity: 0.5; }
 .carrera-card-footer { background: rgba(0,0,0,0.15); padding: 12px 20px; font-weight: 600; font-size: 0.9rem; backdrop-filter: blur(5px); }
@@ -882,7 +882,7 @@ watch(totalPaginas, (nuevoTotal) => { if (paginaActual.value > nuevoTotal) pagin
 .mini-resumen-item { background: #FFFFFF; border-radius: 12px; border: 1px solid #E5E7EB; box-shadow: 0 2px 8px rgba(0,0,0,0.04); padding: 1rem; text-align: center; }
 .mini-resumen-numero { display: block; font-size: 2rem; font-weight: 800; color: #1A1A1A; }
 .mini-resumen-etiqueta { font-size: 0.8rem; color: #6B7280; font-weight: 600; }
-.seccion-titulo { font-size: 1rem; font-weight: 700; color: #1A1A1A; margin: 0 0 0.75rem; }
+.seccion-titulo { font-size: 1.5rem; font-weight: 700; color: #1A1A1A; margin: 0 0 0.75rem; font-family: 'Montserrat', sans-serif;}
 .seccion-titulo.sin-margen { margin: 0; }
 .filtros-card { background: #FFFFFF; border-radius: 12px; border: 1px solid #E5E7EB; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 0.9rem 1.4rem; margin-bottom: 1.5rem; width: 100%; box-sizing: border-box; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
 .filtros-container { display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; flex-wrap: wrap; }
@@ -964,7 +964,7 @@ kbd { background: #E5E7EB; border-radius: 4px; padding: 1px 6px; font-family: mo
 .docente-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
 .docente-card-body { padding: 1.4rem 1.4rem 0.8rem; display: flex; flex-direction: column; align-items: center; text-align: center; flex: 1; }
 .docente-avatar { width: 56px; height: 56px; border-radius: 50%; background: #1B396A; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; margin-bottom: 0.75rem; }
-.docente-nombre { font-size: 1.05rem; font-weight: 700; color: #1A1A1A; margin: 0 0 0.5rem; }
+.docente-nombre { font-size: 1.05rem; font-weight: 700; color: #1A1A1A; margin: 0 0 0.5rem; font-family: 'Montserrat', sans-serif;}
 .docente-materias { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.4rem; margin-bottom: 0.8rem; }
 .materia-tag { background: #DBEAFE; color: #1B396A; padding: 2px 8px; border-radius: 12px; font-size: 0.72rem; font-weight: 600; }
 .docente-stats { font-size: 0.85rem; color: #6B7280; margin-bottom: 0.5rem; }
@@ -985,16 +985,16 @@ kbd { background: #E5E7EB; border-radius: 4px; padding: 1px 6px; font-family: mo
 .modal-body { padding: 1.5rem; }
 .modal-ver-docente { max-width: 550px; }
 .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 1.2rem 1.5rem; border-bottom: 1px solid #E5E7EB; }
-.modal-titulo { font-size: 1.2rem; font-weight: 700; color: #1A1A1A; margin: 0; }
+.modal-titulo { font-size: 1.2rem; font-weight: 700; color: #F9FAFB; margin: 0; font-family: 'Montserrat', sans-serif;}
 .docente-modal-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
 .docente-modal-avatar { width: 60px; height: 60px; border-radius: 50%; background: #1B396A; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 800; flex-shrink: 0; }
-.docente-modal-info h4 { margin: 0 0 4px; font-size: 1.1rem; color: #1A1A1A; }
+.docente-modal-info h4 { margin: 0 0 4px; font-size: 1.1rem; color: #1A1A1A; font-family: 'Montserrat', sans-serif; }
 .docente-modal-carrera { font-size: 0.85rem; color: #6B7280; }
 .docente-modal-detalles { margin-bottom: 1.5rem; }
 .campo { margin-bottom: 0.75rem; }
 .campo-label { display: block; font-size: 0.78rem; color: #6B7280; font-weight: 600; margin-bottom: 2px; }
 .campo-valor { font-size: 0.9rem; color: #1A1A1A; font-weight: 500; }
-.docente-grupos h4 { font-size: 0.95rem; font-weight: 700; color: #1A1A1A; margin: 1rem 0 0.5rem; }
+.docente-grupos h4 { font-size: 0.95rem; font-weight: 700; color: #1A1A1A; margin: 1rem 0 0.5rem; font-family: 'Montserrat', sans-serif;}
 .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
 .info-card { background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 12px; padding: 1rem; display: flex; align-items: center; gap: 0.8rem; }
 .info-icono { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }

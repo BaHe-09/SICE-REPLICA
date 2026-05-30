@@ -1489,7 +1489,7 @@ watch(totalPaginas, (nuevoTotal) => { if (paginaActual.value > nuevoTotal) pagin
 .breadcrumb-link { color: #6B7280; text-decoration: none; transition: color 0.15s; }
 .breadcrumb-link:hover { color: #1B396A; }
 .encabezado-seccion { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; }
-.titulo-pagina { color: #1A1A1A; font-size: 1.9rem; font-weight: 800; margin: 0 0 0.25rem; }
+.titulo-pagina { color: #1A1A1A; font-size: 1.9rem; font-weight: 800; margin: 0 0 0.25rem; font-family: 'Montserrat', sans-serif;}
 .subtitulo { color: #6B7280; font-size: 0.9rem; margin: 0; }
 
 /* ============================================ */

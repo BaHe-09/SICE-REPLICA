@@ -4,10 +4,6 @@
 
       <div class="page-header">
         <div style="display:flex;align-items:center;gap:12px">
-          <button class="btn-regresar" @click="router.back()">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
-            Regresar
-          </button>
           <h1 class="page-title">Historial de Inscripciones</h1>
         </div>
         <button v-if="alumnoSeleccionado" class="btn-exportar" @click="exportarHistorial" :disabled="exportando">
@@ -201,7 +197,7 @@ const estiloCalificacion = c => {
 .btn-regresar{display:inline-flex;align-items:center;gap:6px;background:#FFF;color:#1B396A;border:1.5px solid #1B396A;padding:8px 14px;border-radius:8px;font-weight:600;font-size:.88rem;cursor:pointer;font-family:'Montserrat',sans-serif;transition:background .15s,color .15s;white-space:nowrap}
 .btn-regresar:hover{background:#1B396A;color:#FFF}
 .btn-regresar:hover svg{stroke:#FFF}
-.page-title{color:#1A1A1A;font-size:1.75rem;font-weight:700;letter-spacing:-.02em;margin:0}
+.page-title{color:#1A1A1A;font-size:1.75rem;font-weight:700;letter-spacing:-.02em;margin:0; font-family: 'Montserrat', sans-serif;}
 .barra-carga-global{height:3px;background:transparent;border-radius:2px;margin-bottom:1rem;overflow:hidden;opacity:0;transition:opacity .3s}
 .barra-carga-global.visible{opacity:1}
 .barra-progreso{height:100%;width:40%;background:#1B396A;border-radius:2px;animation:deslizar 1.2s ease-in-out infinite}

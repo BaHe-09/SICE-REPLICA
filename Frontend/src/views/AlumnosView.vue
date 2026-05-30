@@ -843,7 +843,7 @@ const navegarTeclado = (e) => {
 
 /* Page header */
 .page-header { margin-bottom: 25px; }
-.page-title { font-size: 1.8rem; font-weight: 700; color: #111827; margin: 0; }
+.page-title { font-size: 1.8rem; font-weight: 700; color: #111827; margin: 0; font-family: 'Montserrat', sans-serif; }
 .page-subtitle { color: #6B7280; margin-top: 5px; font-size: 0.95rem; }
 
 /* Barra de acciones */
