@@ -69,22 +69,36 @@ const sinResultados = computed(() =>
 const activo = computed(() => focusado.value || !!termino.value)
 
 // ── Normalización ─────────────────────────────────────────────────────────────
-function normalizarAlumno(raw: any) {
+
+function normalizarAlumno(raw: any): ResultadoBusqueda {
   return {
     id: raw.numero_control,
 
     tipo: 'ALUMNO',
 
-    nombre_completo: raw.nombre ?? '',
+    nombre_completo: String(
+      raw.nombre_completo ??
+      raw.nombre ??
+      ''
+    ).toUpperCase(),
 
-    identificador: raw.numero_control ?? '',
+    identificador: String(
+      raw.numero_control ??
+      ''
+    ),
 
-    area: raw.carrera ?? '',
+    area: String(
+      raw.carrera ??
+      ''
+    ),
 
-    estatus: raw.estatus ?? 'ACTIVO',
+    estatus: String(
+      raw.estatus ??
+      'ACTIVO'
+    ),
 
     original: raw
-  }
+  } as ResultadoBusqueda
 }
 
 function normalizarDocente(raw: Record<string, unknown>): ResultadoBusqueda {
@@ -110,8 +124,12 @@ function normalizarDocente(raw: Record<string, unknown>): ResultadoBusqueda {
 
     estatus: 'ACTIVO',
 
-    id: Number(raw.id_persona ?? raw.id ?? 0),
-  }
+    id: Number(
+      raw.id_persona ??
+      raw.id ??
+      0
+    ),
+  } as ResultadoBusqueda
 }
 
 // ── Fetch con fallback automático y Autenticación ────────────────────────────
@@ -262,7 +280,8 @@ function seleccionar(r: ResultadoBusqueda) {
   cerrar()
 
   if (r.tipo === 'ALUMNO') {
-    router.push({ name: 'Alumnos', query: { ver: r.identificador } })
+    // Navega a la vista de alumnos con el query param que abre el modal directamente
+    router.push({ name: 'AlumnosGestion', query: { ver: r.identificador } })
     return
   }
 

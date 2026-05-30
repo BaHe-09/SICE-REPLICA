@@ -437,19 +437,9 @@ import { useRouter, useRoute } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 const router = useRouter()
-const route = useRoute()
+const route  = useRoute()
 const API_URL = import.meta.env.VITE_API_URL
 
-// Observa cuando cambie el query param ?ver=
-watch(() => route.query.ver, (verControl) => {
-  if (!verControl) return
-  const encontrado = alumnos.value.find(
-    a => String(a.numero_control) === String(verControl)
-  )
-  if (encontrado) {
-    abrirModalVer(encontrado)
-  }
-})
 // ── Estado principal ─────────────────────────────────────────────────
 const alumnos          = ref([])
 const cargando         = ref(false)
@@ -561,13 +551,6 @@ const cargarAlumnosDesdeBD = async () => {
       }
       return alumnoCorregido
     })
-     const verControl = route.query.ver
-    if (verControl) {
-      const encontrado = alumnos.value.find(
-        a => String(a.numero_control) === String(verControl)
-      )
-      if (encontrado) abrirModalVer(encontrado)
-    }
   } catch {
     mostrarNotificacion('No se pudo cargar la lista de alumnos.', 'error')
   } finally {
@@ -575,7 +558,35 @@ const cargarAlumnosDesdeBD = async () => {
   }
 }
 
-onMounted(() => { cargarAlumnosDesdeBD(); cargarCatalogos() })
+// ── Apertura de modal desde query param ?ver=<numero_control> ────────
+// Usado por el Buscador Global para navegar directo a la ficha del alumno
+const abrirPorQueryParam = async (noControl) => {
+  if (!noControl) return
+  // Si la lista aún no cargó, esperar a que termine
+  if (alumnos.value.length === 0) {
+    await cargarAlumnosDesdeBD()
+    await cargarCatalogos()
+  }
+  const encontrado = alumnos.value.find(a =>
+    (a.numero_control || a.noControl || '').toString() === noControl.toString()
+  )
+  if (encontrado) {
+    abrirModalVer(encontrado)
+  }
+}
+
+onMounted(async () => {
+  await Promise.all([cargarAlumnosDesdeBD(), cargarCatalogos()])
+  // Abrir modal si se llegó desde el buscador global
+  if (route.query.ver) {
+    abrirPorQueryParam(route.query.ver)
+  }
+})
+
+// Reaccionar si el query param cambia estando ya en la ruta (e.g. segunda búsqueda)
+watch(() => route.query.ver, (noControl) => {
+  if (noControl) abrirPorQueryParam(noControl)
+})
 
 // ── Lógica Modal VER Alumno (con pestañas) ──────────────────────────
 const abrirModalVer = (alumno) => {
