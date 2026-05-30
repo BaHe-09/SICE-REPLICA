@@ -156,12 +156,12 @@ const router = createRouter({
     {
       path: '/calificaciones/residencias',
       name: 'CalificacionesResidencias',
-      component: () => import('@/views/ServiciosEscolares/CalificacionesSE.vue')
+      component: () => import('@/views/ServiciosEscolares/ResidenciasSE.vue')
     },
     {
       path: '/calificaciones/analitica',
       name: 'CalificacionesAnalitica',
-      component: () => import('@/views/ServiciosEscolares/CalificacionesSE.vue')
+      component: () => import('@/views/ServiciosEscolares/AnaliticaView.vue')
     },
     // Rutas existentes calificaciones — se mantienen para otros roles
     {
@@ -656,8 +656,10 @@ const PERMISOS_POR_ROL = {
     '/aspirantes',
     '/configuracion',
     '/procesos',
-    '/aspirantes',                       
+    '/aspirantes',
     '/analytics',
+    '/calificaciones/residencias',
+    '/calificaciones/analitica',
   ],
 }
 
