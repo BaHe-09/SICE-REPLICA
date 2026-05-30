@@ -63,7 +63,7 @@ const router = createRouter({
     {
       path: '/alumnos/gestion',
       name: 'AlumnosGestion',
-      component: () => import('@/views/AlumnosView.vue')
+      component: () => import('@/views/ServiciosEscolares/AlumnosSE.vue')
     },
     // ── EXPEDIENTE ACADÉMICO — módulo 2.2 (NELLY) ─────────────────────────
     // Ruta sin noControl: redirige a gestión (el alumno se busca desde ahí)
