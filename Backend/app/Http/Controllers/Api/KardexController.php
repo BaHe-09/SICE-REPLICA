@@ -232,4 +232,164 @@ class KardexController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    // =========================================================================
+
+    /**
+     * GET /api/kardex/{numero_control}/pdf
+     *
+     * Genera el kardex académico en PDF y lo devuelve como descarga.
+     * Llamado por KardexDetalleView.vue → exportarPDF().
+     *
+     * Requiere: composer require barryvdh/laravel-dompdf
+     * Vista:    resources/views/kardex/kardex_pdf.blade.php
+     */
+    public function exportarPDF(string $numero_control)
+    {
+        try {
+            // ── Datos del alumno ──────────────────────────────────────────
+            $alumnoRow = DB::table('alumno as a')
+                ->join('persona as p', 'a.id_persona', '=', 'p.id_persona')
+                ->join('carrera as c', 'a.id_carrera', '=', 'c.id_carrera')
+                ->where('a.numero_control', $numero_control)
+                ->select(
+                    'a.id_alumno',
+                    'a.numero_control',
+                    'a.id_carrera',
+                    DB::raw("CONCAT(p.nombre,' ',p.apellido_paterno,' ',COALESCE(p.apellido_materno,'')) as nombre_completo"),
+                    'c.nombre as carrera',
+                    'a.semestre_actual',
+                    'a.estatus',
+                    'p.curp'
+                )
+                ->first();
+
+            if (!$alumnoRow) {
+                return response()->json(['error' => 'Alumno no encontrado'], 404);
+            }
+
+            // ── Plan de estudios ──────────────────────────────────────────
+            $planRow = DB::table('plan_estudio')
+                ->where('id_carrera', $alumnoRow->id_carrera)
+                ->orderByDesc('id_plan')
+                ->first();
+
+            $planNombre = $planRow->nombre_plan ?? 'Plan Vigente';
+
+            // ── Materias del plan ─────────────────────────────────────────
+            $planMaterias = DB::table('plan_materia as pm')
+                ->join('plan_estudio as pe', 'pm.id_plan', '=', 'pe.id_plan')
+                ->join('materia as m', 'pm.id_materia', '=', 'm.id_materia')
+                ->where('pe.id_carrera', $alumnoRow->id_carrera)
+                ->when($planRow, fn($q) => $q->where('pm.id_plan', $planRow->id_plan))
+                ->select('m.id_materia', 'm.clave', 'm.nombre', 'm.creditos', 'pm.semestre')
+                ->orderBy('pm.semestre')
+                ->orderBy('m.nombre')
+                ->get();
+
+            // ── Calificaciones cursadas ───────────────────────────────────
+            $cursadas = DB::table('inscripcion as i')
+                ->join('grupo as g', 'i.id_grupo', '=', 'g.id_grupo')
+                ->leftJoin(
+                    DB::raw('(SELECT id_inscripcion, MAX(calificacion) as calificacion FROM calificacion GROUP BY id_inscripcion) as cal'),
+                    'cal.id_inscripcion', '=', 'i.id_inscripcion'
+                )
+                ->where('i.id_alumno', $alumnoRow->id_alumno)
+                ->select('g.id_materia', 'cal.calificacion as calificacion_final')
+                ->get()
+                ->groupBy('id_materia')
+                ->map(fn($rows) => $rows->sortByDesc('calificacion_final')->first());
+
+            // ── Construir semestres (misma lógica que show()) ─────────────
+            $creditosAcum    = 0;
+            $creditosTotales = 0;
+            $semestres       = [];
+
+            foreach ($planMaterias as $m) {
+                $creditosTotales += $m->creditos;
+                $cursada = $cursadas->get($m->id_materia);
+
+                if (!$cursada) {
+                    $estado = 'no_cursada'; $calificacion = null;
+                } elseif ($cursada->calificacion_final === null) {
+                    $estado = 'pendiente';  $calificacion = null;
+                } elseif ($cursada->calificacion_final >= 70) {
+                    $estado = 'acreditada';
+                    $calificacion = (float) $cursada->calificacion_final;
+                    $creditosAcum += $m->creditos;
+                } else {
+                    $estado = 'reprobada';
+                    $calificacion = (float) $cursada->calificacion_final;
+                }
+
+                $sem = $m->semestre;
+                if (!isset($semestres[$sem])) {
+                    $semestres[$sem] = ['numero' => $sem, 'acreditadas' => 0, 'reprobadas' => 0, 'materias' => []];
+                }
+                if ($estado === 'acreditada') $semestres[$sem]['acreditadas']++;
+                if ($estado === 'reprobada')  $semestres[$sem]['reprobadas']++;
+
+                // Promedio del semestre (solo materias con calificación)
+                $semestres[$sem]['materias'][] = [
+                    'clave'        => $m->clave ?? '',
+                    'nombre'       => $m->nombre,
+                    'creditos'     => $m->creditos,
+                    'calificacion' => $calificacion,
+                    'estado'       => $estado,
+                ];
+            }
+
+            ksort($semestres);
+
+            // Calcular promedio por semestre
+            foreach ($semestres as &$sem) {
+                $conCalif = array_filter($sem['materias'], fn($mat) => $mat['calificacion'] !== null);
+                $sem['promedio'] = count($conCalif) > 0
+                    ? round(array_sum(array_column($conCalif, 'calificacion')) / count($conCalif), 2)
+                    : null;
+            }
+            unset($sem);
+
+            // ── Totales globales ──────────────────────────────────────────
+            $todasConCalif = array_merge(...array_map(
+                fn($s) => array_filter($s['materias'], fn($mat) => $mat['calificacion'] !== null),
+                $semestres
+            ));
+            $promedioGeneral = count($todasConCalif) > 0
+                ? round(array_sum(array_column($todasConCalif, 'calificacion')) / count($todasConCalif), 2)
+                : null;
+
+            $totalMaterias  = array_sum(array_map(fn($s) => count($s['materias']), $semestres));
+            $totalAcreditadas = array_sum(array_column($semestres, 'acreditadas'));
+            $totalReprobadas  = array_sum(array_column($semestres, 'reprobadas'));
+
+            // ── Generar PDF ───────────────────────────────────────────────
+            $alumno = [
+                'nombre'              => $alumnoRow->nombre_completo,
+                'no_control'          => $alumnoRow->numero_control,
+                'carrera'             => $alumnoRow->carrera,
+                'plan_estudio'        => $planNombre,
+                'semestre_actual'     => $alumnoRow->semestre_actual,
+                'estatus'             => $alumnoRow->estatus,
+                'curp'                => $alumnoRow->curp,
+                'creditos_acumulados' => $creditosAcum,
+                'creditos_totales'    => $creditosTotales,
+            ];
+
+            $pdf = Pdf::loadView('kardex.kardex_pdf', [
+                'alumno'          => $alumno,
+                'semestres'       => array_values($semestres),
+                'promedioGeneral' => $promedioGeneral,
+                'totalMaterias'   => $totalMaterias,
+                'totalAcreditadas'=> $totalAcreditadas,
+                'totalReprobadas' => $totalReprobadas,
+                'fechaGeneracion' => now()->locale('es')->isoFormat('D [de] MMMM [de] YYYY'),
+            ])->setPaper('letter', 'portrait');
+
+            return $pdf->download("kardex_{$numero_control}.pdf");
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
 }
