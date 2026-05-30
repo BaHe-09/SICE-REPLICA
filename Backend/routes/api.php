@@ -16,6 +16,8 @@ use App\Http\Controllers\Api\EventoController;
 use App\Http\Controllers\Api\ComiteAcademicoController;
 use App\Http\Controllers\Docentes\AsignacionDocenteController;
 use App\Http\Controllers\Docentes\CargaDocenteController;
+use App\Http\Controllers\Api\DocumentoController;
+
 
 // ====================== AUTENTICACIÓN ======================
 
@@ -391,3 +393,8 @@ Route::prefix('analitica')->group(function () {
 use App\Http\Controllers\Api\CarreraResumenController;
 
 Route::get('/carreras/resumen', [CarreraResumenController::class, 'index']);
+
+//======================= DOCUMENTOS OFICIALES EN PDF ======================
+Route::get('/documentos/constancia/{numero_control}',  [DocumentoController::class, 'constancia']);
+Route::get('/documentos/boleta/{numero_control}',      [DocumentoController::class, 'boleta']);
+Route::get('/documentos/certificado/{numero_control}', [DocumentoController::class, 'certificado']);
