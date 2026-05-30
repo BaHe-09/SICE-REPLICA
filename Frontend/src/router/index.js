@@ -2,11 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  
-  // Scroll Behavior configurado para no resetear el scroll automáticamente
+
   scrollBehavior(to, from, savedPosition) {
-    // Retornar false evita que Vue Router maneje el scroll por defecto
-    // Esto ayuda a que el sidebar mantenga su posición de scroll
     return false
   },
 
@@ -33,49 +30,320 @@ const router = createRouter({
     },
 
     // ══════════════════════════════════════════════════════════════════════
-    // MÓDULO: SERVICIOS ESCOLARES
+    // MÓDULO: SERVICIOS ESCOLARES — DASHBOARD
     // ══════════════════════════════════════════════════════════════════════
     {
       path: '/servicios-escolares',
       name: 'ServiciosEscolares',
-      component: () => import('@/views/ServiciosEscolaresView.vue')
+      component: () => import('@/views/ServiciosEscolares/DashboardSE.vue')
+    },
+    {
+      path: '/servicios-escolares/graficas',
+      name: 'SEGraficas',
+      component: () => import('@/views/ServiciosEscolares/DashboardSE.vue')
+    },
+    {
+      path: '/servicios-escolares/actividad',
+      name: 'SEActividad',
+      component: () => import('@/views/ServiciosEscolares/DashboardSE.vue')
     },
 
     // ══════════════════════════════════════════════════════════════════════
-    // MÓDULO: INSCRIPCIONES DETALLADAS (Nelly — Semana 3)
+    // MÓDULO: SERVICIOS ESCOLARES — ALUMNOS
+    // Ruta raíz redirige al primer subtab
     // ══════════════════════════════════════════════════════════════════════
-    { 
-        path: '/inscripciones', 
-        name: 'InscripcionesPanel', 
-        component: () => import('@/views/Inscripciones_detalladas/InscripcionesView.vue') 
+    {
+      path: '/alumnos',
+      redirect: () => {
+        const usuario = JSON.parse(localStorage.getItem('usuario') || 'null')
+        if (usuario?.rol === 'servicios-escolares') return '/alumnos/gestion'
+        return '/alumnos/lista' // fallback otros roles (ajusta si aplica)
+      }
     },
-    { 
-        path: '/inscripciones/gestionar/:id', 
-        name: 'GestionInscripcion', 
-        component: () => import('@/views/Inscripciones_detalladas/GestionInscripcionView.vue') 
+    {
+      path: '/alumnos/gestion',
+      name: 'AlumnosGestion',
+      component: () => import('@/views/ServiciosEscolares/AlumnosSE.vue')
     },
-    { 
-        path: '/inscripciones/historial', 
-        name: 'HistorialInscripciones', 
-        component: () => import('@/views/Inscripciones_detalladas/HistorialInscripcionesView.vue') 
+    {
+      path: '/alumnos/expediente',
+      name: 'ExpedienteAcademico',
+      component: () => import('@/views/ServiciosEscolares/AlumnosSE.vue')
+    },
+    // Rutas existentes de formulario alumno — se mantienen
+    {
+      path: '/formulario-alumno',
+      name: 'FormularioAlumno',
+      component: () => import('@/views/FormularioAlumnoView.vue')
+    },
+    {
+      path: '/formulario-alumno/:id',
+      name: 'EditarAlumno',
+      component: () => import('@/views/FormularioAlumnoView.vue')
     },
 
+    // ══════════════════════════════════════════════════════════════════════
+    // MÓDULO: SERVICIOS ESCOLARES — INSCRIPCIONES
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      path: '/inscripciones/nueva',
+      name: 'NuevaInscripcion',
+      component: () => import('@/views/ServiciosEscolares/InscripcionesSE.vue')
+    },
+    {
+      path: '/inscripciones/cargas',
+      name: 'CargasAcademicas',
+      component: () => import('@/views/ServiciosEscolares/InscripcionesSE.vue')
+    },
+    {
+      path: '/inscripciones/historial',
+      name: 'HistorialInscripciones',
+      component: () => import('@/views/Inscripciones_detalladas/HistorialInscripcionesView.vue')
+    },
+    // Rutas existentes inscripciones detalladas — se mantienen
+    {
+      path: '/inscripciones',
+      name: 'InscripcionesPanel',
+      component: () => import('@/views/Inscripciones_detalladas/InscripcionesView.vue')
+    },
+    {
+      path: '/inscripciones/gestionar/:id',
+      name: 'GestionInscripcion',
+      component: () => import('@/views/Inscripciones_detalladas/GestionInscripcionView.vue')
+    },
+    // Ruta legacy inscripcion simple
+    {
+      path: '/inscripcion',
+      name: 'Inscripcion',
+      component: () => import('@/views/InscripcionView.vue')
+    },
 
-    // Alumnos
-    { path: '/alumnos', name: 'Alumnos', component: () => import('@/views/AlumnosView.vue') },
-    { path: '/formulario-alumno', name: 'FormularioAlumno', component: () => import('@/views/FormularioAlumnoView.vue') },
-    { path: '/formulario-alumno/:id', name: 'EditarAlumno', component: () => import('@/views/FormularioAlumnoView.vue') },
+    // ══════════════════════════════════════════════════════════════════════
+    // MÓDULO: SERVICIOS ESCOLARES — CALIFICACIONES
+    // Ruta raíz redirige al primer subtab según rol
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      path: '/calificaciones',
+      redirect: () => {
+        const usuario = JSON.parse(localStorage.getItem('usuario') || 'null')
+        if (usuario?.rol === 'servicios-escolares') return '/calificaciones/captura'
+        return '/calificaciones/general'
+      }
+    },
+    {
+      path: '/calificaciones/captura',
+      name: 'CalificacionesCaptura',
+      component: () => import('@/views/ServiciosEscolares/CalificacionesSE.vue')
+    },
+    {
+      path: '/calificaciones/actas',
+      name: 'CalificacionesActas',
+      component: () => import('@/views/ServiciosEscolares/CalificacionesSE.vue')
+    },
+    {
+      path: '/calificaciones/especiales',
+      name: 'CalificacionesEspeciales',
+      component: () => import('@/views/ServiciosEscolares/CalificacionesSE.vue')
+    },
+    {
+      path: '/calificaciones/residencias',
+      name: 'CalificacionesResidencias',
+      component: () => import('@/views/ServiciosEscolares/CalificacionesSE.vue')
+    },
+    {
+      path: '/calificaciones/analitica',
+      name: 'CalificacionesAnalitica',
+      component: () => import('@/views/ServiciosEscolares/CalificacionesSE.vue')
+    },
+    // Rutas existentes calificaciones — se mantienen para otros roles
+    {
+      path: '/evaluaciones',
+      name: 'EvaluacionesGeneral',
+      component: () => import('@/views/EvaluacionesView.vue')
+    },
+    {
+      path: '/evaluaciones/:id',
+      name: 'Evaluaciones',
+      component: () => import('@/views/EvaluacionesView.vue')
+    },
+    {
+      path: '/calificaciones/general',
+      name: 'CalificacionesGeneral',
+      component: () => import('@/views/CalificacionesView.vue')
+    },
+    {
+      path: '/calificaciones/:id',
+      name: 'Calificaciones',
+      component: () => import('@/views/CalificacionesView.vue')
+    },
 
-    // Evaluaciones y Calificaciones
-    { path: '/evaluaciones', name: 'EvaluacionesGeneral', component: () => import('@/views/EvaluacionesView.vue') },
-    { path: '/evaluaciones/:id', name: 'Evaluaciones', component: () => import('@/views/EvaluacionesView.vue') },
-    { path: '/calificaciones', name: 'CalificacionesGeneral', component: () => import('@/views/CalificacionesView.vue') },
-    { path: '/calificaciones/:id', name: 'Calificaciones', component: () => import('@/views/CalificacionesView.vue') },
+    // ══════════════════════════════════════════════════════════════════════
+    // MÓDULO: SERVICIOS ESCOLARES — GRUPOS Y HORARIOS
+    // Ruta raíz redirige al primer subtab
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      path: '/gestion-grupos',
+      redirect: () => {
+        const usuario = JSON.parse(localStorage.getItem('usuario') || 'null')
+        if (usuario?.rol === 'servicios-escolares') return '/gestion-grupos/lista'
+        return '/gestion-grupos/lista'
+      }
+    },
+    {
+      path: '/gestion-grupos/lista',
+      name: 'GestionGrupos',
+      component: () => import('@/views/ServiciosEscolares/GruposSE.vue')
+    },
+    {
+      path: '/gestion-grupos/detalle',
+      name: 'DetalleGrupo',
+      component: () => import('@/views/ServiciosEscolares/GruposSE.vue')
+    },
+    {
+      path: '/gestion-grupos/horarios',
+      name: 'HorariosGrupo',
+      component: () => import('@/views/ServiciosEscolares/GruposSE.vue')
+    },
 
-    // Inscripción y Grupos
-    { path: '/inscripcion', name: 'Inscripcion', component: () => import('@/views/InscripcionView.vue') },
-    { path: '/gestion-grupos', name: 'GestionGrupos', component: () => import('@/views/GestionGruposView.vue') },
+    // ══════════════════════════════════════════════════════════════════════
+    // MÓDULO: SERVICIOS ESCOLARES — DOCUMENTOS
+    // Ruta raíz redirige al primer subtab
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      path: '/documentos',
+      redirect: '/documentos/constancias'
+    },
+    {
+      path: '/documentos/constancias',
+      name: 'Constancias',
+      component: () => import('@/views/ServiciosEscolares/DocumentosSE.vue')
+    },
+    {
+      path: '/documentos/boletas',
+      name: 'Boletas',
+      component: () => import('@/views/ServiciosEscolares/DocumentosSE.vue')
+    },
+    {
+      path: '/documentos/certificados',
+      name: 'Certificados',
+      component: () => import('@/views/ServiciosEscolares/DocumentosSE.vue')
+    },
+    {
+      path: '/documentos/actas',
+      name: 'DocumentosActas',
+      component: () => import('@/views/ServiciosEscolares/DocumentosSE.vue')
+    },
+    {
+      path: '/documentos/cargas',
+      name: 'DocumentosCargas',
+      component: () => import('@/views/ServiciosEscolares/DocumentosSE.vue')
+    },
+    {
+      path: '/documentos/residencia',
+      name: 'ActaResidencia',
+      component: () => import('@/views/ServiciosEscolares/DocumentosSE.vue')
+    },
 
+    // ══════════════════════════════════════════════════════════════════════
+    // MÓDULO: SERVICIOS ESCOLARES — EGRESADOS
+    // Ruta raíz redirige al primer subtab
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      path: '/egresados',
+      redirect: '/egresados/lista'
+    },
+    {
+      path: '/egresados/lista',
+      name: 'Egresados',
+      component: () => import('@/views/ServiciosEscolares/EgresadosSE.vue')
+    },
+    {
+      path: '/egresados/posibles',
+      name: 'PosiblesEgresados',
+      component: () => import('@/views/ServiciosEscolares/EgresadosSE.vue')
+    },
+    {
+      path: '/egresados/titulados',
+      name: 'Titulados',
+      component: () => import('@/views/ServiciosEscolares/EgresadosSE.vue')
+    },
+    {
+      path: '/egresados/registro',
+      name: 'RegistroTitulados',
+      component: () => import('@/views/ServiciosEscolares/EgresadosSE.vue')
+    },
+
+    // ══════════════════════════════════════════════════════════════════════
+    // MÓDULO: SERVICIOS ESCOLARES — ASPIRANTES
+    // Ruta raíz redirige al primer subtab
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      path: '/aspirantes',
+      redirect: '/aspirantes/solicitudes'
+    },
+    {
+      path: '/aspirantes/solicitudes',
+      name: 'SolicitudesAspirantes',
+      component: () => import('@/views/ServiciosEscolares/AspirantesSE.vue')
+    },
+    {
+      path: '/aspirantes/configuracion',
+      name: 'ConfiguracionAspirantes',
+      component: () => import('@/views/ServiciosEscolares/AspirantesSE.vue')
+    },
+    {
+      path: '/aspirantes/fichas',
+      name: 'FichasAspirantes',
+      component: () => import('@/views/ServiciosEscolares/AspirantesSE.vue')
+    },
+
+    // ══════════════════════════════════════════════════════════════════════
+    // MÓDULO: SERVICIOS ESCOLARES — CONFIGURACIÓN
+    // Ruta raíz redirige al primer subtab
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      path: '/configuracion',
+      redirect: '/configuracion/carreras'
+    },
+    {
+      path: '/configuracion/carreras',
+      name: 'ConfigCarreras',
+      component: () => import('@/views/ServiciosEscolares/ConfiguracionSE.vue')
+    },
+    {
+      path: '/configuracion/especialidades',
+      name: 'ConfigEspecialidades',
+      component: () => import('@/views/ServiciosEscolares/ConfiguracionSE.vue')
+    },
+    {
+      path: '/configuracion/plan-curricular',
+      name: 'ConfigPlanCurricular',
+      component: () => import('@/views/ServiciosEscolares/ConfiguracionSE.vue')
+    },
+    {
+      path: '/configuracion/periodos',
+      name: 'ConfigPeriodos',
+      component: () => import('@/views/ServiciosEscolares/ConfiguracionSE.vue')
+    },
+
+    // ══════════════════════════════════════════════════════════════════════
+    // MÓDULO: SERVICIOS ESCOLARES — PROCESOS
+    // Ruta raíz redirige al primer subtab
+    // ══════════════════════════════════════════════════════════════════════
+    {
+      path: '/procesos',
+      redirect: '/procesos/cierre'
+    },
+    {
+      path: '/procesos/cierre',
+      name: 'CierreSemestre',
+      component: () => import('@/views/ServiciosEscolares/ProcesosSE.vue')
+    },
+    {
+      path: '/procesos/especiales',
+      name: 'ProcesosEspeciales',
+      component: () => import('@/views/ServiciosEscolares/ProcesosSE.vue')
+    },
 
     // ══════════════════════════════════════════════════════════════════════
     // MÓDULO: PERSONAS
@@ -101,56 +369,45 @@ const router = createRouter({
       component: () => import('@/views/Personas/DetallePersonaView.vue')
     },
 
-
     // ══════════════════════════════════════════════════════════════════════
     // MÓDULO: GESTIÓN ACADÉMICA
     // ══════════════════════════════════════════════════════════════════════
-    { 
-      path: '/gestion-academica',               
-      name: 'GestionAcademica',      
-      component: () => import('@/views/GestionAcademica/GestionAcademicaView.vue') 
+    {
+      path: '/gestion-academica',
+      name: 'GestionAcademica',
+      component: () => import('@/views/GestionAcademica/GestionAcademicaView.vue')
     },
-    // ⭐ LISTA DE CARRERAS (CRUD) - VISTA PRINCIPAL CON DRILL-DOWN
-    { 
-      path: '/gestion-academica/carreras',      
-      name: 'CarrerasList',              
+    {
+      path: '/gestion-academica/carreras',
+      name: 'CarrerasList',
       component: () => import('@/views/GestionAcademica/CarrerasView.vue'),
       props: true
     },
-    // ⭐ DETALLE DE CARRERA (grupos, alumnos, estadísticas)
-    // RUTA ELIMINADA - El archivo CareerDetail.vue no existe
-    // { 
-    //   path: '/gestion-academica/carreras/:id',      
-    //   name: 'CarreraDetail',              
-    //   component: () => import('@/views/GestionAcademica/CareerDetail.vue'),
-    //   props: true
-    // },
-    { 
-      path: '/gestion-academica/planes',        
-      name: 'PlanesEstudio',         
-      component: () => import('@/views/GestionAcademica/PlanesEstudioView.vue') 
+    {
+      path: '/gestion-academica/planes',
+      name: 'PlanesEstudio',
+      component: () => import('@/views/GestionAcademica/PlanesEstudioView.vue')
     },
-    { 
-      path: '/gestion-academica/materias',      
-      name: 'Materias',              
-      component: () => import('@/views/GestionAcademica/MateriasView.vue') 
+    {
+      path: '/gestion-academica/materias',
+      name: 'Materias',
+      component: () => import('@/views/GestionAcademica/MateriasView.vue')
     },
-    { 
+    {
       path: '/gestion-academica/prerrequisitos',
-      name: 'Prerrequisitos',        
-      component: () => import('@/views/GestionAcademica/PrerrequisitosView.vue') 
+      name: 'Prerrequisitos',
+      component: () => import('@/views/GestionAcademica/PrerrequisitosView.vue')
     },
-    { 
-      path: '/gestion-academica/periodos',      
-      name: 'Periodos',              
-      component: () => import('@/views/GestionAcademica/PeriodosView.vue') 
+    {
+      path: '/gestion-academica/periodos',
+      name: 'Periodos',
+      component: () => import('@/views/GestionAcademica/PeriodosView.vue')
     },
-    { 
+    {
       path: '/gestion-academica/edificios-aulas',
-      name: 'EdificiosAulas',       
-      component: () => import('@/views/GestionAcademica/EdificiosAulasView.vue') 
+      name: 'EdificiosAulas',
+      component: () => import('@/views/GestionAcademica/EdificiosAulasView.vue')
     },
-
     {
       path: '/analytics',
       name: 'Analytics',
@@ -158,23 +415,16 @@ const router = createRouter({
     },
 
     // ══════════════════════════════════════════════════════════════════════
-    // RUTAS LEGACY / REDIRECCIONES PARA COMPATIBILIDAD
+    // RUTAS LEGACY
     // ══════════════════════════════════════════════════════════════════════
-    { 
-      path: '/carreras',      
-      redirect: '/gestion-academica/carreras' 
-    },
-    { 
-      path: '/carreras/:id',      
-      redirect: to => `/gestion-academica/carreras/${to.params.id}`
-    },
-    // Rutas estáticas de ejemplo (redirigen a la nueva ruta dinámica)
-    { path: '/carreras/1', redirect: '/gestion-academica/carreras/1' },
-    { path: '/carreras/2', redirect: '/gestion-academica/carreras/2' },
-    { path: '/carreras/3', redirect: '/gestion-academica/carreras/3' },
-    { path: '/carreras/4', redirect: '/gestion-academica/carreras/4' },
-    { path: '/carreras/5', redirect: '/gestion-academica/carreras/5' },
-    { path: '/carreras/6', redirect: '/gestion-academica/carreras/6' },
+    { path: '/carreras',     redirect: '/gestion-academica/carreras' },
+    { path: '/carreras/:id', redirect: to => `/gestion-academica/carreras/${to.params.id}` },
+    { path: '/carreras/1',   redirect: '/gestion-academica/carreras/1' },
+    { path: '/carreras/2',   redirect: '/gestion-academica/carreras/2' },
+    { path: '/carreras/3',   redirect: '/gestion-academica/carreras/3' },
+    { path: '/carreras/4',   redirect: '/gestion-academica/carreras/4' },
+    { path: '/carreras/5',   redirect: '/gestion-academica/carreras/5' },
+    { path: '/carreras/6',   redirect: '/gestion-academica/carreras/6' },
 
     // ══════════════════════════════════════════════════════════════════════
     // MÓDULO: RECURSOS HUMANOS
@@ -214,30 +464,34 @@ const router = createRouter({
       name: 'Puestos',
       component: () => import('@/views/Recursos Humanos/PuestosView.vue')
     },
-  
-     {
+    {
       path: '/recursos-humanos/departamentos',
       name: 'Departamentos',
       component: () => import('@/views/Recursos Humanos/Departamentosview.vue')
     },
 
-    
-
     // ══════════════════════════════════════════════════════════════════════
     // MÓDULO: SEGURIDAD Y USUARIOS
     // ══════════════════════════════════════════════════════════════════════
-    { path: '/roles',          name: 'Roles',          component: () => import('@/views/Seguridad y Usuarios/RolesView.vue') },
-    { path: '/permisos',       name: 'Permisos',       component: () => import('@/views/Seguridad y Usuarios/PermisosView.vue') },
-    { path: '/usuarios',       name: 'Usuarios',       component: () => import('@/views/Seguridad y Usuarios/UsuariosView.vue') },
-    { path: '/bitacora',       name: 'Bitacora',       component: () => import('@/views/Seguridad y Usuarios/BitacoraView.vue') },
-    { path: '/nuevo-usuario',  name: 'NuevoUsuario',   component: () => import('@/views/Seguridad y Usuarios/NuevoUsuarioView.vue') },
-
+    { path: '/roles',         name: 'Roles',        component: () => import('@/views/Seguridad y Usuarios/RolesView.vue') },
+    { path: '/permisos',      name: 'Permisos',     component: () => import('@/views/Seguridad y Usuarios/PermisosView.vue') },
+    { path: '/usuarios',      name: 'Usuarios',     component: () => import('@/views/Seguridad y Usuarios/UsuariosView.vue') },
+    { path: '/bitacora',      name: 'Bitacora',     component: () => import('@/views/Seguridad y Usuarios/BitacoraView.vue') },
+    { path: '/nuevo-usuario', name: 'NuevoUsuario', component: () => import('@/views/Seguridad y Usuarios/NuevoUsuarioView.vue') },
 
     // ══════════════════════════════════════════════════════════════════════
-    // MÓDULO: ASIGNACIÓN DOCENTE A GRUPOS
+    // MÓDULO: ASIGNACIÓN DOCENTE
     // ══════════════════════════════════════════════════════════════════════
-    { path: '/asignacion-docente',name: 'AsignacionDocente', component: () => import('@/views/Asignación_Docente_a_Grupos/Asignaciondocenteview.vue')},
-    { path: '/asignacion-docente/carga', name: 'CargaDocente', component: () => import('@/views/Asignación_Docente_a_Grupos/CargaDocenteView.vue')  },
+    {
+      path: '/asignacion-docente',
+      name: 'AsignacionDocente',
+      component: () => import('@/views/Asignación_Docente_a_Grupos/Asignaciondocenteview.vue')
+    },
+    {
+      path: '/asignacion-docente/carga',
+      name: 'CargaDocente',
+      component: () => import('@/views/Asignación_Docente_a_Grupos/CargaDocenteView.vue')
+    },
 
     // ══════════════════════════════════════════════════════════════════════
     // MÓDULO: EVENTOS
@@ -338,10 +592,8 @@ const router = createRouter({
 // GUARD DE NAVEGACIÓN POR ROLES
 // ══════════════════════════════════════════════════════════════════════
 
-// Rutas que no requieren autenticación
 const RUTAS_PUBLICAS = ['/login']
 
-// Rutas permitidas por rol (admin tiene acceso total, no se lista aquí)
 const PERMISOS_POR_ROL = {
   'docente': [
     '/inicio',
@@ -359,23 +611,25 @@ const PERMISOS_POR_ROL = {
     '/evaluaciones',
     '/calificaciones',
     '/inscripcion',
-    '/gestion-grupos',
     '/inscripciones',
+    '/gestion-grupos',
     '/gestion-academica',
-    '/gestion-academica/carreras',       // Lista de carreras
-    '/gestion-academica/carreras/',      // Detalle de carrera (cualquier id)
+    '/gestion-academica/carreras',
     '/eventos',
     '/comite',
+    '/documentos',
+    '/egresados',
+    '/aspirantes',
+    '/configuracion',
+    '/procesos',
   ],
 }
 
 router.beforeEach((to, from, next) => {
-  // 1. Rutas públicas — siempre pasan
   if (RUTAS_PUBLICAS.includes(to.path)) {
     return next()
   }
 
-  // 2. Sin sesión — redirigir al login
   const token   = localStorage.getItem('auth_token')
   const usuario = JSON.parse(localStorage.getItem('usuario') || 'null')
   if (!token || !usuario) {
@@ -384,7 +638,6 @@ router.beforeEach((to, from, next) => {
 
   const rol = usuario.rol ?? ''
 
-  // 3. Admin — acceso total
   if (rol === 'admin') {
     return next()
   }
@@ -396,7 +649,6 @@ router.beforeEach((to, from, next) => {
     return next()
   }
 
-  // 5. Sin permiso — redirigir al inicio
   return next('/inicio')
 })
 

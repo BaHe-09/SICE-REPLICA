@@ -125,93 +125,187 @@
         <!-- SI ES SERVICIOS ESCOLARES: TABS DIRECTOS  -->
         <!-- ════════════════════════════════════════════ -->
         <template v-if="rolActual === 'servicios-escolares'">
-          <router-link
-            to="/servicios-escolares"
-            class="nav-item nav-item-link"
-            active-class="nav-activo"
-            :title="tooltips.se_principal"
-            @click="cerrarTab"
+        
+          <!-- DASHBOARD -->
+          <div
+            class="nav-item nav-item-tab"
+            :class="{ 'nav-activo': tabActivo === 'se-dashboard' }"
+            @mouseenter="abrirTab('se-dashboard')"
+            @click.stop="abrirTab('se-dashboard')"
+            tabindex="0"
+            title="Dashboard — Panel principal de Servicios Escolares"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-            <span class="nav-label">PRINCIPAL</span>
-          </router-link>
-
-          <router-link
-            to="/alumnos"
-            class="nav-item nav-item-link"
-            active-class="nav-activo"
-            :title="tooltips.se_alumnos"
-            @click="cerrarTab"
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+            </svg>
+            <span class="nav-label">DASHBOARD</span>
+            <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'se-dashboard' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        
+          <!-- ALUMNOS -->
+          <div
+            class="nav-item nav-item-tab"
+            :class="{ 'nav-activo': tabActivo === 'se-alumnos' }"
+            @mouseenter="abrirTab('se-alumnos')"
+            @click.stop="abrirTab('se-alumnos')"
+            tabindex="0"
+            title="Alumnos — Gestión y expedientes"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
             <span class="nav-label">ALUMNOS</span>
-          </router-link>
-
-          <router-link
-            to="/evaluaciones"
-            class="nav-item nav-item-link"
-            active-class="nav-activo"
-            :title="tooltips.se_evaluaciones"
-            @click="cerrarTab"
+            <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'se-alumnos' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        
+          <!-- INSCRIPCIONES -->
+          <div
+            class="nav-item nav-item-tab"
+            :class="{ 'nav-activo': tabActivo === 'se-inscripciones' }"
+            @mouseenter="abrirTab('se-inscripciones')"
+            @click.stop="abrirTab('se-inscripciones')"
+            tabindex="0"
+            title="Inscripciones — Nueva, cargas e historial"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
-            <span class="nav-label">EVALUACIONES</span>
-          </router-link>
-
-          <router-link
-            to="/calificaciones"
-            class="nav-item nav-item-link"
-            active-class="nav-activo"
-            :title="tooltips.se_calificaciones"
-            @click="cerrarTab"
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+            </svg>
+            <span class="nav-label">INSCRIPCIONES</span>
+            <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'se-inscripciones' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        
+          <!-- CALIFICACIONES -->
+          <div
+            class="nav-item nav-item-tab"
+            :class="{ 'nav-activo': tabActivo === 'se-calificaciones' }"
+            @mouseenter="abrirTab('se-calificaciones')"
+            @click.stop="abrirTab('se-calificaciones')"
+            tabindex="0"
+            title="Calificaciones — Captura, actas, especiales, residencias y analítica"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+            </svg>
             <span class="nav-label">CALIFICACIONES</span>
-          </router-link>
-
-          <router-link
-            to="/inscripcion"
-            class="nav-item nav-item-link"
-            active-class="nav-activo"
-            :title="tooltips.se_inscripcion"
-            @click="cerrarTab"
+            <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'se-calificaciones' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        
+          <!-- GRUPOS Y HORARIOS -->
+          <div
+            class="nav-item nav-item-tab"
+            :class="{ 'nav-activo': tabActivo === 'se-grupos' }"
+            @mouseenter="abrirTab('se-grupos')"
+            @click.stop="abrirTab('se-grupos')"
+            tabindex="0"
+            title="Grupos y Horarios"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-            <span class="nav-label">INSCRIPCIÓN</span>
-          </router-link>
-
-          <router-link
-            to="/gestion-grupos"
-            class="nav-item nav-item-link"
-            active-class="nav-activo"
-            :title="tooltips.se_grupos"
-            @click="cerrarTab"
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <span class="nav-label">GRUPOS</span>
+            <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'se-grupos' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        
+          <!-- DOCUMENTOS -->
+          <div
+            class="nav-item nav-item-tab"
+            :class="{ 'nav-activo': tabActivo === 'se-documentos' }"
+            @mouseenter="abrirTab('se-documentos')"
+            @click.stop="abrirTab('se-documentos')"
+            tabindex="0"
+            title="Documentos — Constancias, boletas, certificados y más"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-            <span class="nav-label">GRUPOS Y HORARIOS</span>
-          </router-link>
-
-          <router-link
-            to="/inscripciones"
-            class="nav-item nav-item-link"
-            active-class="nav-activo"
-            :title="tooltips.se_inscripciones"
-            @click="cerrarTab"
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            </svg>
+            <span class="nav-label">DOCUMENTOS</span>
+            <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'se-documentos' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        
+          <!-- EGRESADOS -->
+          <div
+            class="nav-item nav-item-tab"
+            :class="{ 'nav-activo': tabActivo === 'se-egresados' }"
+            @mouseenter="abrirTab('se-egresados')"
+            @click.stop="abrirTab('se-egresados')"
+            tabindex="0"
+            title="Egresados — Posibles, titulados y registro"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-            <span class="nav-label">INSC. DETALLADAS</span>
-          </router-link>
-
-          <router-link
-            to="/inscripciones/historial"
-            class="nav-item nav-item-link"
-            active-class="nav-activo"
-            :title="tooltips.se_historialinsc"
-            @click="cerrarTab"
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
+            </svg>
+            <span class="nav-label">EGRESADOS</span>
+            <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'se-egresados' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        
+          <!-- ASPIRANTES -->
+          <div
+            class="nav-item nav-item-tab"
+            :class="{ 'nav-activo': tabActivo === 'se-aspirantes' }"
+            @mouseenter="abrirTab('se-aspirantes')"
+            @click.stop="abrirTab('se-aspirantes')"
+            tabindex="0"
+            title="Aspirantes — Configuración, solicitudes y fichas"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <span class="nav-label">HISTORIAL INSC.</span>
-          </router-link>
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+            </svg>
+            <span class="nav-label">ASPIRANTES</span>
+            <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'se-aspirantes' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        
+          <!-- CONFIGURACIÓN -->
+          <div
+            class="nav-item nav-item-tab"
+            :class="{ 'nav-activo': tabActivo === 'se-configuracion' }"
+            @mouseenter="abrirTab('se-configuracion')"
+            @click.stop="abrirTab('se-configuracion')"
+            tabindex="0"
+            title="Configuración — Carreras, especialidades, plan curricular y periodos"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <span class="nav-label">CONFIGURACIÓN</span>
+            <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'se-configuracion' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        
+          <!-- PROCESOS -->
+          <div
+            class="nav-item nav-item-tab"
+            :class="{ 'nav-activo': tabActivo === 'se-procesos' }"
+            @mouseenter="abrirTab('se-procesos')"
+            @click.stop="abrirTab('se-procesos')"
+            tabindex="0"
+            title="Procesos — Cierre de semestre y procesos especiales"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            <span class="nav-label">PROCESOS</span>
+            <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'se-procesos' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        
         </template>
 
         <!-- ════════════════════════════════════════════ -->
@@ -838,6 +932,255 @@
             </router-link>
           </template>
 
+          <template v-if="tabActivo === 'se-dashboard'">
+            <router-link to="/servicios-escolares" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+              </div>
+              <span>Inicio</span>
+            </router-link>
+            <router-link to="/servicios-escolares/graficas" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+              </div>
+              <span>Gráficas</span>
+            </router-link>
+            <router-link to="/servicios-escolares/actividad" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <span>Actividad Reciente</span>
+            </router-link>
+          </template>
+          
+          <!-- ── SE: Alumnos ── -->
+          <template v-if="tabActivo === 'se-alumnos'">
+            <router-link to="/alumnos/gestion" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+              </div>
+              <span>Gestión de Alumnos</span>
+            </router-link>
+            <router-link to="/alumnos/expediente" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              </div>
+              <span>Expediente Académico</span>
+            </router-link>
+          </template>
+          
+          <!-- ── SE: Inscripciones ── -->
+          <template v-if="tabActivo === 'se-inscripciones'">
+            <router-link to="/inscripciones/nueva" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"/></svg>
+              </div>
+              <span>Nueva Inscripción</span>
+            </router-link>
+            <router-link to="/inscripciones/cargas" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+              </div>
+              <span>Cargas Académicas</span>
+            </router-link>
+            <router-link to="/inscripciones/historial" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <span>Historial</span>
+            </router-link>
+          </template>
+          
+          <!-- ── SE: Calificaciones ── -->
+          <template v-if="tabActivo === 'se-calificaciones'">
+            <router-link to="/calificaciones/captura" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              </div>
+              <span>Captura</span>
+            </router-link>
+            <router-link to="/calificaciones/actas" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              </div>
+              <span>Actas</span>
+            </router-link>
+            <router-link to="/calificaciones/especiales" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+              </div>
+              <span>Especiales y Globales</span>
+            </router-link>
+            <router-link to="/calificaciones/residencias" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              </div>
+              <span>Residencias</span>
+            </router-link>
+            <router-link to="/calificaciones/analitica" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+              </div>
+              <span>Analítica</span>
+            </router-link>
+          </template>
+          
+          <!-- ── SE: Grupos y Horarios ── -->
+          <template v-if="tabActivo === 'se-grupos'">
+            <router-link to="/gestion-grupos/lista" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              </div>
+              <span>Por Carrera / Semestre / Grupo</span>
+            </router-link>
+            <router-link to="/gestion-grupos/detalle" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+              </div>
+              <span>Detalle de Grupo</span>
+            </router-link>
+          </template>
+          
+          <!-- ── SE: Documentos ── -->
+          <template v-if="tabActivo === 'se-documentos'">
+            <router-link to="/documentos/constancias" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              </div>
+              <span>Constancias</span>
+            </router-link>
+            <router-link to="/documentos/boletas" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+              </div>
+              <span>Boletas</span>
+            </router-link>
+            <router-link to="/documentos/certificados" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+              </div>
+              <span>Certificados</span>
+            </router-link>
+            <router-link to="/documentos/actas" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+              </div>
+              <span>Actas</span>
+            </router-link>
+            <router-link to="/documentos/cargas" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              </div>
+              <span>Cargas Académicas</span>
+            </router-link>
+            <router-link to="/documentos/residencia" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+              </div>
+              <span>Acta de Residencia</span>
+            </router-link>
+          </template>
+          
+          <!-- ── SE: Egresados ── -->
+          <template v-if="tabActivo === 'se-egresados'">
+            <router-link to="/egresados/posibles" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <span>Posibles Egresados</span>
+            </router-link>
+            <router-link to="/egresados/lista" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
+              </div>
+              <span>Egresados</span>
+            </router-link>
+            <router-link to="/egresados/titulados" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <span>Titulados</span>
+            </router-link>
+            <router-link to="/egresados/registro" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              </div>
+              <span>Registro de Titulados</span>
+            </router-link>
+          </template>
+          
+          <!-- ── SE: Aspirantes ── -->
+          <template v-if="tabActivo === 'se-aspirantes'">
+            <router-link to="/aspirantes/configuracion" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              </div>
+              <span>Configuración Inicial</span>
+            </router-link>
+            <router-link to="/aspirantes/solicitudes" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+              </div>
+              <span>Aspirantes</span>
+            </router-link>
+            <router-link to="/aspirantes/solicitudes" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+              </div>
+              <span>Solicitudes</span>
+            </router-link>
+            <router-link to="/aspirantes/fichas" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2"/></svg>
+              </div>
+              <span>Fichas</span>
+            </router-link>
+          </template>
+          
+          <!-- ── SE: Configuración ── -->
+          <template v-if="tabActivo === 'se-configuracion'">
+            <router-link to="/configuracion/carreras" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              </div>
+              <span>Carreras</span>
+            </router-link>
+            <router-link to="/configuracion/especialidades" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/></svg>
+              </div>
+              <span>Especialidades</span>
+            </router-link>
+            <router-link to="/configuracion/plan-curricular" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+              </div>
+              <span>Plan Curricular</span>
+            </router-link>
+            <router-link to="/configuracion/periodos" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              </div>
+              <span>Periodos Escolares</span>
+            </router-link>
+          </template>
+          
+          <!-- ── SE: Procesos ── -->
+          <template v-if="tabActivo === 'se-procesos'">
+            <router-link to="/procesos/cierre" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <span>Cierre de Semestre</span>
+            </router-link>
+            <router-link to="/procesos/especiales" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              </div>
+              <span>Procesos Especiales</span>
+            </router-link>
+          </template>
+ 
         </div>
       </Transition>
     </nav>
