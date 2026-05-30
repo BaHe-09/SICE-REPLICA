@@ -418,12 +418,6 @@ const router = createRouter({
       name: 'Analytics',
       component: () => import('@/views/Analiticas/AcademicAnalyticsView.vue')
     },
-    
-    {
-      path: '/analytics/academica',
-      name: 'Analitica',
-      component: () => import('@/views/AnaliticaAcademica.vue')
-    },
 
 
     // ══════════════════════════════════════════════════════════════════════
