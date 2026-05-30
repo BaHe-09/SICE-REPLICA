@@ -117,20 +117,34 @@
           </div>
 
           <div v-if="alumnoSeleccionado" class="alumno-seleccionado">
-            <div class="alumno-avatar">{{ alumnoSeleccionado.nombre.charAt(0) }}</div>
+            <div class="alumno-avatar">{{ alumnoSeleccionado.nombre.charAt(0).toUpperCase() }}</div>
+
             <div class="alumno-datos">
-              <strong>{{ alumnoSeleccionado.nombre }}</strong>
-              <span>{{ alumnoSeleccionado.noControl }} · {{ alumnoSeleccionado.carrera }} · {{ alumnoSeleccionado.semestre }}° Semestre</span>
+              <strong>{{ alumnoSeleccionado.nombre?.toUpperCase() }}</strong>
+              <span>
+                {{ alumnoSeleccionado.noControl }} · {{ alumnoSeleccionado.carrera?.toUpperCase() }} · {{ alumnoSeleccionado.semestre }}° SEMESTRE
+              </span>
             </div>
+
             <div class="alumno-acciones">
-              <button class="btn-cambiar" @click="limpiarAlumno">Cambiar alumno</button>
+              <button class="btn-carga-academica" @click="abrirModalCargaAlumno(alumnoSeleccionado)">
+                <svg xmlns="http://www.w3.org/2000/svg" class="btn-carga-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                VER CARGA ACADÉMICA
+              </button>
+
+              <button class="btn-cambiar" @click="limpiarAlumno">CAMBIAR ALUMNO</button>
+
               <button class="btn-siguiente" @click="paso = 2">
-                Continuar
+                CONTINUAR
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                 </svg>
               </button>
             </div>
+          </div>
           </div>
         </div>
 
@@ -288,6 +302,129 @@
         </div>
 
       </div>
+      <!-- ══════════════════════════════════════
+     MODAL: CARGA ACADÉMICA DEL ALUMNO
+═══════════════════════════════════════ -->
+<div v-if="showModalCargaAlumno" class="modal-carga-overlay" @click.self="cerrarModalCargaAlumno">
+  <div class="modal-carga-content">
+    <div class="modal-carga-header">
+      <div class="modal-carga-alumno">
+        <div class="modal-carga-avatar">
+          {{ alumnoCargaAcademica?.nombre?.charAt(0)?.toUpperCase() || '?' }}
+        </div>
+
+        <div>
+          <span class="modal-carga-tag">CARGA ACADÉMICA DEL ALUMNO</span>
+          <h3>{{ alumnoCargaAcademica?.nombre?.toUpperCase() }}</h3>
+          <p>
+            {{ alumnoCargaAcademica?.noControl }} · {{ alumnoCargaAcademica?.carrera?.toUpperCase() }} · {{ alumnoCargaAcademica?.semestre }}° SEMESTRE
+          </p>
+        </div>
+      </div>
+
+      <button class="btn-cerrar-carga" @click="cerrarModalCargaAlumno" title="CERRAR">×</button>
+    </div>
+
+    <div class="modal-carga-body">
+      <div class="carga-resumen-grid">
+        <div class="carga-resumen-card">
+          <span class="carga-resumen-numero">{{ cargaAcademicaAlumno.length }}</span>
+          <span class="carga-resumen-label">MATERIAS</span>
+        </div>
+
+        <div class="carga-resumen-card">
+          <span class="carga-resumen-numero">{{ totalCreditosAlumno }}</span>
+          <span class="carga-resumen-label">CRÉDITOS</span>
+        </div>
+
+        <div class="carga-resumen-card">
+          <span class="carga-resumen-numero">{{ totalHorasAlumno }}</span>
+          <span class="carga-resumen-label">HRS / SEMANA</span>
+        </div>
+
+        <div class="carga-resumen-card">
+          <span class="carga-resumen-numero">{{ periodos.find(p => p.id === periodo)?.nombre?.toUpperCase() ?? '—' }}</span>
+          <span class="carga-resumen-label">PERIODO</span>
+        </div>
+      </div>
+
+      <div class="modal-carga-acciones">
+        <button
+          class="btn-exportar-carga"
+          @click="exportarCargaAlumno"
+          :disabled="cargaAcademicaAlumno.length === 0"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="btn-exportar-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          EXPORTAR CARGA
+        </button>
+      </div>
+
+      <div class="table-container carga-alumno-table-container">
+        <div v-if="cargandoCargaAlumno" class="loading-overlay carga-modal-loading">
+          <div class="loading-spinner"></div>
+          <span>CARGANDO CARGA ACADÉMICA...</span>
+        </div>
+
+        <table v-else-if="cargaAcademicaAlumno.length > 0" class="inscripcion-table carga-alumno-table">
+          <thead>
+            <tr>
+              <th>CLAVE DEL GRUPO</th>
+              <th>MATERIA</th>
+              <th>DOCENTE</th>
+              <th>AULA</th>
+              <th>HORARIO</th>
+              <th class="text-center">CRÉDITOS</th>
+              <th class="text-center">ESTATUS</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr v-for="grupo in cargaAcademicaAlumno" :key="grupo.id">
+              <td class="celda-clave-carga">{{ grupo.claveGrupo }}</td>
+              <td class="celda-materia-carga">{{ grupo.materia }}</td>
+              <td>{{ grupo.docente }}</td>
+              <td>{{ grupo.aula }}</td>
+              <td>
+                <span v-if="grupo.dia || grupo.horaInicio || grupo.horaFin" class="horario-badge">
+                  {{ grupo.dia }} {{ grupo.horaInicio }}–{{ grupo.horaFin }}
+                </span>
+                <span v-else class="sin-dato">—</span>
+              </td>
+              <td class="text-center">
+                <span class="creditos-badge">{{ grupo.creditos }}</span>
+              </td>
+              <td class="text-center">
+                <span class="estatus-carga-badge">{{ grupo.estatus }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div v-else class="estado-vacio-carga">
+          <svg xmlns="http://www.w3.org/2000/svg" class="icono-vacio-carga" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+          <h3>SIN CARGA ACADÉMICA</h3>
+          <p>EL ALUMNO NO TIENE MATERIAS INSCRITAS EN EL PERIODO SELECCIONADO.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-carga-footer">
+      <span>
+        TOTAL DE HORAS ASIGNADAS:
+        <strong>{{ totalHorasAlumno }} HRS / SEMANA</strong>
+      </span>
+
+      <button class="btn-cerrar-carga-footer" @click="cerrarModalCargaAlumno">
+        CERRAR
+      </button>
+    </div>
+  </div>
 
       <footer class="footer-institucional">
         © {{ new Date().getFullYear() }} Tecnológico Nacional de México · Todos los derechos reservados
@@ -401,13 +538,169 @@ const buscarAlumno = async () => {
 }
 
 const elegirAlumno = (alumno) => { alumnoSeleccionado.value = alumno; resultadosBusqueda.value = []; paso.value = 2 }
-const limpiarAlumno = () => { alumnoSeleccionado.value = null; resultadosBusqueda.value = [] }
+const limpiarAlumno = () => {
+  alumnoSeleccionado.value = null
+  resultadosBusqueda.value = []
+  alumnoCargaAcademica.value = null
+  cargaAcademicaAlumno.value = []
+  showModalCargaAlumno.value = false
+}
 
 const busquedaGrupo = ref('')
 const currentPage = ref(1)
 const porPagina = 5
 const grupoSeleccionado = ref(null)
 const grupos = ref([])
+
+// ── MODAL: CARGA ACADÉMICA DEL ALUMNO ─────────────────────────────
+const showModalCargaAlumno = ref(false)
+const cargandoCargaAlumno = ref(false)
+const cargaAcademicaAlumno = ref([])
+const alumnoCargaAcademica = ref(null)
+
+const normalizarCargaAlumno = (g) => ({
+  id: g.id_inscripcion ?? g.id_asignacion ?? g.id_grupo ?? g.id,
+  claveGrupo: g.clave_grupo ?? g.claveGrupo ?? g.grupo ?? '—',
+  materia: (g.materia ?? g.nombre_materia ?? 'SIN MATERIA').toString().toUpperCase(),
+  docente: (g.docente ?? g.nombre_docente ?? 'SIN DOCENTE').toString().toUpperCase(),
+  aula: (g.aula ?? g.nombre_aula ?? '—').toString().toUpperCase(),
+  dia: (g.dia ?? g.horario?.dia ?? '').toString().toUpperCase(),
+  horaInicio: g.hora_inicio ?? g.horaInicio ?? g.horario?.horaInicio ?? '',
+  horaFin: g.hora_fin ?? g.horaFin ?? g.horario?.horaFin ?? '',
+  creditos: Number(g.creditos ?? g.materia_creditos ?? 0),
+  estatus: (g.estatus ?? g.estado ?? 'INSCRITO').toString().toUpperCase()
+})
+
+const calcularHorasCarga = (inicio, fin) => {
+  if (!inicio || !fin) return 1
+
+  try {
+    const [hI, mI] = inicio.split(':').map(Number)
+    const [hF, mF] = fin.split(':').map(Number)
+    const minutos = (hF * 60 + mF) - (hI * 60 + mI)
+
+    if (minutos <= 0) return 1
+
+    return Math.max(1, Math.round(minutos / 60))
+  } catch {
+    return 1
+  }
+}
+
+const totalHorasAlumno = computed(() => {
+  return cargaAcademicaAlumno.value.reduce((total, grupo) => {
+    return total + calcularHorasCarga(grupo.horaInicio, grupo.horaFin)
+  }, 0)
+})
+
+const totalCreditosAlumno = computed(() => {
+  return cargaAcademicaAlumno.value.reduce((total, grupo) => total + Number(grupo.creditos || 0), 0)
+})
+
+const obtenerRutasCargaAlumno = (alumno) => {
+  const idAlumno = alumno?.id_alumno
+  const noControl = alumno?.noControl
+  const queryPeriodo = periodo.value ? `?id_periodo=${encodeURIComponent(periodo.value)}` : ''
+
+  return [
+    `${API}/carga-academica/alumno/${idAlumno}${queryPeriodo}`,
+    `${API}/inscripcion/carga-alumno/${idAlumno}${queryPeriodo}`,
+    `${API}/alumnos/${idAlumno}/carga-academica${queryPeriodo}`,
+    `${API}/carga-academica/alumno/control/${encodeURIComponent(noControl)}${queryPeriodo}`
+  ].filter(ruta => !ruta.includes('/undefined') && !ruta.includes('/null'))
+}
+
+const cargarCargaAcademicaAlumno = async (alumno) => {
+  cargandoCargaAlumno.value = true
+  cargaAcademicaAlumno.value = []
+
+  try {
+    const rutas = obtenerRutasCargaAlumno(alumno)
+    let ultimoError = null
+
+    for (const ruta of rutas) {
+      try {
+        const response = await fetch(ruta, {
+          headers: {
+            'Accept': 'application/json'
+          }
+        })
+
+        if (!response.ok) {
+          ultimoError = new Error(`HTTP ${response.status}`)
+          continue
+        }
+
+        const data = await response.json()
+        const lista = Array.isArray(data)
+          ? data
+          : data.carga_academica ?? data.cargaAcademica ?? data.grupos ?? data.inscripciones ?? []
+
+        cargaAcademicaAlumno.value = lista.map(normalizarCargaAlumno)
+        return
+      } catch (error) {
+        ultimoError = error
+      }
+    }
+
+    throw ultimoError || new Error('NO SE ENCONTRÓ ENDPOINT DE CARGA ACADÉMICA')
+  } catch (error) {
+    console.error('Error cargando carga académica del alumno:', error)
+    cargaAcademicaAlumno.value = []
+    showNotification('NO SE PUDO CARGAR LA CARGA ACADÉMICA DEL ALUMNO.', 'error')
+  } finally {
+    cargandoCargaAlumno.value = false
+  }
+}
+
+const abrirModalCargaAlumno = async (alumno = alumnoSeleccionado.value) => {
+  if (!alumno) {
+    showNotification('SELECCIONE UN ALUMNO PARA CONSULTAR SU CARGA ACADÉMICA.', 'error')
+    return
+  }
+
+  alumnoCargaAcademica.value = { ...alumno }
+  showModalCargaAlumno.value = true
+
+  await cargarCargaAcademicaAlumno(alumno)
+}
+
+const cerrarModalCargaAlumno = () => {
+  showModalCargaAlumno.value = false
+}
+
+const exportarCargaAlumno = () => {
+  if (!alumnoCargaAcademica.value || cargaAcademicaAlumno.value.length === 0) return
+
+  const hoy = new Date().toISOString().split('T')[0]
+  const encabezados = ['CLAVE GRUPO', 'MATERIA', 'DOCENTE', 'AULA', 'DÍA', 'HORA INICIO', 'HORA FIN', 'CRÉDITOS', 'ESTATUS']
+  const filas = cargaAcademicaAlumno.value.map(g => [
+    g.claveGrupo,
+    g.materia,
+    g.docente,
+    g.aula,
+    g.dia,
+    g.horaInicio,
+    g.horaFin,
+    g.creditos,
+    g.estatus
+  ])
+
+  const contenido = [encabezados, ...filas]
+    .map(fila => fila.map(valor => `"${String(valor ?? '').replace(/"/g, '""')}"`).join(','))
+    .join('\n')
+
+  const nombreAlumno = (alumnoCargaAcademica.value.nombre || 'alumno').replace(/\s+/g, '_').toLowerCase()
+  const blob = new Blob(['\uFEFF' + contenido], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+
+  a.href = url
+  a.download = `carga_academica_${nombreAlumno}_${hoy}.csv`
+  a.click()
+
+  URL.revokeObjectURL(url)
+}
 
 const normalizarGrupo = (g) => ({
   id: g.id, materia: g.materia || '', docente: g.docente || '', aula: g.aula || '',
@@ -448,32 +741,56 @@ const nextPage = () => { if (currentPage.value < totalPages.value) { currentPage
 const inscribirAlumno = (grupo) => { grupoSeleccionado.value = grupo; paso.value = 3 }
 
 const confirmarInscripcion = async () => {
-  if (!alumnoSeleccionado.value || !grupoSeleccionado.value) { showNotification('Faltan datos.', 'error'); return }
+  if (!alumnoSeleccionado.value || !grupoSeleccionado.value) {
+    showNotification('FALTAN DATOS.', 'error')
+    return
+  }
+
   cargando.value = true
-  mensajeCarga.value = 'Registrando inscripción...'
+  mensajeCarga.value = 'REGISTRANDO INSCRIPCIÓN...'
+
   try {
-    // ── CORRECCIÓN: payload lleva id_periodo con el ID real del backend ──
+    const alumnoActual = { ...alumnoSeleccionado.value }
+
     const payload = {
-      id_alumno:  alumnoSeleccionado.value.id_alumno,
-      id_grupo:   grupoSeleccionado.value.id,
+      id_alumno: alumnoSeleccionado.value.id_alumno,
+      id_grupo: grupoSeleccionado.value.id,
       id_periodo: periodo.value
     }
+
     const response = await fetch(`${API_BASE}/registrar`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
       body: JSON.stringify(payload)
     })
+
     const data = await response.json()
-    if (!response.ok) throw new Error(data.error || 'Error del servidor')
-    showNotification(data.message || `Inscripción confirmada: ${alumnoSeleccionado.value.nombre} en ${grupoSeleccionado.value.materia}`, 'success')
+
+    if (!response.ok) throw new Error(data.error || 'ERROR DEL SERVIDOR')
+
+    showNotification(data.message || `INSCRIPCIÓN CONFIRMADA: ${alumnoActual.nombre?.toUpperCase()} EN ${grupoSeleccionado.value.materia?.toUpperCase()}`, 'success')
+
     await cargarGruposDisponibles()
+    await abrirModalCargaAlumno(alumnoActual)
+
     paso.value = 1
-    alumnoSeleccionado.value = null; grupoSeleccionado.value = null
-    resultadosBusqueda.value = []; busquedaControl.value = ''; busquedaNombre.value = ''
-    busquedaGrupo.value = ''; currentPage.value = 1; filaActiva.value = -1
-    // No reseteamos periodo para que el usuario no tenga que seleccionarlo de nuevo
+    alumnoSeleccionado.value = null
+    grupoSeleccionado.value = null
+    resultadosBusqueda.value = []
+    busquedaControl.value = ''
+    busquedaNombre.value = ''
+    busquedaGrupo.value = ''
+    currentPage.value = 1
+    filaActiva.value = -1
   } catch (error) {
-    showNotification(error.message || 'No se pudo registrar la inscripción.', 'error')
-  } finally { cargando.value = false; mensajeCarga.value = '' }
+    showNotification(error.message || 'NO SE PUDO REGISTRAR LA INSCRIPCIÓN.', 'error')
+  } finally {
+    cargando.value = false
+    mensajeCarga.value = ''
+  }
 }
 
 const manejarTeclado = (e) => {
@@ -815,6 +1132,47 @@ onUnmounted(() => { window.removeEventListener('keydown', manejarTeclado) })
   padding-top: 2rem; margin-top: 1rem;
 }
 
+/* Modal carga académica alumno */
+.btn-carga-academica { background: #DBEAFE; color: #1B396A; border: 1px solid #BFDBFE; padding: 9px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.86rem; font-family: 'Montserrat', sans-serif; text-transform: uppercase; transition: background 0.2s; }
+.btn-carga-academica:hover { background: #BFDBFE; }
+.btn-carga-icono { width: 16px; height: 16px; stroke: #1B396A; }
+.modal-carga-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 2500; padding: 1rem; }
+.modal-carga-content { width: min(1050px, 96vw); max-height: 90vh; background: #FFFFFF; border-radius: 16px; box-shadow: 0 25px 60px rgba(0,0,0,0.24); border: 1px solid #E5E7EB; overflow: hidden; display: flex; flex-direction: column; font-family: 'Montserrat', sans-serif; }
+.modal-carga-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.25rem 1.5rem; background: #1B396A; color: #FFFFFF; }
+.modal-carga-alumno { display: flex; align-items: center; gap: 1rem; min-width: 0; }
+.modal-carga-avatar { width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.18); color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 800; border: 2px solid rgba(255,255,255,0.35); flex-shrink: 0; }
+.modal-carga-tag { display: block; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; opacity: 0.85; text-transform: uppercase; margin-bottom: 3px; }
+.modal-carga-header h3 { margin: 0; font-size: 1.2rem; font-weight: 800; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.modal-carga-header p { margin: 3px 0 0; font-size: 0.84rem; opacity: 0.9; text-transform: uppercase; }
+.btn-cerrar-carga { background: rgba(255,255,255,0.15); color: #FFFFFF; border: none; width: 34px; height: 34px; border-radius: 8px; font-size: 1.6rem; line-height: 1; cursor: pointer; transition: background 0.2s; flex-shrink: 0; }
+.btn-cerrar-carga:hover { background: rgba(255,255,255,0.28); }
+.modal-carga-body { padding: 1.25rem 1.5rem; overflow-y: auto; }
+.carga-resumen-grid { display: grid; grid-template-columns: repeat(4, minmax(140px, 1fr)); gap: 0.9rem; margin-bottom: 1rem; }
+.carga-resumen-card { background: #F8FAFC; border: 1px solid #E5E7EB; border-radius: 12px; padding: 1rem; text-align: center; }
+.carga-resumen-numero { display: block; color: #1A1A1A; font-size: 1.35rem; font-weight: 800; line-height: 1.2; text-transform: uppercase; }
+.carga-resumen-label { display: block; color: #6B7280; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.05em; margin-top: 4px; text-transform: uppercase; }
+.modal-carga-acciones { display: flex; justify-content: flex-end; margin-bottom: 1rem; }
+.btn-exportar-carga { display: flex; align-items: center; gap: 7px; background: #DBEAFE; color: #1B396A; border: 1px solid #BFDBFE; padding: 9px 16px; border-radius: 8px; font-weight: 700; font-size: 0.86rem; cursor: pointer; font-family: 'Montserrat', sans-serif; text-transform: uppercase; transition: background 0.2s; }
+.btn-exportar-carga:hover:not(:disabled) { background: #BFDBFE; }
+.btn-exportar-carga:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-exportar-icono { width: 17px; height: 17px; stroke: #1B396A; }
+.carga-alumno-table-container { position: relative; max-height: 430px; overflow: auto; }
+.carga-modal-loading { min-height: 220px; text-transform: uppercase; }
+.carga-alumno-table th { text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.03em; white-space: nowrap; }
+.carga-alumno-table td { text-transform: uppercase; font-size: 0.86rem; vertical-align: middle; }
+.celda-clave-carga { color: #1B396A; font-weight: 800; white-space: nowrap; }
+.celda-materia-carga { font-weight: 700; min-width: 180px; }
+.creditos-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; background: #EFF6FF; color: #1B396A; border: 1px solid #BFDBFE; border-radius: 999px; padding: 4px 10px; font-weight: 800; }
+.estatus-carga-badge { display: inline-flex; align-items: center; justify-content: center; background: #F0FDF4; color: #16A34A; border: 1px solid #86EFAC; border-radius: 999px; padding: 4px 10px; font-weight: 800; font-size: 0.78rem; }
+.estado-vacio-carga { text-align: center; padding: 3rem 2rem; color: #6B7280; text-transform: uppercase; }
+.icono-vacio-carga { width: 52px; height: 52px; stroke: #9CA3AF; margin-bottom: 12px; }
+.estado-vacio-carga h3 { font-size: 1.1rem; color: #1A1A1A; margin: 0 0 6px; }
+.estado-vacio-carga p { font-size: 0.86rem; margin: 0; }
+.modal-carga-footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.5rem; background: #F8FAFC; border-top: 1px solid #E5E7EB; color: #6B7280; font-size: 0.86rem; font-weight: 600; text-transform: uppercase; }
+.modal-carga-footer strong { color: #1B396A; }
+.btn-cerrar-carga-footer { background: #1B396A; color: #FFFFFF; border: none; padding: 9px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; font-family: 'Montserrat', sans-serif; text-transform: uppercase; }
+.btn-cerrar-carga-footer:hover { background: #1D4ED8; }
+
 /* Responsive */
 @media (max-width: 700px) {
   .busqueda-row { grid-template-columns: 1fr; }
@@ -823,5 +1181,10 @@ onUnmounted(() => { window.removeEventListener('keydown', manejarTeclado) })
   .paso-label { display: none; }
   .confirmacion-grid { flex-direction: column; }
   .confirmacion-flecha { transform: rotate(90deg); }
+  .carga-resumen-grid { grid-template-columns: 1fr 1fr; }
+  .modal-carga-footer { flex-direction: column; align-items: stretch; }
+  .btn-cerrar-carga-footer { width: 100%; }
+  .alumno-acciones { width: 100%; }
+  .btn-carga-academica, .btn-cambiar, .btn-siguiente { width: 100%; justify-content: center; }
 }
 </style>
