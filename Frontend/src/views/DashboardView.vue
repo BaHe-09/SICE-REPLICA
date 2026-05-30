@@ -498,7 +498,7 @@ const cargarBitacora = async () => {
   state.cargandoBitacora = true
   state.errorBitacora    = false
   try {
-    const res = await fetch(`${API_URL}/bitacora?limit=8`)
+    const res = await fetch(`${API_URL}/api/bitacora?limit=8`)
     const data = await res.json()
     state.bitacora = data.registros ?? data ?? []
   } catch (e) {
