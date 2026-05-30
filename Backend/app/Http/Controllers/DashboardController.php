@@ -132,7 +132,7 @@ class DashboardController extends Controller
             $gruposActivos   = DB::table('grupo')->where('estatus', 1)->count();
             $numCarreras     = DB::table('carrera')->where('estatus', 1)->count();
             $materiasActivas = DB::table('materia')->where('estatus', 1)->count();
-            $adeudos         = DB::table('adeudo')->where('pagado', false)->count();
+            $adeudos         = Schema::hasTable('adeudo') ? DB::table('adeudo')->where('pagado', false)->count() : 0;
 
             $egresados        = $this->alumnosConEstatus(['Egresado'])->count();
             $titulados        = $this->alumnosConEstatus(['Titulado'])->count();
