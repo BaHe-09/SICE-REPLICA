@@ -433,12 +433,23 @@
 
 <script setup>
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 const router = useRouter()
+const route = useRoute()
 const API_URL = import.meta.env.VITE_API_URL
 
+// Observa cuando cambie el query param ?ver=
+watch(() => route.query.ver, (verControl) => {
+  if (!verControl) return
+  const encontrado = alumnos.value.find(
+    a => String(a.numero_control) === String(verControl)
+  )
+  if (encontrado) {
+    abrirModalVer(encontrado)
+  }
+})
 // ── Estado principal ─────────────────────────────────────────────────
 const alumnos          = ref([])
 const cargando         = ref(false)
@@ -550,6 +561,13 @@ const cargarAlumnosDesdeBD = async () => {
       }
       return alumnoCorregido
     })
+     const verControl = route.query.ver
+    if (verControl) {
+      const encontrado = alumnos.value.find(
+        a => String(a.numero_control) === String(verControl)
+      )
+      if (encontrado) abrirModalVer(encontrado)
+    }
   } catch {
     mostrarNotificacion('No se pudo cargar la lista de alumnos.', 'error')
   } finally {

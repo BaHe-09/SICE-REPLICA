@@ -1,4 +1,5 @@
 <template>
+  
   <div class="sistema-layout" @click="cerrarMenus">
 
     <!-- ══ ENCABEZADO FIJO ══ -->
@@ -20,23 +21,9 @@
 
       <div class="encabezado-derecha">
         <!-- Buscador -->
-        <div class="grupo-busqueda">
-          <svg xmlns="http://www.w3.org/2000/svg" class="icono-busqueda" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Buscar por número de control..."
-            v-model="busquedaGlobal"
-            @keydown.escape="busquedaGlobal = ''"
-            @click.stop
-            aria-label="Búsqueda global"
-            :tabindex="busquedaOculta ? -1 : 0"
-            :readonly="busquedaOculta"
-            autocomplete="off"
-          >
-        </div>
+        <div class="grupo-busqueda" @click.stop>
+  <BuscadorGlobal tema="header" @seleccionar="onSeleccionarResultado" />
+</div>
 
         <!-- Campana -->
         <div class="campana-notificaciones" @click.stop="toggleNotificaciones" aria-label="Notificaciones" title="Notificaciones">
@@ -1455,10 +1442,11 @@
 
 
 <script setup>
+import BuscadorGlobal from '@/components/search/BuscadorGlobal.vue'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 useKeyboardShortcuts()
 
-import { ref, computed, watch, onMounted, onUnmounted, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, onBeforeUnmount, nextTick, provide } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
 const tooltips = {
@@ -1487,6 +1475,20 @@ const tooltips = {
 
 const router = useRouter()
 const route  = useRoute()
+
+// ── Buscador global → navegación a AlumnosView ────────────────────────
+const resultadoBuscador = ref(null)
+provide('resultadoBuscador', resultadoBuscador)
+
+const onSeleccionarResultado = async (resultado) => {
+  if (resultado.tipo === 'ALUMNO') {
+    resultadoBuscador.value = null  // reset para que el watch dispare aunque sea el mismo
+    if (route.name !== 'Alumnos') {
+      await router.push({ name: 'Alumnos' })
+    }
+    nextTick(() => { resultadoBuscador.value = resultado })
+  }
+}
 
 // ── Estado global ─────────────────────────────────────────────────────
 const busquedaGlobal = ref('')
