@@ -214,7 +214,7 @@ Route::get('/bitacora', [BitacoraController::class, 'index']);
 
 // ====================== Modulo Eventos ======================
 Route::get('/tipos-evento',         [EventoController::class, 'tiposEvento']);
-Route::get('/eventos/proximos',     [EventoController::class, 'proximos']);  
+Route::get('/eventos/proximos',     [EventoController::class, 'proximos']);
 Route::get('/eventos/estadisticas', [EventoController::class, 'estadisticas']);
 Route::get('/eventos',              [EventoController::class, 'index']);
 Route::post('/eventos',             [EventoController::class, 'store']);
@@ -421,10 +421,25 @@ use App\Http\Controllers\Api\CarreraResumenController;
 Route::get('/carreras/resumen', [CarreraResumenController::class, 'index']);
 
 //======================= DOCUMENTOS OFICIALES EN PDF ======================
-Route::get('/documentos/constancia/{numero_control}',  [DocumentoController::class, 'constancia']);
-Route::get('/documentos/boleta/{numero_control}',      [DocumentoController::class, 'boleta']);
-Route::get('/documentos/certificado/{numero_control}', [DocumentoController::class, 'certificado']);
+use App\Http\Controllers\Api\ConstanciaController;
+use App\Http\Controllers\Api\BoletaController;
+use App\Http\Controllers\Api\CertificadoController;
 
+// Constancias
+Route::get('/documentos/constancia/{numero_control}', [ConstanciaController::class, 'generarConstancia'])
+    ->name('documentos.constancia');
+
+// Boletas (individual)
+Route::get('/documentos/boleta/{numero_control}', [BoletaController::class, 'generarBoleta'])
+    ->name('documentos.boleta');
+
+// Boletas masivas (ZIP)
+Route::get('/documentos/boletas-masivas', [BoletaController::class, 'generarBoletasMasivas'])
+    ->name('documentos.boletas-masivas');
+
+// Certificados
+Route::get('/documentos/certificado/{numero_control}', [CertificadoController::class, 'generarCertificado'])
+    ->name('documentos.certificado');
 
 // Residencias Profesionales
 Route::get ('/residencias/elegibles',          [ResidenciaController::class, 'elegibles']);
