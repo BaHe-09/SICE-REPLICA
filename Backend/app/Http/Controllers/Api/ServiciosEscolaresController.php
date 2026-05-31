@@ -79,6 +79,119 @@ class ServiciosEscolaresController extends Controller
     return response()->json(array_values($resultado));
 }
 
+    public function getCalificaciones(Request $request)
+    {
+        $grupoId   = $request->query('grupo')   ?? $request->query('grupo_id');
+        $materiaId = $request->query('materia') ?? $request->query('materia_id');
+
+        $query = DB::table('inscripcion as i')
+            ->join('alumno as a', 'i.id_alumno', '=', 'a.id_alumno')
+            ->join('persona as p', 'a.id_persona', '=', 'p.id_persona')
+            ->join('grupo as g', 'i.id_grupo', '=', 'g.id_grupo')
+            ->join('evaluacion as e', 'e.id_grupo', '=', 'i.id_grupo')
+            ->leftJoin('calificacion as c', function ($join) {
+                $join->on('c.id_inscripcion', '=', 'i.id_inscripcion')
+                     ->on('c.id_evaluacion',  '=', 'e.id_evaluacion');
+            })
+            ->select(
+                'i.id_inscripcion',
+                'a.numero_control',
+                DB::raw("CONCAT(p.nombre, ' ', p.apellido_paterno, ' ', p.apellido_materno) as nombre"),
+                'e.id_evaluacion',
+                'e.nombre as evaluacion',
+                'c.calificacion'
+            );
+
+        if ($grupoId)   $query->where('i.id_grupo', $grupoId);
+        if ($materiaId) $query->where('g.id_materia', $materiaId);
+
+        $datos     = $query->get();
+        $resultado = [];
+
+        foreach ($datos as $d) {
+            $key = $d->numero_control;
+            if (!isset($resultado[$key])) {
+                $resultado[$key] = [
+                    'id_inscripcion'          => $d->id_inscripcion,
+                    'control'                 => $d->numero_control,
+                    'nombre'                  => $d->nombre,
+                    'p1' => null, 'p2' => null, 'proy' => null,
+                    'u1' => null, 'u2' => null, 'u3'  => null, 'u4' => null, 'u5' => null,
+                    'id_evaluacion_parcial_1' => null,
+                    'id_evaluacion_parcial_2' => null,
+                    'id_evaluacion_proyecto'  => null,
+                    'id_evaluacion_u1' => null, 'id_evaluacion_u2' => null,
+                    'id_evaluacion_u3' => null, 'id_evaluacion_u4' => null,
+                    'id_evaluacion_u5' => null,
+                ];
+            }
+            $nombre = strtolower(trim($d->evaluacion ?? ''));
+            if ($nombre === 'parcial 1')                                    { $resultado[$key]['p1']   = $d->calificacion; $resultado[$key]['id_evaluacion_parcial_1'] = $d->id_evaluacion; }
+            elseif (str_contains($nombre, 'parcial 2'))                     { $resultado[$key]['p2']   = $d->calificacion; $resultado[$key]['id_evaluacion_parcial_2'] = $d->id_evaluacion; }
+            elseif (str_contains($nombre, 'proyecto'))                      { $resultado[$key]['proy'] = $d->calificacion; $resultado[$key]['id_evaluacion_proyecto']  = $d->id_evaluacion; }
+            elseif (str_contains($nombre, 'unidad 1') || $nombre === 'u1') { $resultado[$key]['u1']   = $d->calificacion; $resultado[$key]['id_evaluacion_u1'] = $d->id_evaluacion; }
+            elseif (str_contains($nombre, 'unidad 2') || $nombre === 'u2') { $resultado[$key]['u2']   = $d->calificacion; $resultado[$key]['id_evaluacion_u2'] = $d->id_evaluacion; }
+            elseif (str_contains($nombre, 'unidad 3') || $nombre === 'u3') { $resultado[$key]['u3']   = $d->calificacion; $resultado[$key]['id_evaluacion_u3'] = $d->id_evaluacion; }
+            elseif (str_contains($nombre, 'unidad 4') || $nombre === 'u4') { $resultado[$key]['u4']   = $d->calificacion; $resultado[$key]['id_evaluacion_u4'] = $d->id_evaluacion; }
+            elseif (str_contains($nombre, 'unidad 5') || $nombre === 'u5') { $resultado[$key]['u5']   = $d->calificacion; $resultado[$key]['id_evaluacion_u5'] = $d->id_evaluacion; }
+        }
+
+        return response()->json(array_values($resultado));
+    }
+
+    public function guardarCalificacionesUnidad(Request $request)
+    {
+        $request->validate([
+            'materia_id'                      => 'required|integer',
+            'unidad'                          => 'required|integer|min:1|max:5',
+            'calificaciones'                  => 'required|array|min:1',
+            'calificaciones.*.alumno_id'      => 'required|integer',
+            'calificaciones.*.calificacion'   => 'required|numeric|min:0|max:100',
+        ]);
+
+        $nombreUnidad = 'Unidad ' . $request->unidad;
+        $guardadas    = [];
+        $errores      = [];
+
+        foreach ($request->calificaciones as $item) {
+            $inscripcion = DB::table('inscripcion as i')
+                ->join('grupo as g', 'i.id_grupo', '=', 'g.id_grupo')
+                ->where('i.id_alumno', $item['alumno_id'])
+                ->where('g.id_materia', $request->materia_id)
+                ->select('i.id_inscripcion', 'i.id_grupo')
+                ->first();
+
+            if (!$inscripcion) {
+                $errores[] = "Alumno {$item['alumno_id']} no inscrito en materia {$request->materia_id}";
+                continue;
+            }
+
+            $evaluacion = DB::table('evaluacion')
+                ->where('id_grupo', $inscripcion->id_grupo)
+                ->whereRaw('LOWER(nombre) LIKE ?', ['%' . strtolower($nombreUnidad) . '%'])
+                ->first();
+
+            if (!$evaluacion) {
+                $errores[] = "No existe evaluacion '{$nombreUnidad}' en grupo {$inscripcion->id_grupo}";
+                continue;
+            }
+
+            $cal = Calificacion::updateOrCreate(
+                ['id_inscripcion' => $inscripcion->id_inscripcion, 'id_evaluacion' => $evaluacion->id_evaluacion],
+                ['calificacion'   => $item['calificacion']]
+            );
+
+            BitacoraService::registrar('INSERT', 'calificacion', $cal->id_calificacion ?? 0, [], ['calificacion' => $item['calificacion']]);
+            $guardadas[] = $cal;
+        }
+
+        $total = count($request->calificaciones);
+        return response()->json([
+            'guardadas' => count($guardadas),
+            'errores'   => $errores,
+        ], count($errores) === $total ? 422 : 200);
+    }
+
     public function guardarCalificaciones(Request $request)
 {
     $request->validate([

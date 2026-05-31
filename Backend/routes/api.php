@@ -34,6 +34,7 @@ Route::get('/dashboard/carreras',  [DashboardController::class, 'carreras']);
 Route::get('/dashboard/semestres', [DashboardController::class, 'semestres']);
 
 // 🔹 CALIFICACIONES
+Route::get('/calificaciones',       [ServiciosEscolaresController::class, 'getCalificaciones']);
 Route::get('/calificaciones-grupo', [ServiciosEscolaresController::class, 'getCalificacionesGrupo']);
 Route::post('/guardar-calificaciones', [ServiciosEscolaresController::class, 'guardarCalificaciones']);
 Route::put('/calificaciones/{id}', [ServiciosEscolaresController::class, 'actualizarCalificacion']);
@@ -95,6 +96,8 @@ Route::prefix('inscripcion')->group(function () {
     Route::get('/grupos', [InscripcionController::class, 'gruposDisponibles']);
     Route::post('/registrar', [InscripcionController::class, 'inscribirAlumno']);
 });
+
+Route::get('/carga-academica/alumno/{id_alumno}', [InscripcionController::class, 'cargaAcademica']);
 
 
 // 🔹 FILTROS DINÁMICOS
@@ -210,18 +213,22 @@ Route::get('/bitacora', [BitacoraController::class, 'index']);
 
 
 // ====================== Modulo Eventos ======================
-Route::get('/eventos', [EventoController::class, 'index']);
-Route::get('/tipos-evento', [EventoController::class, 'tiposEvento']);
-Route::get('/eventos/{id}', [EventoController::class, 'show']);
-Route::post('/eventos', [EventoController::class, 'store']);
-Route::put('/eventos/{id}', [EventoController::class, 'update']);
+Route::get('/tipos-evento',         [EventoController::class, 'tiposEvento']);
+Route::get('/eventos/proximos',     [EventoController::class, 'proximos']);
+Route::get('/eventos/estadisticas', [EventoController::class, 'estadisticas']);
+Route::get('/eventos',              [EventoController::class, 'index']);
+Route::post('/eventos',             [EventoController::class, 'store']);
+Route::get('/eventos/{id}',         [EventoController::class, 'show']);
+Route::put('/eventos/{id}',         [EventoController::class, 'update']);
+Route::delete('/eventos/{id}',      [EventoController::class, 'destroy']);
 
-Route::get('/eventos/{id}/participantes', [EventoController::class, 'participantes']);
-Route::post('/eventos/{id}/participantes', [EventoController::class, 'registrarParticipante']);
+Route::get('/eventos/{id}/participantes',                        [EventoController::class, 'participantes']);
+Route::post('/eventos/{id}/participantes',                       [EventoController::class, 'registrarParticipante']);
 Route::patch('/eventos/{id}/participantes/{control}/constancia', [EventoController::class, 'emitirConstancia']);
-Route::delete('/eventos/{id}/participantes/{control}', [EventoController::class, 'eliminarParticipante']);
+Route::delete('/eventos/{id}/participantes/{control}',           [EventoController::class, 'eliminarParticipante']);
 
-Route::delete('/eventos/{id}', [EventoController::class, 'destroy']);
+Route::get('/eventos/{id}/constancias',          [EventoController::class, 'constancias']);
+Route::post('/eventos/{id}/constancias/generar', [EventoController::class, 'generarConstancias']);
 
 
 // ====================== MÓDULO DE RECURSOS HUMANOS ======================
@@ -414,10 +421,25 @@ use App\Http\Controllers\Api\CarreraResumenController;
 Route::get('/carreras/resumen', [CarreraResumenController::class, 'index']);
 
 //======================= DOCUMENTOS OFICIALES EN PDF ======================
-Route::get('/documentos/constancia/{numero_control}',  [DocumentoController::class, 'constancia']);
-Route::get('/documentos/boleta/{numero_control}',      [DocumentoController::class, 'boleta']);
-Route::get('/documentos/certificado/{numero_control}', [DocumentoController::class, 'certificado']);
+use App\Http\Controllers\Api\ConstanciaController;
+use App\Http\Controllers\Api\BoletaController;
+use App\Http\Controllers\Api\CertificadoController;
 
+// Constancias
+Route::get('/documentos/constancia/{numero_control}', [ConstanciaController::class, 'generarConstancia'])
+    ->name('documentos.constancia');
+
+// Boletas (individual)
+Route::get('/documentos/boleta/{numero_control}', [BoletaController::class, 'generarBoleta'])
+    ->name('documentos.boleta');
+
+// Boletas masivas (ZIP)
+Route::get('/documentos/boletas-masivas', [BoletaController::class, 'generarBoletasMasivas'])
+    ->name('documentos.boletas-masivas');
+
+// Certificados
+Route::get('/documentos/certificado/{numero_control}', [CertificadoController::class, 'generarCertificado'])
+    ->name('documentos.certificado');
 
 // Residencias Profesionales
 Route::get ('/residencias/elegibles',          [ResidenciaController::class, 'elegibles']);
