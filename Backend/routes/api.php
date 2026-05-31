@@ -39,6 +39,21 @@ Route::post('/guardar-calificaciones', [ServiciosEscolaresController::class, 'gu
 Route::put('/calificaciones/{id}', [ServiciosEscolaresController::class, 'actualizarCalificacion']);
 Route::delete('/calificaciones/{id}', [ServiciosEscolaresController::class, 'eliminarCalificacion']);
 
+// 1. Semestres de una carrera (si hay llamada directa)
+Route::get('/carreras/{id}/semestres', [CarreraController::class, 'semestres']);
+
+// 2. Actas de una carrera
+Route::get('/carreras/{id}/actas', [CarreraController::class, 'actas']);
+
+// 3. Alumnos de un grupo
+Route::get('/grupos/{id}/alumnos', [GrupoController::class, 'alumnos']);
+
+// 4. Calificaciones por grupo
+Route::get('/grupos/{id}/calificaciones', [GrupoController::class, 'calificaciones']);
+
+// 5. Guardar calificaciones por unidad (nuevo formato)
+Route::post('/calificaciones/unidad', [ServiciosEscolaresController::class, 'guardarCalificacionesUnidad']);
+
 // 🔹 ALUMNOS
 Route::get('/alumnos-full', [ServiciosEscolaresController::class, 'getAlumnos']);
 Route::post('/alumnos', [ServiciosEscolaresController::class, 'store']);
