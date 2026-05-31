@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\ComiteAcademicoController;
 use App\Http\Controllers\Docentes\AsignacionDocenteController;
 use App\Http\Controllers\Docentes\CargaDocenteController;
 use App\Http\Controllers\Api\DocumentoController;
+use App\Http\Controllers\Api\ResidenciaController;
 
 
 // ====================== AUTENTICACIÓN ======================
@@ -401,3 +402,15 @@ Route::get('/carreras/resumen', [CarreraResumenController::class, 'index']);
 Route::get('/documentos/constancia/{numero_control}',  [DocumentoController::class, 'constancia']);
 Route::get('/documentos/boleta/{numero_control}',      [DocumentoController::class, 'boleta']);
 Route::get('/documentos/certificado/{numero_control}', [DocumentoController::class, 'certificado']);
+
+
+// Residencias Profesionales
+Route::get ('/residencias/elegibles',          [ResidenciaController::class, 'elegibles']);
+Route::get ('/residencias/{id}/reportes',      [ResidenciaController::class, 'reportes']);
+Route::post('/residencias/{id}/reportes',      [ResidenciaController::class, 'guardarReporte']);
+Route::post('/residencias/{id}/evaluacion',    [ResidenciaController::class, 'guardarEvaluacion']);
+Route::get ('/residencias',                    [ResidenciaController::class, 'index']);
+Route::get ('/residencias/{id}',               [ResidenciaController::class, 'show']);
+Route::post('/residencias',                    [ResidenciaController::class, 'store']);
+Route::put ('/residencias/{id}',               [ResidenciaController::class, 'update']);
+Route::get ('/empresas-residencia',            [ResidenciaController::class, 'empresas']);
