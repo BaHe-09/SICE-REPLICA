@@ -1743,36 +1743,47 @@ const confirmarEliminar = async () => {
 .breadcrumb-chevron  { stroke: #D1D5DB; flex-shrink: 0; }
 .breadcrumb-actual   { color: #374151; cursor: default; }
 
-/* ══════════════════════════════════════════════════════
-   ENCABEZADO DE PÁGINA
-══════════════════════════════════════════════════════ */
+/* ENCABEZADO DE PÁGINA */
 .page-header {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  gap: 16px; margin-bottom: 24px; flex-wrap: wrap;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
 }
-.page-header-left  { display: flex; flex-direction: column; gap: 4px; }
-.page-header-btns  { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+.page-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.page-header-btns {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* ✅ Fixed selector typo (.page-title instead of .p age-title) */
 .page-title {
-<<<<<<< Updated upstream
-  font-size: 1.7rem; font-weight: 800; color: #0F172A;
-  letter-spacing: -0.01em; margin: 0;
-=======
   font-size: 1.7rem;
   font-weight: 800;
   color: #0F172A;
+  /* ✅ Fixed property typo (letter-spacing instead of letter-spac ing) */
   letter-spacing: -0.01em;
   margin: 0;
   font-family: 'Montserrat', sans-serif;
 }
+
 .page-subtitle {
   font-size: 0.82rem;
   font-weight: 600;
   color: #6B7280;
   letter-spacing: 0.04em;
   margin: 0;
->>>>>>> Stashed changes
 }
-.page-subtitle { font-size: 0.82rem; font-weight: 600; color: #6B7280; letter-spacing: 0.04em; margin: 0; }
 .subtitle-sel  { color: #1B396A; }
 
 .btn-nuevo {
@@ -2017,7 +2028,14 @@ const confirmarEliminar = async () => {
 
 .card-info      { flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
 .card-control   { font-size:0.73rem; font-weight:700; font-family:'Courier New',monospace; color:#1B396A; letter-spacing:0.04em; }
-.card-nombre    { font-size:0.92rem; font-weight:800; color:#0F172A; margin:0; line-height:1.2; letter-spacing:-0.01em; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+.card-nombre { 
+  font-size:0.92rem; font-weight:800; color:#0F172A; margin:0; 
+  line-height:1.2; letter-spacing:-0.01em; overflow:hidden; 
+  display:-webkit-box; 
+  -webkit-line-clamp:2; 
+  line-clamp:2; /* ✅ Propiedad estándar añadida */
+  -webkit-box-orient:vertical; 
+}
 .card-carrera   { font-size:0.73rem; font-weight:600; color:#6B7280; margin:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
 .card-divider   { height:1px; background:#F3F4F6; margin:0 16px; }
 
