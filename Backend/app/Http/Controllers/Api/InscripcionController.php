@@ -78,6 +78,9 @@ class InscripcionController extends Controller
                     )), 'Sin docente') as docente"),
                     DB::raw("COALESCE(a.nombre, 'Sin aula') as aula"),
                     'g.capacidad',
+                    'g.dia',
+                    'g.hora_inicio',
+                    'g.hora_fin',
                     DB::raw('COUNT(i.id_inscripcion) as inscritos')
                 )
                 ->groupBy(
@@ -88,7 +91,10 @@ class InscripcionController extends Controller
                     'p.apellido_paterno',
                     'p.apellido_materno',
                     'a.nombre',
-                    'g.capacidad'
+                    'g.capacidad',
+                    'g.dia',
+                    'g.hora_inicio',
+                    'g.hora_fin'
                 )
                 ->orderBy('m.nombre')
                 ->get();
