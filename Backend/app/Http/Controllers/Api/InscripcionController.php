@@ -78,6 +78,9 @@ class InscripcionController extends Controller
                     )), 'Sin docente') as docente"),
                     DB::raw("COALESCE(a.nombre, 'Sin aula') as aula"),
                     'g.capacidad',
+                    'g.dia',
+                    'g.hora_inicio',
+                    'g.hora_fin',
                     DB::raw('COUNT(i.id_inscripcion) as inscritos')
                 )
                 ->groupBy(
@@ -88,7 +91,10 @@ class InscripcionController extends Controller
                     'p.apellido_paterno',
                     'p.apellido_materno',
                     'a.nombre',
-                    'g.capacidad'
+                    'g.capacidad',
+                    'g.dia',
+                    'g.hora_inicio',
+                    'g.hora_fin'
                 )
                 ->orderBy('m.nombre')
                 ->get();
@@ -170,8 +176,11 @@ class InscripcionController extends Controller
                     ->where('g.dia', $grupo->dia)
                     ->where('g.id_grupo', '!=', $request->id_grupo)
                     ->where(function ($q) use ($grupo) {
-                        $q->whereBetween('g.hora_inicio', [$grupo->hora_inicio, $grupo->hora_fin])
-                          ->orWhereBetween('g.hora_fin', [$grupo->hora_inicio, $grupo->hora_fin])
+                        // Traslape real: excluye el caso donde uno termina exactamente cuando empieza el otro
+                        $q->where(function ($q1) use ($grupo) {
+                            $q1->where('g.hora_inicio', '<', $grupo->hora_fin)
+                               ->where('g.hora_fin', '>', $grupo->hora_inicio);
+                          })
                           ->orWhere(function ($q2) use ($grupo) {
                               $q2->where('g.hora_inicio', '<=', $grupo->hora_inicio)
                                  ->where('g.hora_fin', '>=', $grupo->hora_fin);
@@ -247,6 +256,49 @@ class InscripcionController extends Controller
             return response()->json([
                 'error' => 'Error al realizar la inscripción: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    // =====================================================
+    // 🔹 CARGA ACADÉMICA DEL ALUMNO
+    // GET /api/carga-academica/alumno/{id_alumno}?id_periodo=X
+    // =====================================================
+    public function cargaAcademica(Request $request, $id_alumno)
+    {
+        try {
+            $periodoId = $request->query('id_periodo');
+
+            $query = DB::table('inscripcion as i')
+                ->join('grupo as g',       'i.id_grupo',    '=', 'g.id_grupo')
+                ->join('materia as m',     'g.id_materia',  '=', 'm.id_materia')
+                ->leftJoin('docente as d', 'g.id_docente',  '=', 'd.id_docente')
+                ->leftJoin('empleado as e','d.id_empleado', '=', 'e.id_empleado')
+                ->leftJoin('persona as p', 'e.id_persona',  '=', 'p.id_persona')
+                ->leftJoin('aula as a',    'g.id_aula',     '=', 'a.id_aula')
+                ->where('i.id_alumno', $id_alumno)
+                ->select(
+                    'i.id_inscripcion',
+                    'g.id_grupo',
+                    'g.clave_grupo',
+                    'm.nombre as materia',
+                    'm.creditos',
+                    DB::raw("COALESCE(TRIM(CONCAT(COALESCE(p.nombre,''),' ',COALESCE(p.apellido_paterno,''))), 'Sin docente') as docente"),
+                    DB::raw("COALESCE(a.nombre, 'Sin aula') as aula"),
+                    'g.dia',
+                    'g.hora_inicio',
+                    'g.hora_fin',
+                    'i.estatus'
+                )
+                ->orderBy('g.dia')
+                ->orderBy('g.hora_inicio');
+
+            if ($periodoId) {
+                $query->where('g.id_periodo', $periodoId);
+            }
+
+            return response()->json($query->get());
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
 
