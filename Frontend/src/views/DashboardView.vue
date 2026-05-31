@@ -188,23 +188,7 @@
               <div class="hero-sub">NÚMERO DE CONTROL, NOMBRE O APELLIDO</div>
             </div>
           </div>
-          <div class="hero-form">
-            <input
-              class="hero-input"
-              v-model.trim="busquedaControl"
-              placeholder="NÚMERO DE CONTROL, NOMBRE O APELLIDO"
-              maxlength="100"
-              type="text"
-              aria-label="NUMERO DE CONTROL O NOMBRE DEL ALUMNO"
-              @keydown.enter="irAKardex"
-            />
-            <button class="hero-btn" @click="irAKardex" :disabled="!esValidaBusqueda" type="button">
-              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-              </svg>
-              BUSCAR
-            </button>
-          </div>
+          <BuscadorAlumnoHero />
           <div class="hero-stats">
             <div class="hero-stat"><div class="hero-stat-n">{{ state.kpis.consultasHoy }}</div><div class="hero-stat-l">CONSULTAS HOY</div></div>
             <div class="hero-stat"><div class="hero-stat-n">{{ formatNum(state.kpis.totalAlumnos) }}</div><div class="hero-stat-l">ALUMNOS REGISTRADOS</div></div>
@@ -295,6 +279,7 @@
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
+import BuscadorAlumnoHero from '@/components/dashboard/BuscadorAlumnoHero.vue'
 
 // ── Importa tus componentes hijos ──────────────────────────────────────
 import StatsGrid     from '@/components/dashboard/StatsGrid.vue'
@@ -529,7 +514,7 @@ const irAKardex = async () => {
       router.push(`/kardex/${t}`)
       return
     }
-    const res  = await fetch(`${API_URL}/kardex/buscar-por-nombre?q=${encodeURIComponent(t)}`)
+    const res = await fetch(`${API_URL}/api/kardex/buscar-por-nombre?q=${encodeURIComponent(t)}`)
     const data = await res.json()
     const nc   = data.resultados?.[0]?.numero_control
     if (nc) router.push(`/kardex/${nc}`)
