@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\ComiteAcademicoController;
 use App\Http\Controllers\Docentes\AsignacionDocenteController;
 use App\Http\Controllers\Docentes\CargaDocenteController;
 use App\Http\Controllers\Api\DocumentoController;
+use App\Http\Controllers\Api\ResidenciaController;
 
 
 // ====================== AUTENTICACIÓN ======================
@@ -37,6 +38,21 @@ Route::get('/calificaciones-grupo', [ServiciosEscolaresController::class, 'getCa
 Route::post('/guardar-calificaciones', [ServiciosEscolaresController::class, 'guardarCalificaciones']);
 Route::put('/calificaciones/{id}', [ServiciosEscolaresController::class, 'actualizarCalificacion']);
 Route::delete('/calificaciones/{id}', [ServiciosEscolaresController::class, 'eliminarCalificacion']);
+
+// 1. Semestres de una carrera (si hay llamada directa)
+Route::get('/carreras/{id}/semestres', [CarreraController::class, 'semestres']);
+
+// 2. Actas de una carrera
+Route::get('/carreras/{id}/actas', [CarreraController::class, 'actas']);
+
+// 3. Alumnos de un grupo
+Route::get('/grupos/{id}/alumnos', [GrupoController::class, 'alumnos']);
+
+// 4. Calificaciones por grupo
+Route::get('/grupos/{id}/calificaciones', [GrupoController::class, 'calificaciones']);
+
+// 5. Guardar calificaciones por unidad (nuevo formato)
+Route::post('/calificaciones/unidad', [ServiciosEscolaresController::class, 'guardarCalificacionesUnidad']);
 
 // 🔹 ALUMNOS
 Route::get('/alumnos-full', [ServiciosEscolaresController::class, 'getAlumnos']);
@@ -61,6 +77,7 @@ Route::put('/grupos/{id}', [GrupoController::class, 'update']);
 Route::delete('/grupos/{id}', [GrupoController::class, 'destroy']);
 Route::post('/grupos/{id}/cerrar-acta', [GrupoController::class, 'cerrarActa']);
 Route::post('/grupos/{id}/abrir-acta',  [GrupoController::class, 'abrirActa']);
+Route::get('/grupos/{id}/materias', [GrupoController::class, 'materias']);
 
 // 🔹 EVALUACIONES
 Route::post('/evaluaciones/guardar', [ServiciosEscolaresController::class, 'guardarEvaluaciones']);
@@ -327,6 +344,7 @@ Route::get('/turnos',        [CatalogosController::class, 'turnos']);
 use App\Http\Controllers\Api\KardexController;
 
 Route::get('/kardex/buscar-por-nombre', [KardexController::class, 'buscarPorNombre']);
+Route::get('/kardex/{numero_control}/pdf', [KardexController::class, 'exportarPDF']);
 Route::get('/kardex/{numero_control}', [KardexController::class, 'show']);
 
 // ====================== SEGUIMIENTO ACADÉMICO ======================
@@ -399,3 +417,15 @@ Route::get('/carreras/resumen', [CarreraResumenController::class, 'index']);
 Route::get('/documentos/constancia/{numero_control}',  [DocumentoController::class, 'constancia']);
 Route::get('/documentos/boleta/{numero_control}',      [DocumentoController::class, 'boleta']);
 Route::get('/documentos/certificado/{numero_control}', [DocumentoController::class, 'certificado']);
+
+
+// Residencias Profesionales
+Route::get ('/residencias/elegibles',          [ResidenciaController::class, 'elegibles']);
+Route::get ('/residencias/{id}/reportes',      [ResidenciaController::class, 'reportes']);
+Route::post('/residencias/{id}/reportes',      [ResidenciaController::class, 'guardarReporte']);
+Route::post('/residencias/{id}/evaluacion',    [ResidenciaController::class, 'guardarEvaluacion']);
+Route::get ('/residencias',                    [ResidenciaController::class, 'index']);
+Route::get ('/residencias/{id}',               [ResidenciaController::class, 'show']);
+Route::post('/residencias',                    [ResidenciaController::class, 'store']);
+Route::put ('/residencias/{id}',               [ResidenciaController::class, 'update']);
+Route::get ('/empresas-residencia',            [ResidenciaController::class, 'empresas']);

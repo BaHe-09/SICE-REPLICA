@@ -54,7 +54,7 @@
     @if($alumno->curp)
       y CURP <strong>{{ $alumno->curp }}</strong>,
     @endif
-    se encuentra {{ $tipo === 'inscripcion' ? 'debidamente <strong>inscrito(a)</strong>' : '<strong>cursando</strong>' }}
+    se encuentra {!! $tipo === 'inscripcion' ? 'debidamente <strong>inscrito(a)</strong>' : '<strong>cursando</strong>' !!}
     el <strong>{{ $alumno->semestre_actual }}° semestre</strong>
     de la carrera de <strong>{{ $alumno->carrera }}</strong>.
 
