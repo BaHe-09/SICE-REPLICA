@@ -529,7 +529,7 @@ const irAKardex = async () => {
       router.push(`/kardex/${t}`)
       return
     }
-    const res  = await fetch(`${API_URL}/kardex/buscar-por-nombre?q=${encodeURIComponent(t)}`)
+    const res = await fetch(`${API_URL}/api/kardex/buscar-por-nombre?q=${encodeURIComponent(t)}`)
     const data = await res.json()
     const nc   = data.resultados?.[0]?.numero_control
     if (nc) router.push(`/kardex/${nc}`)
