@@ -415,10 +415,17 @@ Route::prefix('analitica')->group(function () {
     Route::get('/carreras', [AnaliticaController::class, 'rendimientoPorCarreras']);
     Route::get('/materias-criticas', [AnaliticaController::class, 'materiasCriticas']);
 });
-// =============== Resumen de cacrreras =====================================
+// =============== Resumen de carreras =====================================
 use App\Http\Controllers\Api\CarreraResumenController;
 
 Route::get('/carreras/resumen', [CarreraResumenController::class, 'index']);
+
+// ====================== ANALYTICS (Equipo D4) ======================
+use App\Http\Controllers\Api\AnalyticsController;
+
+Route::get('/analytics/aprobados-reprobados', [AnalyticsController::class, 'aprobadosReprobados']);
+Route::get('/analytics/tronco-comun',         [AnalyticsController::class, 'troncoComun']);
+Route::get('/analytics/materias-riesgo',      [AnalyticsController::class, 'materiasRiesgo']);
 
 //======================= DOCUMENTOS OFICIALES EN PDF ======================
 use App\Http\Controllers\Api\ConstanciaController;
