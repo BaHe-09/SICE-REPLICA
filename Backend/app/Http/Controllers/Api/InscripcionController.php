@@ -176,8 +176,11 @@ class InscripcionController extends Controller
                     ->where('g.dia', $grupo->dia)
                     ->where('g.id_grupo', '!=', $request->id_grupo)
                     ->where(function ($q) use ($grupo) {
-                        $q->whereBetween('g.hora_inicio', [$grupo->hora_inicio, $grupo->hora_fin])
-                          ->orWhereBetween('g.hora_fin', [$grupo->hora_inicio, $grupo->hora_fin])
+                        // Traslape real: excluye el caso donde uno termina exactamente cuando empieza el otro
+                        $q->where(function ($q1) use ($grupo) {
+                            $q1->where('g.hora_inicio', '<', $grupo->hora_fin)
+                               ->where('g.hora_fin', '>', $grupo->hora_inicio);
+                          })
                           ->orWhere(function ($q2) use ($grupo) {
                               $q2->where('g.hora_inicio', '<=', $grupo->hora_inicio)
                                  ->where('g.hora_fin', '>=', $grupo->hora_fin);
