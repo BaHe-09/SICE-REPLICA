@@ -53,7 +53,7 @@ const router = createRouter({
       redirect: () => {
         const usuario = JSON.parse(localStorage.getItem('usuario') || 'null')
         if (usuario?.rol === 'servicios-escolares') return '/alumnos/gestion'
-        return '/alumnos/lista' // fallback otros roles (ajusta si aplica)
+        return '/alumnos/gestion' // fallback otros roles (ajusta si aplica)
       }
     },
     {
