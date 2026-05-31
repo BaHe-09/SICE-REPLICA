@@ -119,7 +119,14 @@ class DashboardController extends Controller
             $periodo      = DB::table('periodo')->where('estatus', 1)->orderByDesc('id_periodo')->first();
             $totalAlumnos = $this->alumnosConEstatus(['Activo', '1', 'true'])->count();
 
-            $alumnosInscritos = DB::table('inscripcion')->distinct()->count('id_alumno');
+            $alumnosInscritos = DB::table('inscripcion as i')
+                ->join('grupo as g', 'i.id_grupo', '=', 'g.id_grupo')
+                ->join('alumno as a', 'a.id_alumno', '=', 'i.id_alumno')
+                ->where('g.id_periodo', $periodo->id_periodo ?? 0)
+                ->where('a.estatus', 'Activo')
+                ->where('i.estatus', '!=', 'Cancelada')
+                ->distinct()
+                ->count('i.id_alumno');
 
             $totalInscripciones = DB::table('inscripcion')->count();
             $conCalif = DB::table('inscripcion as i')
