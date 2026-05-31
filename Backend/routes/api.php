@@ -34,6 +34,7 @@ Route::get('/dashboard/carreras',  [DashboardController::class, 'carreras']);
 Route::get('/dashboard/semestres', [DashboardController::class, 'semestres']);
 
 // 🔹 CALIFICACIONES
+Route::get('/calificaciones',       [ServiciosEscolaresController::class, 'getCalificaciones']);
 Route::get('/calificaciones-grupo', [ServiciosEscolaresController::class, 'getCalificacionesGrupo']);
 Route::post('/guardar-calificaciones', [ServiciosEscolaresController::class, 'guardarCalificaciones']);
 Route::put('/calificaciones/{id}', [ServiciosEscolaresController::class, 'actualizarCalificacion']);
