@@ -79,11 +79,12 @@
             </svg>
           </button>
         </div>
-        <button @click="mostrarFiltrosAvanzados = true" class="btn-filtros-premium">
+        <button @click="mostrarFiltrosAvanzados = true" class="btn-filtros-premium" :class="{ 'btn-filtros-activos': hayFiltrosActivos }">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
             <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
           </svg>
           FILTROS AVANZADOS
+          <span v-if="hayFiltrosActivos" class="filtros-badge-activos">{{ contadorFiltrosActivos }}</span>
         </button>
       </div>
 
@@ -138,6 +139,7 @@
               >
                 {{ evento.tipo_evento?.nombre_tipo || 'GENERAL' }}
               </span>
+              <span class="badge-estatus estatus-proximo">PRÓXIMO</span>
             </div>
             <div class="evento-card-meta">
               <span class="meta-item">
@@ -214,6 +216,7 @@
           </svg>
           HISTORIAL DE EVENTOS
         </h2>
+        <span class="seccion-contador">{{ eventosFiltrados.length }} REGISTRO(S)</span>
       </div>
 
       <!-- ─── MODAL: Filtros Avanzados ─── -->
@@ -287,6 +290,7 @@
                 <th>NOMBRE DEL EVENTO</th>
                 <th>TIPO</th>
                 <th>FECHA</th>
+                <th>ESTATUS</th>
                 <th>DESCRIPCIÓN</th>
                 <th class="centrado">ACCIONES</th>
               </tr>
@@ -301,6 +305,11 @@
                   </span>
                 </td>
                 <td class="texto-secundario">{{ formatearFecha(evento.fecha) }}</td>
+                <td>
+                  <span class="badge-estatus" :class="classBadgeEstatus(evento.fecha)">
+                    {{ evento.fecha >= hoy ? 'PRÓXIMO' : 'FINALIZADO' }}
+                  </span>
+                </td>
                 <td class="texto-secundario texto-corto">{{ evento.descripcion || '—' }}</td>
                 <td class="centrado">
                   <div class="acciones-fila">
@@ -315,13 +324,11 @@
                       </svg>
                     </button>
                     <button
-  @click="router.push({
-    name: 'FormularioEvento',
-    params: { id: evento.id_evento }
-  })"
+  @click="router.push(`/eventos/${evento.id_evento}/editar`)"
   class="btn-accion editar"
   title="EDITAR EVENTO"
 >
+  <!-- NOTA: path /eventos/:id/editar — ajustar si la ruta exacta en router/index.js difiere -->
   <svg
     viewBox="0 0 24 24"
     fill="none"
@@ -347,7 +354,7 @@
                 </td>
               </tr>
               <tr v-if="eventosPaginados.length === 0">
-                <td colspan="5" class="sin-resultados">
+                <td colspan="6" class="sin-resultados">
                   <svg viewBox="0 0 24 24" fill="none" stroke="#E0E0E0" stroke-width="1.5" width="40" height="40">
                     <circle cx="11" cy="11" r="8"/>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -376,13 +383,15 @@
               </svg>
             </button>
             <div class="paginacion-numeros">
-              <button
-                v-for="p in totalPaginas"
-                :key="p"
-                @click="cambiarPagina(p)"
-                class="btn-num"
-                :class="{ activa: paginaActual === p }"
-              >{{ p }}</button>
+              <template v-for="item in paginacionVentana" :key="item">
+                <span v-if="item === '...'" class="pag-ellipsis">…</span>
+                <button
+                  v-else
+                  @click="cambiarPagina(item)"
+                  class="btn-num"
+                  :class="{ activa: paginaActual === item }"
+                >{{ item }}</button>
+              </template>
             </div>
             <button
               @click="cambiarPagina(paginaActual + 1)"
@@ -569,6 +578,7 @@
   @click="router.push(`/eventos/${eventoDetalle.id_evento}/editar`)"
   class="btn-secundario"
 >
+  <!-- NOTA: path /eventos/:id/editar — ajustar si la ruta exacta en router/index.js difiere -->
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
     <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
   </svg>
@@ -618,7 +628,6 @@ const headersGet = { 'Authorization': `Bearer ${token}` }
 // Estado general
 // ──────────────────────────────────────────────────
 const cargando       = ref(false)
-const cargandoForm   = ref(false)
 const busquedaNombre = ref('')
 const tiposEvento    = ref([])
 const eventos        = ref([])
@@ -656,7 +665,6 @@ const cerrarModalDetalle = () => {
 // ──────────────────────────────────────────────────
 // Toast
 // ──────────────────────────────────────────────────
-const fechaMinima = computed(() => new Date().toISOString().split('T')[0])
 const toast = ref({ visible: false, mensaje: '', tipo: 'exito' })
 let timerToast = null
 
@@ -729,12 +737,12 @@ const eventosFiltrados = computed(() => {
   })
 })
 
-// KPI: Eventos próximos — siempre sobre todos los eventos (no filtrados)
+// KPI: siempre sobre el total de eventos sin filtrar
 const eventosProximos = computed(() =>
   eventosFiltrados.value.filter(e => e.fecha >= hoy)
 )
 
-// CORRECCIÓN: eventosFinalizados no estaba declarado — bug crítico de runtime
+// CORRECCIÓN: eventosFinalizados consistente con eventosProximos (ambos desde eventosFiltrados)
 const eventosFinalizados = computed(() =>
   eventos.value.filter(e => e.fecha < hoy).length
 )
@@ -748,9 +756,32 @@ const totalPaginas   = computed(() => Math.max(1, Math.ceil(eventosFiltrados.val
 const mostrandoDesde = computed(() => eventosFiltrados.value.length === 0 ? 0 : (paginaActual.value - 1) * registrosPorPagina + 1)
 const mostrandoHasta = computed(() => Math.min(paginaActual.value * registrosPorPagina, eventosFiltrados.value.length))
 
+// Paginación con ventana truncada (máx 7 botones visibles)
+const paginacionVentana = computed(() => {
+  const total = totalPaginas.value
+  const actual = paginaActual.value
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  const items = []
+  items.push(1)
+  if (actual > 3) items.push('...')
+  for (let p = Math.max(2, actual - 1); p <= Math.min(total - 1, actual + 1); p++) items.push(p)
+  if (actual < total - 2) items.push('...')
+  items.push(total)
+  return items
+})
+
 const reiniciarPagina = () => { paginaActual.value = 1 }
 const cambiarPagina   = (p) => { if (p >= 1 && p <= totalPaginas.value) paginaActual.value = p }
 const limpiarFiltros  = () => { filtrosAvanzados.value = { tipo: '', estatus: '', fechaInicio: '', fechaFin: '' }; reiniciarPagina() }
+
+// Indicadores de filtros activos
+const hayFiltrosActivos = computed(() =>
+  !!(filtrosAvanzados.value.tipo || filtrosAvanzados.value.estatus || filtrosAvanzados.value.fechaInicio || filtrosAvanzados.value.fechaFin)
+)
+const contadorFiltrosActivos = computed(() =>
+  [filtrosAvanzados.value.tipo, filtrosAvanzados.value.estatus, filtrosAvanzados.value.fechaInicio, filtrosAvanzados.value.fechaFin]
+    .filter(Boolean).length
+)
 
 // ──────────────────────────────────────────────────
 // Modal: Crear / Editar
@@ -1232,7 +1263,6 @@ const classBadgeEstatus = (fecha) => fecha >= hoy ? 'estatus-proximo' : 'estatus
   flex-direction: column;
   overflow: hidden;
 }
-.modal-caja.modal-ancho { width: 620px; }
 .modal-cabecera {
   padding: 1.4rem 1.6rem 1.1rem;
   border-bottom: 1px solid #EEF1F6;
@@ -1333,6 +1363,37 @@ const classBadgeEstatus = (fecha) => fecha >= hoy ? 'estatus-proximo' : 'estatus
 .detalle-descripcion-vacio { margin: 0; font-size: 0.85rem; color: #9CA3AF; font-style: italic; }
 .detalle-pie { justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; }
 .detalle-pie-derecha { display: flex; gap: 0.5rem; align-items: center; }
+
+.btn-filtros-activos {
+  border-color: #1D52B7;
+  color: #1D52B7;
+  background: rgba(29,82,183,.06);
+}
+.filtros-badge-activos {
+  background: #1D52B7;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  line-height: 1;
+}
+.pag-ellipsis {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  color: #9CA3AF;
+  font-size: 0.9rem;
+  font-weight: 600;
+  user-select: none;
+}
 
 /* Botón eliminar */
 .btn-eliminar {
@@ -1460,11 +1521,10 @@ const classBadgeEstatus = (fecha) => fecha >= hoy ? 'estatus-proximo' : 'estatus
   .btn-filtros-premium { width: 100%; justify-content: center; }
 
   .evento-card { flex-direction: column; align-items: flex-start; }
-  .evento-card-acciones { width: 100%; flex-direction: row; }
-  .btn-card-accion { flex: 1; }
+  .evento-card-acciones { width: 100%; flex-direction: row; flex-wrap: wrap; }
+  .btn-card-accion { flex: 1; min-width: 120px; }
 
   .modal-caja,
-  .modal-caja.modal-ancho,
   .modal-detalle { width: 100%; max-width: 100%; margin: 0; border-radius: 16px; }
 
   .modal-cabecera,
