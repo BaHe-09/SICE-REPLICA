@@ -45,13 +45,22 @@ class CarreraController extends Controller
             ->map(function ($c) {
                 return [
                     'id_carrera'      => $c->id_carrera,
+                    'id'              => $c->id_carrera,
                     'nombre'          => $c->nombre,
+                    'clave'           => strtoupper(implode('', array_map(
+                        fn($w) => substr($w, 0, 1),
+                        array_filter(
+                            explode(' ', preg_replace('/\b(EN|DE|LA|LOS|LAS|Y|A|DEL)\b/i', '', $c->nombre)),
+                            fn($w) => strlen(trim($w)) > 0
+                        )
+                    ))),
                     'id_departamento' => $c->id_departamento,
                     'id_nivel'        => $c->id_nivel,
                     'estatus'         => $c->estatus,
                     // Métricas para la Pantalla 1
                     'total_alumnos'   => (int) $c->total_alumnos,
                     'total_grupos'    => (int) $c->total_grupos,
+                    'totalGrupos'     => (int) $c->total_grupos,
                     'total_docentes'  => (int) $c->total_docentes,
                     // Relaciones estructuradas para formularios de Vue
                     'departamento'    => [
