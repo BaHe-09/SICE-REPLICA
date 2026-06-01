@@ -1054,7 +1054,7 @@ const iniciales = (n) => {
   outline: none;
   background: transparent;
   font-size: 0.82rem;
-  font-family: inherit;
+  font-family: Montserrat, sans-serif;
   color: #111827;
   min-width: 0;
 }
@@ -1133,7 +1133,7 @@ const iniciales = (n) => {
   border: 1px solid #E5E7EB;
   padding: 2px 7px;
   border-radius: 5px;
-  font-family: 'Courier New', monospace;
+  font-family: Montserrat, sans-serif;
   font-size: 0.78rem;
   font-weight: 700;
   color: #374151;
@@ -1216,7 +1216,7 @@ const iniciales = (n) => {
   flex-shrink: 0;
   font-size: 0.68rem;
   font-weight: 700;
-  font-family: inherit;
+  font-family: Montserrat, sans-serif;
   white-space: nowrap;
 }
 .btn-accion .btn-label { line-height: 1; }
@@ -1255,7 +1255,7 @@ const iniciales = (n) => {
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
-  font-family: inherit;
+  font-family: Montserrat, sans-serif;
   text-decoration: underline;
   text-underline-offset: 2px;
   padding: 0;
@@ -1301,7 +1301,7 @@ const iniciales = (n) => {
   align-items: center;
   gap: 6px;
   cursor: pointer;
-  font-family: inherit;
+  font-family: Montserrat, sans-serif;
   transition: background 0.2s, box-shadow 0.2s;
   white-space: nowrap;
   height: 38px;
@@ -1321,7 +1321,7 @@ const iniciales = (n) => {
   font-weight: 600;
   font-size: 0.875rem;
   cursor: pointer;
-  font-family: inherit;
+  font-family: Montserrat, sans-serif;
   transition: background 0.15s, border-color 0.15s;
 }
 .btn-cancelar:hover { background: #F9FAFB; border-color: #D1D5DB; }
@@ -1401,7 +1401,7 @@ const iniciales = (n) => {
   border: none;
   background: transparent;
   font-size: 0.875rem;
-  font-family: inherit;
+  font-family: Montserrat, sans-serif;
   color: #111827;
   outline: none;
   min-width: 0;

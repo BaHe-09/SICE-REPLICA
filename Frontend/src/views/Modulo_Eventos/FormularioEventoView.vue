@@ -625,7 +625,7 @@ const guardar = async () => {
   border: 1.5px solid #E4E9F0;
   border-radius: 10px;
   font-size: 0.875rem;
-  font-family: inherit;
+  font-family: Montserrat, sans-serif;
   color: #0B2545;
   outline: none;
   background: #FAFBFC;
@@ -831,7 +831,7 @@ const guardar = async () => {
   align-items: center;
   gap: 7px;
   cursor: pointer;
-  font-family: inherit;
+  font-family: Montserrat, sans-serif;
   transition: opacity 0.2s, box-shadow 0.2s;
   white-space: nowrap;
   box-shadow: 0 4px 14px rgba(29,82,183,.28);
@@ -854,7 +854,7 @@ const guardar = async () => {
   align-items: center;
   gap: 6px;
   cursor: pointer;
-  font-family: inherit;
+  font-family: Montserrat, sans-serif;
   transition: background 0.2s, border-color 0.2s;
   white-space: nowrap;
 }

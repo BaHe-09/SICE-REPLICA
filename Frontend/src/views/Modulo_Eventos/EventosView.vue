@@ -966,7 +966,7 @@ const classBadgeEstatus = (fecha) => fecha >= hoy ? 'estatus-proximo' : 'estatus
   background: transparent;
   padding: 0;
   font-size: 0.9rem;
-  font-family: inherit;
+  font-family: Montserrat, sans-serif;
   outline: none;
   flex: 1;
   color: #0B2545;
@@ -988,7 +988,7 @@ const classBadgeEstatus = (fecha) => fecha >= hoy ? 'estatus-proximo' : 'estatus
   border-radius: 10px;
   font-weight: 600;
   font-size: 0.875rem;
-  font-family: inherit;
+  font-family: Montserrat, sans-serif;
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.2s ease;
@@ -1230,7 +1230,7 @@ const classBadgeEstatus = (fecha) => fecha >= hoy ? 'estatus-proximo' : 'estatus
   cursor: pointer;
   font-size: 0.85rem;
   font-weight: 600;
-  font-family: inherit;
+  font-family: Montserrat, sans-serif;
   color: #4F4F4F;
   transition: all 0.2s;
   padding: 0 8px;
@@ -1408,7 +1408,7 @@ const classBadgeEstatus = (fecha) => fecha >= hoy ? 'estatus-proximo' : 'estatus
   align-items: center;
   gap: 6px;
   cursor: pointer;
-  font-family: inherit;
+  font-family: Montserrat, sans-serif;
   transition: background 0.2s;
   white-space: nowrap;
 }
@@ -1428,7 +1428,7 @@ const classBadgeEstatus = (fecha) => fecha >= hoy ? 'estatus-proximo' : 'estatus
 .campo-ancho { grid-column: 1 / -1; }
 .campo-label { font-size: 0.82rem; font-weight: 700; color: #374151; }
 .requerido { color: #EB5757; }
-.campo-input { padding: 10px 14px; border: 1.5px solid #E4E9F0; border-radius: 9px; font-size: 0.875rem; font-family: inherit; color: #0B2545; outline: none; background: #FFFFFF; transition: border-color 0.2s, box-shadow 0.2s; }
+.campo-input { padding: 10px 14px; border: 1.5px solid #E4E9F0; border-radius: 9px; font-size: 0.875rem; font-family: Montserrat, sans-serif; color: #0B2545; outline: none; background: #FFFFFF; transition: border-color 0.2s, box-shadow 0.2s; }
 .campo-input:focus { border-color: #2F80ED; background: #FFFFFF; box-shadow: 0 0 0 4px rgba(47,128,237,.12); }
 .campo-input.campo-error { border-color: #EB5757; }
 .campo-textarea { resize: vertical; min-height: 80px; }
@@ -1449,7 +1449,7 @@ const classBadgeEstatus = (fecha) => fecha >= hoy ? 'estatus-proximo' : 'estatus
   align-items: center;
   gap: 6px;
   cursor: pointer;
-  font-family: inherit;
+  font-family: Montserrat, sans-serif;
   transition: opacity 0.2s, box-shadow 0.2s;
   white-space: nowrap;
   box-shadow: 0 4px 12px rgba(29,82,183,.25);
@@ -1469,7 +1469,7 @@ const classBadgeEstatus = (fecha) => fecha >= hoy ? 'estatus-proximo' : 'estatus
   align-items: center;
   gap: 6px;
   cursor: pointer;
-  font-family: inherit;
+  font-family: Montserrat, sans-serif;
   transition: background 0.2s, border-color 0.2s;
   white-space: nowrap;
 }
@@ -1485,7 +1485,7 @@ const classBadgeEstatus = (fecha) => fecha >= hoy ? 'estatus-proximo' : 'estatus
   font-weight: 600;
   font-size: 0.875rem;
   cursor: pointer;
-  font-family: inherit;
+  font-family: Montserrat, sans-serif;
   transition: background 0.2s, border-color 0.2s;
 }
 .btn-cancelar:hover { background: #F4F6F9; border-color: #C8D3E8; }
