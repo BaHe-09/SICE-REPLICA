@@ -751,4 +751,61 @@ class GrupoController extends Controller
         }
     }
 
+    // =========================================================================
+
+    /**
+     * GET /api/grupos/{id}/alumnos
+     *
+     * Alumnos inscritos en un grupo con estatus y promedio calculado.
+     * Campos: noControl, nombre, estatus, promedio
+     */
+    public function alumnos(int $id)
+    {
+        try {
+            $grupo = DB::table('grupo')->where('id_grupo', $id)->first();
+
+            if (!$grupo) {
+                return response()->json(['error' => 'Grupo no encontrado'], 404);
+            }
+
+            $alumnos = DB::table('inscripcion as i')
+                ->join('alumno as a',  'i.id_alumno', '=', 'a.id_alumno')
+                ->join('persona as p', 'a.id_persona', '=', 'p.id_persona')
+                ->leftJoin('estatus_alumno as ea', 'a.id_estatus_alumno', '=', 'ea.id_estatus_alumno')
+                ->where('i.id_grupo', $id)
+                ->whereIn('i.estatus', ['Activo', 'activo', 'inscrito'])
+                ->select(
+                    'a.numero_control as noControl',
+                    DB::raw("CONCAT(p.nombre,' ',p.apellido_paterno,' ',COALESCE(p.apellido_materno,'')) as nombre"),
+                    DB::raw("COALESCE(ea.nombre, a.estatus, 'Activo') as estatus"),
+                    'i.id_inscripcion'
+                )
+                ->orderBy('p.apellido_paterno')
+                ->get()
+                ->map(function ($alumno) {
+                    // Promedio ponderado de calificaciones del alumno en este grupo
+                    $promedio = DB::table('calificacion as c')
+                        ->join('evaluacion as ev', 'c.id_evaluacion', '=', 'ev.id_evaluacion')
+                        ->where('c.id_inscripcion', $alumno->id_inscripcion)
+                        ->sum(DB::raw('c.calificacion * ev.porcentaje / 100'));
+
+                    return [
+                        'noControl' => $alumno->noControl,
+                        'nombre'    => trim($alumno->nombre),
+                        'estatus'   => $alumno->estatus,
+                        'promedio'  => $promedio ? round((float) $promedio, 1) : null,
+                    ];
+                });
+
+            return response()->json([
+                'id_grupo' => $id,
+                'total'    => $alumnos->count(),
+                'alumnos'  => $alumnos->values(),
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
 }
