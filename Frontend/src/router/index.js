@@ -94,6 +94,11 @@ const router = createRouter({
   redirect: '/inscripciones/nueva'
 },
 {
+  path: '/inscripciones/nuevo-ingreso',
+  name: 'InscripcionNuevoIngreso',
+  component: () => import('@/views/InscripcionNuevoIngresoView.vue')
+},
+{
   path: '/inscripciones/nueva',
   name: 'NuevaInscripcion',
   component: () => import('@/views/InscripcionView.vue')
@@ -109,7 +114,7 @@ const router = createRouter({
   component: () => import('@/views/HistorialInscripcionesView.vue')
 },
 {
-  path: '/inscripciones/detalladas',
+  path: '/inscripciones/panel',
   name: 'InscripcionesPanel',
   component: () => import('@/views/Inscripciones_detalladas/InscripcionesView.vue')
 },

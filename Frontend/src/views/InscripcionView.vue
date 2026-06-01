@@ -13,13 +13,13 @@
         </span>
 
         <span class="breadcrumb-actual" aria-current="page">
-          INSCRIPCIÓN
+          INSCRIPCIÓN REGULAR
         </span>
       </nav>
 
-      <h1 class="page-title">INSCRIPCIÓN</h1>
+      <h1 class="page-title">INSCRIPCIÓN REGULAR</h1>
       <p class="subtitle">
-        BUSQUE AL ALUMNO POR NÚMERO DE CONTROL O NOMBRE, Y ASÍGNELO A UNO O MÁS GRUPOS DISPONIBLES.
+        BUSQUE UN ALUMNO EXISTENTE, SELECCIONE EL PERIODO Y ASIGNE LAS MATERIAS DISPONIBLES SEGÚN SU SITUACIÓN ACADÉMICA.
       </p>
 
       <!-- TOAST -->
@@ -44,14 +44,14 @@
             <span v-if="paso > 2">✓</span>
             <span v-else>2</span>
           </div>
-          <span class="paso-label">SELECCIONAR MATERIAS</span>
+          <span class="paso-label">ASIGNAR MATERIAS</span>
         </div>
 
         <div class="paso-linea" :class="{ completado: paso > 2 }"></div>
 
         <div class="paso" :class="{ activo: paso >= 3 }">
           <div class="paso-circulo">3</div>
-          <span class="paso-label">CONFIRMAR</span>
+          <span class="paso-label">CONFIRMAR CARGA</span>
         </div>
       </div>
 
@@ -209,7 +209,7 @@
             </div>
 
             <div>
-              <h3>SELECCIONAR MATERIAS</h3>
+              <h3>ASIGNAR MATERIAS</h3>
               <p class="paso-desc">
                 ASIGNANDO A:
                 <strong>{{ alumnoSeleccionado?.nombre?.toUpperCase() }}</strong>
@@ -394,8 +394,8 @@
             </div>
 
             <div>
-              <h3>CONFIRMAR INSCRIPCIÓN</h3>
-              <p class="paso-desc">VERIFIQUE LOS DATOS ANTES DE CONFIRMAR.</p>
+              <h3>CONFIRMAR CARGA ACADÉMICA</h3>
+              <p class="paso-desc">VERIFIQUE LAS MATERIAS SELECCIONADAS ANTES DE CONFIRMAR LA INSCRIPCIÓN REGULAR.</p>
             </div>
           </div>
 
@@ -478,7 +478,7 @@
 
             <button class="btn-confirmar" @click="confirmarInscripcion" :disabled="cargando || gruposSeleccionados.length === 0">
               <span v-if="cargando" class="spinner-btn"></span>
-              {{ cargando ? 'INSCRIBIENDO...' : `CONFIRMAR ${gruposSeleccionados.length} MATERIA(S)` }}
+              {{ cargando ? 'REGISTRANDO CARGA...' : `CONFIRMAR CARGA REGULAR (${gruposSeleccionados.length} MATERIA(S))` }}
             </button>
           </div>
         </div>
@@ -1012,7 +1012,8 @@ const confirmarInscripcion = async () => {
       const payload = {
         id_alumno: alumnoSeleccionado.value.id_alumno,
         id_grupo: grupo.id,
-        id_periodo: periodo.value
+        id_periodo: periodo.value,
+        tipo_inscripcion: 'REGULAR'
       }
 
       const response = await fetch(`${API_BASE}/registrar`, {
@@ -1031,8 +1032,7 @@ const confirmarInscripcion = async () => {
       }
     }
 
-    showNotification(`INSCRIPCIÓN CONFIRMADA: ${alumnoActual.nombre?.toUpperCase()} EN ${gruposSeleccionados.value.length} MATERIA(S).`, 'success')
-
+    showNotification(`CARGA REGULAR CONFIRMADA: ${alumnoActual.nombre?.toUpperCase()} EN ${gruposSeleccionados.value.length} MATERIA(S).`, 'success')
     await cargarGruposDisponibles()
     await abrirModalCargaAlumno(alumnoActual)
 

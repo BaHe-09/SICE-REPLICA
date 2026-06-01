@@ -616,22 +616,46 @@
             </router-link>
 
             <template v-if="puedeVerItem('/inscripciones')">
-              <div class="ribbon-separador"></div>
+            <router-link to="/inscripciones/nuevo-ingreso" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" class="ribbon-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"
+                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3M6 20a6 6 0 0112 0M12 12a4 4 0 100-8 4 4 0 000 8z"/>
+                </svg>
+              </div>
+              <span>NUEVO INGRESO</span>
+            </router-link>
 
-              <router-link to="/inscripciones" class="ribbon-item" @click="cerrarTab">
-                <div class="ribbon-icono-wrap">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-                </div>
-                <span>INSC. DETALLADAS</span>
-              </router-link>
+            <router-link to="/inscripciones/nueva" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" class="ribbon-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+              </div>
+              <span>NUEVA INSCRIPCIÓN</span>
+            </router-link>
 
-              <router-link to="/inscripciones/historial" class="ribbon-item" @click="cerrarTab">
-                <div class="ribbon-icono-wrap">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </div>
-                <span>HISTORIAL INSC.</span>
-              </router-link>
-            </template>
+            <router-link to="/inscripciones/cargas" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" class="ribbon-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"
+                        d="M9 5h6M9 12h6M9 16h4M8 3h8a1 1 0 011 1v2h1a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h1V4a1 1 0 011-1z"/>
+                </svg>
+              </div>
+              <span>CARGAS ACADÉMICAS</span>
+            </router-link>
+
+            <router-link to="/inscripciones/historial" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" class="ribbon-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"
+                        d="M12 8v5l3 2M21 12a9 9 0 11-3.3-6.96M21 4v5h-5"/>
+                </svg>
+              </div>
+              <span>HISTORIAL</span>
+            </router-link>
+          </template>
           </template>
 
           <!-- ── Gestión Académica ── -->
@@ -974,25 +998,56 @@
             </router-link>
           </template>
           
-          <!-- ── SE: Inscripciones ── -->
+          <!-- ── SE: INSCRIPCIONES ── -->
           <template v-if="tabActivo === 'se-inscripciones'">
-            <router-link to="/inscripcion" class="ribbon-item" @click="cerrarTab">
+            <router-link to="/inscripciones/nuevo-ingreso" class="ribbon-item" @click="cerrarTab">
               <div class="ribbon-icono-wrap">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="ribbon-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"
+                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3M6 20a6 6 0 0112 0M12 12a4 4 0 100-8 4 4 0 000 8z"/>
+                </svg>
               </div>
-              <span>Nueva Inscripción</span>
+              <span>NUEVO INGRESO</span>
             </router-link>
+
+            <router-link to="/inscripciones/nueva" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" class="ribbon-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+              </div>
+              <span>NUEVA INSCRIPCIÓN</span>
+            </router-link>
+
             <router-link to="/inscripciones/cargas" class="ribbon-item" @click="cerrarTab">
               <div class="ribbon-icono-wrap">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="ribbon-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"
+                        d="M9 5h6M9 12h6M9 16h4M8 3h8a1 1 0 011 1v2h1a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h1V4a1 1 0 011-1z"/>
+                </svg>
               </div>
-              <span>Cargas Académicas</span>
+              <span>CARGAS ACADÉMICAS</span>
             </router-link>
+
             <router-link to="/inscripciones/historial" class="ribbon-item" @click="cerrarTab">
               <div class="ribbon-icono-wrap">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="ribbon-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"
+                        d="M12 8v5l3 2M21 12a9 9 0 11-3.3-6.96M21 4v5h-5"/>
+                </svg>
               </div>
-              <span>Historial</span>
+              <span>HISTORIAL</span>
+            </router-link>
+
+            <router-link to="/gestion-grupos" class="ribbon-item" @click="cerrarTab">
+              <div class="ribbon-icono-wrap">
+                <svg xmlns="http://www.w3.org/2000/svg" class="ribbon-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"
+                        d="M8 3v4M16 3v4M4 9h16M6 5h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2zM8 13h3M13 13h3M8 17h3M13 17h3"/>
+                </svg>
+              </div>
+              <span>GRUPOS Y HORARIOS</span>
             </router-link>
           </template>
           
@@ -1697,12 +1752,33 @@ onBeforeUnmount(() => {
 })
 
 const RUTAS_PRINCIPALES = new Set([
-  '/inicio', '/dashboard', '/servicios-escolares', '/alumnos',
-  '/evaluaciones', '/calificaciones', '/inscripcion', '/inscripciones',
-  '/gestion-grupos', '/gestion-academica', '/eventos', '/comite',
-  '/kardex', '/historial-academico', '/asignacion-docente',
-  '/roles', '/permisos', '/usuarios', '/bitacora', '/nuevo-usuario',
-  '/recursos-humanos', '/personas',
+  '/inicio',
+  '/dashboard',
+  '/servicios-escolares',
+  '/alumnos',
+  '/evaluaciones',
+  '/calificaciones',
+  '/inscripcion',
+  '/inscripciones',
+  '/inscripciones/nuevo-ingreso',
+  '/inscripciones/nueva',
+  '/inscripciones/cargas',
+  '/inscripciones/historial',
+  '/inscripciones/panel',
+  '/gestion-grupos',
+  '/gestion-academica',
+  '/eventos',
+  '/comite',
+  '/kardex',
+  '/historial-academico',
+  '/asignacion-docente',
+  '/roles',
+  '/permisos',
+  '/usuarios',
+  '/bitacora',
+  '/nuevo-usuario',
+  '/recursos-humanos',
+  '/personas',
   '/gestion-academica/carreras',
 ])
 
@@ -1936,64 +2012,6 @@ const regresarPagina = () => router.back()
 }
 
 /* ══════════════════════════════════════
-   RIBBON PANEL
-══════════════════════════════════════ */
-.ribbon-panel {
-  position: fixed;
-  top: var(--total-h);
-  left: 0; right: 0;
-  min-height: var(--ribbon-h);
-  background: #F8FAFC;
-  border-top: 1px solid #E5E7EB;
-  border-bottom: 1px solid var(--borde);
-  box-shadow: 0 3px 10px rgba(0,0,0,0.05);
-  z-index: 990;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 1.5rem;
-  overflow-x: auto;
-  overflow-y: hidden;
-  white-space: nowrap;
-}
-.ribbon-panel::-webkit-scrollbar        { height: 4px; }
-.ribbon-panel::-webkit-scrollbar-track  { background: transparent; }
-.ribbon-panel::-webkit-scrollbar-thumb  { background: #CBD5E1; border-radius: 999px; }
-
-.ribbon-item {
-  height: 30px;
-  min-width: auto;
-  padding: 0 11px;
-  border-radius: 7px;
-  border: 1px solid transparent;
-  background: transparent;
-  display: inline-flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  text-decoration: none;
-  color: #374151;
-  font-size: 0.78rem;
-  font-weight: 500;
-  line-height: 1;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-  flex-shrink: 0;
-  text-transform: uppercase;
-}
-.ribbon-item:hover               { background: #DBEAFE; color: var(--azul); border-color: #BFDBFE; }
-.ribbon-item.router-link-active  { background: #EFF6FF; color: var(--azul); border-color: #BFDBFE; font-weight: 700; box-shadow: inset 0 0 0 1px rgba(27,57,106,0.08); }
-
-.ribbon-icono-wrap {
-  width: 18px; height: 18px;
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-}
-.ribbon-icono-wrap svg { width: 15px; height: 15px; stroke: currentColor; }
-
-.ribbon-separador { width: 1px; height: 24px; background: #D1D5DB; margin: 0 5px; flex-shrink: 0; }
-
-/* ══════════════════════════════════════
    ÁREA DE CONTENIDO
 ══════════════════════════════════════ */
 .area-contenido {
@@ -2204,5 +2222,86 @@ h3 { font-size: clamp(1rem, 2.5vw, 1.2rem); }
   .paginacion { flex-direction: column !important; align-items: center !important; gap: 0.5rem !important; }
   .modal-footer, .modal-pie { flex-direction: column !important; gap: 0.5rem !important; }
   .modal-footer button, .modal-pie button { width: 100% !important; justify-content: center; }
+}
+
+/* ══════════════════════════════════════
+   AJUSTE FINAL RIBBON
+══════════════════════════════════════ */
+.ribbon-item {
+  height: 30px;
+  min-width: auto;
+  padding: 0 11px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  background: transparent;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  text-decoration: none;
+  color: #374151;
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.ribbon-item:hover {
+  background: #DBEAFE;
+  color: var(--azul);
+  border-color: #BFDBFE;
+}
+
+.ribbon-item.router-link-active,
+.ribbon-item.router-link-exact-active {
+  background: #EFF6FF;
+  color: var(--azul);
+  border-color: #BFDBFE;
+  font-weight: 700;
+  box-shadow: inset 0 0 0 1px rgba(27,57,106,0.08);
+}
+
+.ribbon-icono-wrap {
+  width: 18px;
+  min-width: 18px;
+  height: 18px;
+  min-height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.ribbon-icono-wrap svg,
+.ribbon-icon {
+  display: block;
+  width: 15px;
+  min-width: 15px;
+  height: 15px;
+  min-height: 15px;
+  max-width: none;
+  stroke: currentColor;
+  fill: none;
+  flex-shrink: 0;
+}
+
+.ribbon-item span {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.78rem !important;
+  font-weight: 500;
+  line-height: 1 !important;
+  color: inherit;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.ribbon-item.router-link-active span,
+.ribbon-item.router-link-exact-active span {
+  font-weight: 700;
 }
 </style>
