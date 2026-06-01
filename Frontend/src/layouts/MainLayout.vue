@@ -90,7 +90,8 @@
     </header>
 
     <!-- ══ BARRA DE NAVEGACIÓN HORIZONTAL (solo desktop) ══ -->
-    <nav class="barra-nav-horizontal" @click.stop @mouseenter="cancelarCierreTab" @mouseleave="cerrarTabConRetardo" aria-label="Menú principal">
+    <nav class="barra-nav-horizontal" @click.stop @mouseenter="cancelarCierreTab" @mouseleave="cerrarTabConRetardo" aria-label="Menú principal"
+         :style="tabActivo && colorModuloActivo ? `--color-modulo:${colorModuloActivo.color};--color-modulo-bg:${colorModuloActivo.colorBg};--color-modulo-light:${colorModuloActivo.colorLight};--color-modulo-border:${colorModuloActivo.colorBorder}` : ''">
       <div class="nav-scroll-inner" ref="navScrollRef">
 
         <!-- Inicio (siempre visible) -->
@@ -102,10 +103,7 @@
           :title="tooltips.inicio"
           @click="cerrarTab"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z" fill="rgba(22,163,74,.2)" stroke="#16a34a" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 21V12h6v9" stroke="#16a34a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span class="nav-label">INICIO</span>
         </router-link>
 
@@ -123,9 +121,9 @@
             tabindex="0"
             title="Dashboard — Panel principal de Servicios Escolares"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24">
+              <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z" fill="rgba(22,163,74,.2)" stroke="#16a34a" stroke-width="1.8" stroke-linejoin="round"/>
+              <path d="M9 21V12h6v9" stroke="#16a34a" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <span class="nav-label">PRINCIPAL</span>
             <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'se-dashboard' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -142,9 +140,7 @@
             tabindex="0"
             title="Alumnos — Gestión y expedientes"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="7" r="4" fill="rgba(37,99,235,.2)" stroke="#2563eb" stroke-width="1.8"/><path d="M4 21c0-4 3.582-7 8-7s8 3 8 7" stroke="#2563eb" stroke-width="1.7" stroke-linecap="round"/></svg>
             <span class="nav-label">ALUMNOS</span>
             <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'se-alumnos' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -160,9 +156,7 @@
             tabindex="0"
             title="Inscripciones — Nueva, cargas e historial"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20" stroke="#7c3aed" stroke-width="1.7" stroke-linecap="round"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" fill="rgba(124,58,237,.2)" stroke="#7c3aed" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 7h8M8 11h5" stroke="#7c3aed" stroke-width="1.5" stroke-linecap="round"/></svg>
             <span class="nav-label">INSCRIPCIONES</span>
             <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'se-inscripciones' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -178,9 +172,7 @@
             tabindex="0"
             title="Calificaciones — Captura, actas, especiales, residencias y analítica"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3" fill="rgba(217,119,6,.2)" stroke="#d97706" stroke-width="1.8"/><path d="M8 12h2.5l2-5 2 9 2-4h3.5" stroke="#d97706" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span class="nav-label">CALIFICACIONES</span>
             <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'se-calificaciones' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -196,9 +188,7 @@
             tabindex="0"
             title="Grupos y Horarios"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="3" fill="rgba(13,148,136,.2)" stroke="#0d9488" stroke-width="1.8"/><path d="M16 2v4M8 2v4M3 10h18" stroke="#0d9488" stroke-width="1.7" stroke-linecap="round"/><circle cx="8" cy="15" r="1.2" fill="#0d9488"/><circle cx="12" cy="15" r="1.2" fill="#0d9488"/><circle cx="16" cy="15" r="1.2" fill="#0d9488"/></svg>
             <span class="nav-label">GRUPOS</span>
             <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'se-grupos' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -214,9 +204,7 @@
             tabindex="0"
             title="Documentos — Constancias, boletas, certificados y más"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" fill="rgba(234,88,12,.2)" stroke="#ea580c" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 2v6h6M8 13h8M8 17h5" stroke="#ea580c" stroke-width="1.6" stroke-linecap="round"/></svg>
             <span class="nav-label">DOCUMENTOS</span>
             <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'se-documentos' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -232,9 +220,7 @@
             tabindex="0"
             title="Egresados — Posibles, titulados y registro"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24"><path d="M12 2L2 8l10 6 10-6-10-6z" fill="rgba(219,39,119,.2)" stroke="#db2777" stroke-width="1.8" stroke-linejoin="round"/><path d="M6 11.5V17c0 0 2 3 6 3s6-3 6-3v-5.5" stroke="#db2777" stroke-width="1.7" stroke-linecap="round"/><path d="M20 8v5" stroke="#db2777" stroke-width="1.7" stroke-linecap="round"/></svg>
             <span class="nav-label">EGRESADOS</span>
             <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'se-egresados' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -250,9 +236,7 @@
             tabindex="0"
             title="Aspirantes — Configuración, solicitudes y fichas"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="rgba(147,51,234,.2)" stroke="#9333ea" stroke-width="1.8"/><path d="M4 21a8 8 0 0116 0" stroke="#9333ea" stroke-width="1.7" stroke-linecap="round"/><path d="M17 4l2-2M17 12l2 2M12 3V1" stroke="#9333ea" stroke-width="1.5" stroke-linecap="round"/></svg>
             <span class="nav-label">ASPIRANTES</span>
             <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'se-aspirantes' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -268,9 +252,7 @@
             tabindex="0"
             title="Configuración — Carreras, especialidades, plan curricular y periodos"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="rgba(71,85,105,.3)" stroke="#475569" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" fill="rgba(71,85,105,.12)" stroke="#475569" stroke-width="1.7"/></svg>
             <span class="nav-label">CONFIGURACIÓN</span>
             <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'se-configuracion' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -286,9 +268,7 @@
             tabindex="0"
             title="Procesos — Cierre de semestre y procesos especiales"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24"><path d="M4 4v5h5" stroke="#dc2626" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 20v-5h-5" stroke="#dc2626" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.49 9A9 9 0 005.64 5.64L4 9M4 15a9 9 0 0014.36 3.36L20 15" stroke="#dc2626" stroke-width="1.7" stroke-linecap="round"/></svg>
             <span class="nav-label">PROCESOS</span>
             <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'se-procesos' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -336,10 +316,7 @@
               :aria-expanded="tabActivo === 'servicios'"
               tabindex="0"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z" fill="rgba(37,99,235,.2)" stroke="#2563eb" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 21V13h6v8" stroke="#2563eb" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
               <span class="nav-label">ESCOLARES</span>
               <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'servicios' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -358,10 +335,7 @@
               tabindex="0"
               :title="tooltips.academica"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 14l9-5-9-5-9 5 9 5zM12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24"><path d="M12 2L2 8l10 6 10-6-10-6z" fill="rgba(13,148,136,.2)" stroke="#0d9488" stroke-width="1.8" stroke-linejoin="round"/><path d="M6 11.5V17c0 0 2 3 6 3s6-3 6-3v-5.5" stroke="#0d9488" stroke-width="1.7" stroke-linecap="round"/><path d="M20 8v5" stroke="#0d9488" stroke-width="1.7" stroke-linecap="round"/></svg>
               <span class="nav-label">GESTION</span>
               <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'academica' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -377,10 +351,7 @@
               @click.stop="toggleTab('carreras')"
               :title="tooltips.carreras"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20" stroke="#9333ea" stroke-width="1.7" stroke-linecap="round"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" fill="rgba(147,51,234,.2)" stroke="#9333ea" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 7h8M8 11h5" stroke="#9333ea" stroke-width="1.5" stroke-linecap="round"/></svg>
               <span class="nav-label">Carreras</span>
               <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'carreras' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -468,10 +439,7 @@
               tabindex="0"
               :title="tooltips.rrhh"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="3" fill="rgba(234,88,12,.2)" stroke="#ea580c" stroke-width="1.8"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" stroke="#ea580c" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="14" r="2" fill="rgba(234,88,12,.4)" stroke="#ea580c" stroke-width="1.5"/></svg>
               <span class="nav-label">RH</span>
               <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'rrhh' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -488,10 +456,7 @@
               tabindex="0"
               :title="tooltips.personas"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24"><circle cx="9" cy="7" r="3.5" fill="rgba(37,99,235,.2)" stroke="#2563eb" stroke-width="1.7"/><path d="M2 20c0-3.314 3.134-6 7-6" stroke="#2563eb" stroke-width="1.7" stroke-linecap="round"/><circle cx="16.5" cy="8" r="3" fill="rgba(37,99,235,.2)" stroke="#2563eb" stroke-width="1.5"/><path d="M13 20c0-2.762 2.462-5 5.5-5S24 17.238 24 20" stroke="#2563eb" stroke-width="1.7" stroke-linecap="round"/></svg>
               <span class="nav-label">PERSONAS</span>
               <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'personas' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -510,10 +475,7 @@
               tabindex="0"
               :title="tooltips.asignacion"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20" stroke="#7c3aed" stroke-width="1.7" stroke-linecap="round"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" fill="rgba(124,58,237,.2)" stroke="#7c3aed" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 9h8M8 12h4" stroke="#7c3aed" stroke-width="1.5" stroke-linecap="round"/><path d="M14 15l2 2 3-3" stroke="#7c3aed" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
               <span class="nav-label">ASIGNACION</span>
               <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'asignacion' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -533,10 +495,7 @@
               tabindex="0"
               :title="tooltips.kardex"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" fill="rgba(22,163,74,.2)" stroke="#16a34a" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 2v6h6M8 13h8M8 17h5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round"/></svg>
               <span class="nav-label">KARDEX</span>
               <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'kardex' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -553,10 +512,7 @@
               tabindex="0"
               :title="tooltips.historial"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" class="nav-icono" fill="none" viewBox="0 0 24 24"><rect x="3" y="7" width="5" height="10" rx="1" fill="rgba(71,85,105,.25)" stroke="#475569" stroke-width="1.6"/><rect x="9.5" y="5" width="5" height="14" rx="1" fill="rgba(71,85,105,.2)" stroke="#475569" stroke-width="1.6"/><rect x="16" y="3" width="5" height="16" rx="1" fill="rgba(71,85,105,.15)" stroke="#475569" stroke-width="1.6"/></svg>
               <span class="nav-label">HISTORIAL</span>
               <svg class="nav-flecha" :class="{ 'nav-flecha-activa': tabActivo === 'historial' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -569,7 +525,8 @@
 
       <!-- ══ RIBBON PANEL ══ -->
       <Transition name="ribbon">
-        <div v-if="tabActivo" class="ribbon-panel" @click.stop>
+        <div v-if="tabActivo" class="ribbon-panel" @click.stop
+             :style="colorModuloActivo ? `border-bottom-color:${colorModuloActivo.color}` : ''">
 
           <!-- ── Servicios Escolares ── -->
           <template v-if="tabActivo === 'servicios'">
@@ -1235,8 +1192,10 @@
 
     <!-- ══ DRAWER MÓVIL ══ -->
     <Transition name="drawer">
-      <aside v-if="drawerAbierto" ref="sidebarRef" class="drawer-movil" @click.stop>
-        <div class="drawer-encabezado">
+      <aside v-if="drawerAbierto" ref="sidebarRef" class="drawer-movil" @click.stop
+            :style="colorDrawerActivo ? `--color-modulo:${colorDrawerActivo.color};--color-modulo-bg:${colorDrawerActivo.colorBg};--color-modulo-light:${colorDrawerActivo.colorLight};--color-modulo-border:${colorDrawerActivo.colorBorder}` : ''">
+        <div class="drawer-encabezado"
+             :style="colorDrawerActivo ? `border-bottom: 3px solid ${colorDrawerActivo.color}` : ''">
           <span class="drawer-titulo">Menú</span>
           <button class="drawer-cerrar" @click="drawerAbierto = false" aria-label="Cerrar menú">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1246,9 +1205,7 @@
         </div>
         <nav class="drawer-nav">
           <router-link to="/inicio" class="drawer-item" @click="drawerAbierto = false">
-            <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z" fill="rgba(22,163,74,.18)" stroke="#16a34a" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 21V13h6v8" stroke="#16a34a" stroke-width="1.7" stroke-linecap="round"/></svg>
             Inicio
           </router-link>
 
@@ -1268,9 +1225,7 @@
             <!-- Servicios Escolares (desplegable) -->
             <template v-if="puedeVer.serviciosEscolares">
               <div class="drawer-grupo-titulo" @click="toggleDrawerSeccion('servicios')">
-                <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z" fill="rgba(37,99,235,.18)" stroke="#2563eb" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 21V13h6v8" stroke="#2563eb" stroke-width="1.7" stroke-linecap="round"/></svg>
                 <span>Servicios Escolares</span>
                 <svg class="drawer-flecha" :class="{ rotada: drawerSeccionAbierta === 'servicios' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -1315,9 +1270,7 @@
             <!-- Carreras -->
             <template v-if="puedeVer.carreras">
               <div class="drawer-grupo-titulo" @click="toggleDrawerSeccion('carreras')">
-                <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0112 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20" stroke="#9333ea" stroke-width="1.7" stroke-linecap="round"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" fill="rgba(147,51,234,.18)" stroke="#9333ea" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 7h8M8 11h5" stroke="#9333ea" stroke-width="1.5" stroke-linecap="round"/></svg>
                 <span>Carreras</span>
                 <svg class="drawer-flecha" :class="{ rotada: drawerSeccionAbierta === 'carreras' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -1338,9 +1291,7 @@
             <!-- Eventos -->
             <template v-if="puedeVer.eventos">
               <div class="drawer-grupo-titulo" @click="toggleDrawerSeccion('eventos')">
-                <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="3" fill="rgba(217,119,6,.18)" stroke="#d97706" stroke-width="1.8"/><path d="M16 2v4M8 2v4M3 10h18" stroke="#d97706" stroke-width="1.7" stroke-linecap="round"/><circle cx="8" cy="15" r="1.2" fill="#d97706"/><circle cx="12" cy="15" r="1.2" fill="#d97706"/><circle cx="16" cy="15" r="1.2" fill="#d97706"/></svg>
                 <span>Eventos</span>
                 <svg class="drawer-flecha" :class="{ rotada: drawerSeccionAbierta === 'eventos' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -1355,9 +1306,7 @@
             <!-- Comité -->
             <template v-if="puedeVer.comite">
               <div class="drawer-grupo-titulo" @click="toggleDrawerSeccion('comite')">
-                <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3" fill="rgba(219,39,119,.18)" stroke="#db2777" stroke-width="1.8"/><path d="M8 9h8M8 13h5" stroke="#db2777" stroke-width="1.6" stroke-linecap="round"/></svg>
                 <span>Comité Académico</span>
                 <svg class="drawer-flecha" :class="{ rotada: drawerSeccionAbierta === 'comite' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -1377,9 +1326,7 @@
               <div class="drawer-separador"><span>ADMINISTRACIÓN</span></div>
 
               <div class="drawer-grupo-titulo" @click="toggleDrawerSeccion('seguridad')">
-                <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24"><path d="M12 2.944A11.955 11.955 0 0120.618 6.04 12.02 12.02 0 0121 9c0 5.591-3.824 10.29-9 11.622C6.824 19.29 3 14.591 3 9a12.02 12.02 0 01.382-3.016A11.955 11.955 0 0112 2.944z" fill="rgba(220,38,38,.18)" stroke="#dc2626" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="#dc2626" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 <span>Seguridad y Usuarios</span>
                 <svg class="drawer-flecha" :class="{ rotada: drawerSeccionAbierta === 'seguridad' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -1394,9 +1341,7 @@
               </div>
 
               <div class="drawer-grupo-titulo" @click="toggleDrawerSeccion('rrhh')">
-                <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="3" fill="rgba(234,88,12,.18)" stroke="#ea580c" stroke-width="1.8"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" stroke="#ea580c" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="14" r="2" fill="rgba(234,88,12,.4)" stroke="#ea580c" stroke-width="1.5"/></svg>
                 <span>Recursos Humanos</span>
                 <svg class="drawer-flecha" :class="{ rotada: drawerSeccionAbierta === 'rrhh' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -1412,9 +1357,7 @@
               </div>
 
               <div class="drawer-grupo-titulo" @click="toggleDrawerSeccion('personas')">
-                <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24"><circle cx="9" cy="7" r="3.5" fill="rgba(37,99,235,.18)" stroke="#2563eb" stroke-width="1.7"/><path d="M2 20c0-3.314 3.134-6 7-6" stroke="#2563eb" stroke-width="1.7" stroke-linecap="round"/><circle cx="16.5" cy="8" r="3" fill="rgba(37,99,235,.15)" stroke="#2563eb" stroke-width="1.5"/><path d="M13 20c0-2.762 2.462-5 5.5-5S24 17.238 24 20" stroke="#2563eb" stroke-width="1.7" stroke-linecap="round"/></svg>
                 <span>Personas</span>
                 <svg class="drawer-flecha" :class="{ rotada: drawerSeccionAbierta === 'personas' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -1426,9 +1369,7 @@
               </div>
 
               <div class="drawer-grupo-titulo" @click="toggleDrawerSeccion('kardex')">
-                <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" fill="rgba(22,163,74,.18)" stroke="#16a34a" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 2v6h6M8 13h8M8 17h5" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round"/></svg>
                 <span>Kardex</span>
                 <svg class="drawer-flecha" :class="{ rotada: drawerSeccionAbierta === 'kardex' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -1439,9 +1380,7 @@
               </div>
 
               <div class="drawer-grupo-titulo" @click="toggleDrawerSeccion('historial')">
-                <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24"><rect x="3" y="7" width="5" height="10" rx="1" fill="rgba(71,85,105,.25)" stroke="#475569" stroke-width="1.6"/><rect x="9.5" y="5" width="5" height="14" rx="1" fill="rgba(71,85,105,.2)" stroke="#475569" stroke-width="1.6"/><rect x="16" y="3" width="5" height="16" rx="1" fill="rgba(71,85,105,.15)" stroke="#475569" stroke-width="1.6"/></svg>
                 <span>Historial Académico</span>
                 <svg class="drawer-flecha" :class="{ rotada: drawerSeccionAbierta === 'historial' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -1455,9 +1394,7 @@
             <!-- Asignación Docente -->
             <template v-if="puedeVer.asignacionDocente">
               <div class="drawer-grupo-titulo" @click="toggleDrawerSeccion('asignacion')">
-                <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="drawer-icono" fill="none" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20" stroke="#7c3aed" stroke-width="1.7" stroke-linecap="round"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" fill="rgba(124,58,237,.18)" stroke="#7c3aed" stroke-width="1.7" stroke-linejoin="round"/><path d="M14 15l2 2 3-3" stroke="#7c3aed" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 <span>Asignación Docente</span>
                 <svg class="drawer-flecha" :class="{ rotada: drawerSeccionAbierta === 'asignacion' }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
@@ -1533,6 +1470,45 @@ const tooltips = {
   se_inscripciones:   'Servicios Escolares → Inscripciones detalladas',
   se_historialinsc:   'Servicios Escolares → Historial de inscripciones',
 }
+
+// ── Color de identidad por módulo ─────────────────────────────────────
+// Cada módulo tiene color (stroke principal), colorBg (relleno semitransparente 20%)
+// y colorLight (hover suave para drawer subitems)
+const COLORES_MODULO = {
+  'inicio':           { color: '#16a34a', colorBg: 'rgba(22,163,74,.18)',  colorLight: '#f0fdf4', colorBorder: '#bbf7d0' },
+  'servicios':        { color: '#2563eb', colorBg: 'rgba(37,99,235,.18)',  colorLight: '#eff6ff', colorBorder: '#bfdbfe' },
+  'se-dashboard':     { color: '#16a34a', colorBg: 'rgba(22,163,74,.18)',  colorLight: '#f0fdf4', colorBorder: '#bbf7d0' },
+  'se-alumnos':       { color: '#2563eb', colorBg: 'rgba(37,99,235,.18)',  colorLight: '#eff6ff', colorBorder: '#bfdbfe' },
+  'se-inscripciones': { color: '#7c3aed', colorBg: 'rgba(124,58,237,.18)', colorLight: '#f5f3ff', colorBorder: '#ddd6fe' },
+  'se-calificaciones':{ color: '#d97706', colorBg: 'rgba(217,119,6,.18)',  colorLight: '#fffbeb', colorBorder: '#fde68a' },
+  'se-grupos':        { color: '#0d9488', colorBg: 'rgba(13,148,136,.18)', colorLight: '#f0fdfa', colorBorder: '#99f6e4' },
+  'se-documentos':    { color: '#ea580c', colorBg: 'rgba(234,88,12,.18)',  colorLight: '#fff7ed', colorBorder: '#fed7aa' },
+  'se-egresados':     { color: '#db2777', colorBg: 'rgba(219,39,119,.18)', colorLight: '#fdf2f8', colorBorder: '#fbcfe8' },
+  'se-aspirantes':    { color: '#9333ea', colorBg: 'rgba(147,51,234,.18)', colorLight: '#faf5ff', colorBorder: '#e9d5ff' },
+  'se-configuracion': { color: '#475569', colorBg: 'rgba(71,85,105,.18)',  colorLight: '#f8fafc', colorBorder: '#cbd5e1' },
+  'se-procesos':      { color: '#dc2626', colorBg: 'rgba(220,38,38,.18)',  colorLight: '#fef2f2', colorBorder: '#fecaca' },
+  'academica':        { color: '#0d9488', colorBg: 'rgba(13,148,136,.18)', colorLight: '#f0fdfa', colorBorder: '#99f6e4' },
+  'carreras':         { color: '#9333ea', colorBg: 'rgba(147,51,234,.18)', colorLight: '#faf5ff', colorBorder: '#e9d5ff' },
+  'eventos':          { color: '#d97706', colorBg: 'rgba(217,119,6,.18)',  colorLight: '#fffbeb', colorBorder: '#fde68a' },
+  'comite':           { color: '#db2777', colorBg: 'rgba(219,39,119,.18)', colorLight: '#fdf2f8', colorBorder: '#fbcfe8' },
+  'seguridad':        { color: '#dc2626', colorBg: 'rgba(220,38,38,.18)',  colorLight: '#fef2f2', colorBorder: '#fecaca' },
+  'rrhh':             { color: '#ea580c', colorBg: 'rgba(234,88,12,.18)',  colorLight: '#fff7ed', colorBorder: '#fed7aa' },
+  'personas':         { color: '#2563eb', colorBg: 'rgba(37,99,235,.18)',  colorLight: '#eff6ff', colorBorder: '#bfdbfe' },
+  'asignacion':       { color: '#7c3aed', colorBg: 'rgba(124,58,237,.18)', colorLight: '#f5f3ff', colorBorder: '#ddd6fe' },
+  'kardex':           { color: '#16a34a', colorBg: 'rgba(22,163,74,.18)',  colorLight: '#f0fdf4', colorBorder: '#bbf7d0' },
+  'historial':        { color: '#475569', colorBg: 'rgba(71,85,105,.18)',  colorLight: '#f8fafc', colorBorder: '#cbd5e1' },
+}
+
+const colorModuloActivo = computed(() => {
+  if (!tabActivo.value) return null
+  return COLORES_MODULO[tabActivo.value] ?? null
+})
+
+// Color del drawer según la sección abierta
+const colorDrawerActivo = computed(() => {
+  if (!drawerSeccionAbierta.value) return null
+  return COLORES_MODULO[drawerSeccionAbierta.value] ?? null
+})
 
 const router = useRouter()
 const route  = useRoute()
@@ -1991,10 +1967,10 @@ const regresarPagina = () => router.back()
   flex-shrink: 0;
   user-select: none;
 }
-.nav-item:hover { color: var(--azul); background: #F0F4FF; }
+.nav-item:hover { color: var(--color-modulo, var(--azul)); background: var(--color-modulo-light, #F0F4FF); }
 .nav-item.nav-activo,
-.nav-item.router-link-active { color: var(--azul); font-weight: 700; border-bottom-color: var(--azul); background: #EFF6FF; }
-.nav-item-tab.nav-activo     { color: var(--azul); font-weight: 700; border-bottom-color: var(--azul); background: #EFF6FF; }
+.nav-item.router-link-active { color: var(--color-modulo, var(--azul)); font-weight: 700; border-bottom-color: var(--color-modulo, var(--azul)); background: var(--color-modulo-bg, #EFF6FF); }
+.nav-item-tab.nav-activo     { color: var(--color-modulo, var(--azul)); font-weight: 700; border-bottom-color: var(--color-modulo, var(--azul)); background: var(--color-modulo-bg, #EFF6FF); }
 
 .nav-icono  { width: 26px; height: 26px; stroke: currentColor; flex-shrink: 0; }
 .nav-label  { font-size: 0.76rem; font-weight: 600; line-height: 1.1; text-align: center; white-space: nowrap; }
@@ -2063,7 +2039,7 @@ const regresarPagina = () => router.back()
   transition: background 0.15s; cursor: pointer;
 }
 .drawer-item:hover { background: #F3F4F6; }
-.drawer-item.router-link-active { color: var(--azul); font-weight: 600; background: #EFF6FF; }
+.drawer-item.router-link-active { color: var(--color-modulo, var(--azul)); font-weight: 600; background: var(--color-modulo-light, #EFF6FF); }
 
 .drawer-grupo-titulo {
   display: flex; align-items: center; gap: 10px;
@@ -2072,13 +2048,14 @@ const regresarPagina = () => router.back()
   color: var(--texto); cursor: pointer;
   transition: background 0.15s; user-select: none;
 }
-.drawer-grupo-titulo:hover { background: #F3F4F6; }
-.drawer-icono  { width: 18px; height: 18px; stroke: var(--gris); flex-shrink: 0; }
+.drawer-grupo-titulo:hover { background: var(--color-modulo-light, #F3F4F6); }
+.drawer-grupo-titulo:hover .drawer-icono { stroke: var(--color-modulo, var(--gris)); }
+.drawer-icono  { width: 18px; height: 18px; stroke: var(--gris); flex-shrink: 0; transition: stroke 0.2s; }
 .drawer-grupo-titulo span { flex: 1; }
 .drawer-flecha { width: 14px; height: 14px; stroke: var(--gris); transition: transform 0.22s; }
 .drawer-flecha.rotada { transform: rotate(180deg); }
 
-.drawer-submenu { background: #F9FAFB; }
+.drawer-submenu { background: var(--color-modulo-light, #F9FAFB); border-left: 3px solid var(--color-modulo, transparent); margin-left: 0; }
 .drawer-subitem {
   display: block;
   padding: 9px 18px 9px 46px;
@@ -2086,8 +2063,8 @@ const regresarPagina = () => router.back()
   color: #4B5563; text-decoration: none;
   transition: background 0.15s;
 }
-.drawer-subitem:hover { background: var(--azul-suave); color: var(--azul); }
-.drawer-subitem.router-link-active { color: var(--azul); font-weight: 600; }
+.drawer-subitem:hover { background: var(--color-modulo-light, var(--azul-suave)); color: var(--color-modulo, var(--azul)); }
+.drawer-subitem.router-link-active { color: var(--color-modulo, var(--azul)); font-weight: 600; }
 .drawer-subitem--anidado { padding-left: 60px; font-size: 0.81rem; color: var(--gris); }
 
 .drawer-separador { padding: 10px 18px 4px; margin-top: 4px; border-top: 1px solid var(--borde); }
@@ -2251,16 +2228,16 @@ h3 { font-size: clamp(1rem, 2.5vw, 1.2rem); }
 }
 
 .ribbon-item:hover {
-  background: #DBEAFE;
-  color: var(--azul);
-  border-color: #BFDBFE;
+  background: var(--color-modulo-light, #DBEAFE);
+  color: var(--color-modulo, var(--azul));
+  border-color: var(--color-modulo-border, #BFDBFE);
 }
 
 .ribbon-item.router-link-active,
 .ribbon-item.router-link-exact-active {
-  background: #EFF6FF;
-  color: var(--azul);
-  border-color: #BFDBFE;
+  background: var(--color-modulo-light, #EFF6FF);
+  color: var(--color-modulo, var(--azul));
+  border-color: var(--color-modulo-border, #BFDBFE);
   font-weight: 700;
   box-shadow: inset 0 0 0 1px rgba(27,57,106,0.08);
 }
