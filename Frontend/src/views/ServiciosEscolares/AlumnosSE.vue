@@ -472,6 +472,8 @@
                 </svg>
               </button>
             </div>
+            <!-- Barra de carga mientras se obtiene el expediente completo -->
+            <div v-if="cargandoExpediente" style="height:3px;background:linear-gradient(90deg,#1B396A 0%,#3B82F6 50%,#1B396A 100%);background-size:200% 100%;animation:shimmer 1.2s infinite;"></div>
             <div class="modal-body-tabs">
               <div class="detalle-tabs" role="tablist">
                 <button v-for="tab in tabs" :key="tab.id"
@@ -514,11 +516,19 @@
                       </div>
                       <div class="detalle-campo">
                         <span class="detalle-label">GÉNERO</span>
-                        <span class="detalle-valor">{{ (alumnoSeleccionado.genero || alumnoSeleccionado.persona?.genero || '—').toUpperCase() }}</span>
+                        <span class="detalle-valor">{{ (alumnoSeleccionado.genero || '—').toUpperCase() }}</span>
+                      </div>
+                      <div class="detalle-campo">
+                        <span class="detalle-label">TELÉFONO</span>
+                        <span class="detalle-valor mono-bold">{{ alumnoSeleccionado.telefono || '—' }}</span>
                       </div>
                       <div class="detalle-campo full-width">
-                        <span class="detalle-label">CORREO INSTITUCIONAL</span>
-                        <span class="detalle-valor">{{ alumnoSeleccionado.email || alumnoSeleccionado.persona?.email || '—' }}</span>
+                        <span class="detalle-label">CORREO ELECTRÓNICO</span>
+                        <span class="detalle-valor">{{ alumnoSeleccionado.email || '—' }}</span>
+                      </div>
+                      <div class="detalle-campo full-width">
+                        <span class="detalle-label">DIRECCIÓN</span>
+                        <span class="detalle-valor">{{ alumnoSeleccionado.direccion || '—' }}</span>
                       </div>
                     </div>
                   </div>
@@ -564,12 +574,12 @@
                     </div>
                     <div class="detalle-grid">
                       <div class="detalle-campo">
-                        <span class="detalle-label">SEGURO MÉDICO</span>
-                        <span class="detalle-valor">{{ (alumnoSeleccionado.seguro_medico || '—').toUpperCase() }}</span>
+                        <span class="detalle-label">NSS (SEGURO SOCIAL)</span>
+                        <span class="detalle-valor mono-bold">{{ alumnoSeleccionado.nss || '—' }}</span>
                       </div>
                       <div class="detalle-campo">
-                        <span class="detalle-label">SUBES / BECA</span>
-                        <span class="detalle-valor">{{ (alumnoSeleccionado.subes || alumnoSeleccionado.beca || '—').toUpperCase() }}</span>
+                        <span class="detalle-label">FOLIO SUBES / BECA</span>
+                        <span class="detalle-valor">{{ alumnoSeleccionado.folio_subes || '—' }}</span>
                       </div>
                       <div class="detalle-campo full-width exp-contacto-titulo">
                         <span class="detalle-label">CONTACTO DE EMERGENCIA</span>
@@ -579,16 +589,16 @@
                         <span class="detalle-valor">{{ (alumnoSeleccionado.contacto_emergencia?.nombre || '—').toUpperCase() }}</span>
                       </div>
                       <div class="detalle-campo">
-                        <span class="detalle-label">RELACIÓN</span>
-                        <span class="detalle-valor">{{ (alumnoSeleccionado.contacto_emergencia?.relacion || '—').toUpperCase() }}</span>
+                        <span class="detalle-label">PARENTESCO</span>
+                        <span class="detalle-valor">{{ (alumnoSeleccionado.contacto_emergencia?.parentesco || '—').toUpperCase() }}</span>
                       </div>
                       <div class="detalle-campo">
                         <span class="detalle-label">TELÉFONO</span>
                         <span class="detalle-valor mono-bold">{{ alumnoSeleccionado.contacto_emergencia?.telefono || '—' }}</span>
                       </div>
                       <div class="detalle-campo">
-                        <span class="detalle-label">CORREO</span>
-                        <span class="detalle-valor">{{ alumnoSeleccionado.contacto_emergencia?.email || '—' }}</span>
+                        <span class="detalle-label">TELÉFONO ALTERNATIVO</span>
+                        <span class="detalle-valor mono-bold">{{ alumnoSeleccionado.contacto_emergencia?.telefono_alt || '—' }}</span>
                       </div>
                     </div>
                   </div>
@@ -902,6 +912,7 @@ const showModal          = ref(false)
 const showModalEliminar  = ref(false)
 const alumnoSeleccionado = ref(null)
 const alumnoEditar       = ref({})
+const cargandoExpediente = ref(false)
 
 const tabActivo         = ref('general')
 const kardexData        = ref(null)
@@ -1302,13 +1313,33 @@ watch(() => route.query.ver, (verControl) => {
   if (encontrado) abrirModalVer(encontrado)
 })
 
-const abrirModalVer = (alumno) => {
+const abrirModalVer = async (alumno) => {
+  // Mostrar el modal de inmediato con datos básicos (sin bloquear UX)
   alumnoSeleccionado.value = alumno
   tabActivo.value   = 'general'
   kardexData.value  = null
   horarioData.value = null
   showViewModal.value = true
   router.replace({ query: { ...route.query, ver: alumno.numero_control || alumno.noControl } })
+
+  // En paralelo, cargar el expediente completo con todos los campos
+  const nc = alumno.numero_control || alumno.noControl
+  if (!nc) return
+  cargandoExpediente.value = true
+  try {
+    const res  = await fetch(`${API_URL}/api/alumnos/${encodeURIComponent(nc)}/expediente`)
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const json = await res.json()
+    if (json.success && json.data) {
+      // Mezclar los datos del expediente sobre los datos básicos ya visibles
+      alumnoSeleccionado.value = { ...alumnoSeleccionado.value, ...json.data }
+    }
+  } catch (e) {
+    console.warn('[AlumnosSE] expediente completo no disponible:', e.message)
+    // Silencioso: el modal sigue con los datos básicos de la lista
+  } finally {
+    cargandoExpediente.value = false
+  }
 }
 
 const cerrarModalVer = () => {
@@ -1995,4 +2026,3 @@ RESPONSIVE
   .tabla-alumnos{min-width: 620px;}
 }
 </style>
-
