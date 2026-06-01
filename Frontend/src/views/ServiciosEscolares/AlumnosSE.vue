@@ -84,20 +84,6 @@
       </div>
 
       <div class="kpis-grid">
-        <div class="kpi-card kpi-total">
-          <div class="kpi-icon-wrap">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="22" height="22" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <path stroke-linecap="round" stroke-linejoin="round" d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-              <path stroke-linecap="round" stroke-linejoin="round" d="M16 3.13a4 4 0 0 1 0 7.75"/>
-            </svg>
-          </div>
-          <div class="kpi-data">
-            <span class="kpi-numero">{{ kpiTotal }}</span>
-            <span class="kpi-label">TOTAL ALUMNOS</span>
-          </div>
-        </div>
         <div class="kpi-card kpi-activo">
           <div class="kpi-icon-wrap">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="22" height="22" stroke-width="2">
@@ -1681,7 +1667,7 @@ BASE & OPTIMIZACIÓN DE ESPACIO
 KPIs COMPACTOS
 ══════════════════════════════════════════════════════ */
 .kpis-grid {
-  display: grid; grid-template-columns: repeat(5,1fr);
+  display: grid; grid-template-columns: repeat(4,1fr);
   gap: 10px; margin-bottom: 20px;
 }
 .kpi-card {
@@ -2002,7 +1988,7 @@ EXPEDIENTE v2.2
 /* ══════════════════════════════════════════════════════
 RESPONSIVE
 ══════════════════════════════════════════════════════ */
-@media (max-width:1200px) { .kpis-grid{grid-template-columns:repeat(3,1fr)} }
+@media (max-width:1200px) { .kpis-grid{grid-template-columns:repeat(4,1fr)} }
 @media (max-width:900px) {
   .kpis-grid{grid-template-columns:repeat(2,1fr)}
   .filtros-grid{grid-template-columns:1fr 1fr}
