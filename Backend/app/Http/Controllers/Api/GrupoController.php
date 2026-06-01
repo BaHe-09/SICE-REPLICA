@@ -671,7 +671,7 @@ class GrupoController extends Controller
             // Conteo de inscritos
             $inscritos = DB::table('inscripcion')
                 ->where('id_grupo', $id)
-                ->whereIn('estatus', ['Activo', 'activo', 'inscrito'])
+                ->whereIn('estatus', ['Activo', 'activo', 'Inscrito', 'inscrito', 'INSCRITO'])
                 ->count();
 
             // Regulares: promedio >= 70 en todas sus materias
@@ -696,7 +696,7 @@ class GrupoController extends Controller
                 ->join('persona as p', 'a.id_persona', '=', 'p.id_persona')
                 ->leftJoin('estatus_alumno as ea', 'a.id_estatus_alumno', '=', 'ea.id_estatus_alumno')
                 ->where('i.id_grupo', $id)
-                ->whereIn('i.estatus', ['Activo', 'activo', 'inscrito'])
+                ->whereIn('i.estatus', ['Activo', 'activo', 'Inscrito', 'inscrito', 'INSCRITO'])
                 ->select(
                     'a.numero_control as noControl',
                     DB::raw("CONCAT(p.nombre,' ',p.apellido_paterno,' ',COALESCE(p.apellido_materno,'')) as nombre"),
@@ -773,7 +773,7 @@ class GrupoController extends Controller
                 ->join('persona as p', 'a.id_persona', '=', 'p.id_persona')
                 ->leftJoin('estatus_alumno as ea', 'a.id_estatus_alumno', '=', 'ea.id_estatus_alumno')
                 ->where('i.id_grupo', $id)
-                ->whereIn('i.estatus', ['Activo', 'activo', 'inscrito'])
+                ->whereIn('i.estatus', ['Activo', 'activo', 'Inscrito', 'inscrito', 'INSCRITO'])
                 ->select(
                     'a.numero_control as noControl',
                     DB::raw("CONCAT(p.nombre,' ',p.apellido_paterno,' ',COALESCE(p.apellido_materno,'')) as nombre"),
@@ -834,7 +834,7 @@ class GrupoController extends Controller
                 ->join('alumno as a',  'i.id_alumno',  '=', 'a.id_alumno')
                 ->join('persona as p', 'a.id_persona', '=', 'p.id_persona')
                 ->where('i.id_grupo', $id)
-                ->whereIn('i.estatus', ['Activo', 'activo', 'inscrito'])
+                ->whereIn('i.estatus', ['Activo', 'activo', 'Inscrito', 'inscrito', 'INSCRITO'])
                 ->select(
                     'a.numero_control as noControl',
                     DB::raw("CONCAT(p.nombre,' ',p.apellido_paterno,' ',COALESCE(p.apellido_materno,'')) as nombre"),
