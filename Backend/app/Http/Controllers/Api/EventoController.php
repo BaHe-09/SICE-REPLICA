@@ -614,9 +614,11 @@ class EventoController extends Controller
             }
 
             $fecha_emision = now()->locale('es')->isoFormat('D [de] MMMM [de] YYYY');
+            $tipo_evento   = $this->mapearTipo($evento->nombre_tipo);
+            $folio         = strtoupper(substr(md5($no_control . $id . date('Ymd')), 0, 10));
 
             $pdf = Pdf::loadView('documentos.constancia_evento', compact(
-                'evento', 'alumno', 'fecha_emision'
+                'evento', 'alumno', 'fecha_emision', 'tipo_evento', 'folio'
             ))->setPaper('letter', 'portrait');
 
             $filename = "constancia_evento_{$id}_{$no_control}.pdf";

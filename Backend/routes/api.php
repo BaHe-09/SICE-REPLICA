@@ -230,6 +230,8 @@ Route::delete('/eventos/{id}/participantes/{control}',           [EventoControll
 Route::get('/eventos/{id}/constancias',          [EventoController::class, 'constancias']);
 Route::post('/eventos/{id}/constancias/generar', [EventoController::class, 'generarConstancias']);
 
+Route::get('/eventos/{id}/constancias/{no_control}', [EventoController::class, 'constanciaPDF']);
+
 
 // ====================== MÓDULO DE RECURSOS HUMANOS ======================
 
