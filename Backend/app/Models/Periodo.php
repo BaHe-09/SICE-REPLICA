@@ -9,5 +9,17 @@ class Periodo extends Model
     protected $table = 'periodo';
     protected $primaryKey = 'id_periodo';
 
-    public $timestamps = false;
+    protected $fillable = [
+        'nombre_periodo',
+        'fecha_inicio',
+        'fecha_fin',
+        'estatus',
+        'activo',
+    ];
+
+    protected $casts = [
+        'activo' => 'boolean',
+        'fecha_inicio' => 'date:Y-m-d',
+        'fecha_fin' => 'date:Y-m-d',
+    ];
 }
