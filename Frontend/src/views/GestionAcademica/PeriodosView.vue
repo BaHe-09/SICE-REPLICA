@@ -63,8 +63,9 @@
               <label class="filtro-label">Estatus</label>
               <select v-model="filtroEstatus" class="filter-select">
                 <option value="">Todos</option>
-                <option value="1">Activo</option>
-                <option value="0">Inactivo</option>
+                <option value="ACTIVO">Activo</option>
+                <option value="PROGRAMADO">Programado</option>
+                <option value="INACTIVO">Inactivo</option>
               </select>
             </div>
             <button class="btn-limpiar-filtros" @click="limpiarFiltros">
@@ -84,7 +85,7 @@
               <td class="celda-nombre">{{ periodo.nombre_periodo }}</td>
               <td>{{ formatearFecha(periodo.fecha_inicio) }}</td>
               <td>{{ formatearFecha(periodo.fecha_fin) }}</td>
-              <td><span class="estatus-badge" :class="periodo.estatus ? 'activo' : 'inactivo'">{{ periodo.estatus ? 'Activo' : 'Inactivo' }}</span></td>
+              <td><span class="estatus-badge" :class="periodo.activo ? 'activo' : 'inactivo'">{{ etiquetaEstatus(periodo) }}</span></td>
               <td class="celda-acciones">
                 <button class="btn-icono ver" @click.stop="abrirModalVer(periodo)" title="Ver detalle">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
@@ -125,7 +126,7 @@
           <div class="detalle-fila"><span class="detalle-label">Nombre</span><span class="detalle-valor">{{ periodoVer.nombre_periodo }}</span></div>
           <div class="detalle-fila"><span class="detalle-label">Fecha de inicio</span><span class="detalle-valor">{{ formatearFecha(periodoVer.fecha_inicio) }}</span></div>
           <div class="detalle-fila"><span class="detalle-label">Fecha de fin</span><span class="detalle-valor">{{ formatearFecha(periodoVer.fecha_fin) }}</span></div>
-          <div class="detalle-fila"><span class="detalle-label">Estatus</span><span class="estatus-badge" :class="periodoVer.estatus ? 'activo' : 'inactivo'">{{ periodoVer.estatus ? 'Activo' : 'Inactivo' }}</span></div>
+          <div class="detalle-fila"><span class="detalle-label">Estatus</span><span class="estatus-badge" :class="periodoVer.activo ? 'activo' : 'inactivo'">{{ etiquetaEstatus(periodoVer) }}</span></div>
         </div>
         <div class="modal-footer"><button class="btn-secundario" @click="showModalVer = false">Cerrar</button></div>
       </div>
@@ -136,7 +137,7 @@
       <div class="modal-content">
         <div class="modal-header"><h3>{{ form.id_periodo ? 'Editar Periodo' : 'Nuevo Periodo Académico' }}</h3><button @click="cerrarModal" class="btn-cerrar-modal">×</button></div>
         <div class="modal-body">
-          <div v-if="form.estatus && periodoActivoExistente && !form.id_periodo" class="aviso-amarillo">
+          <div v-if="form.activo && periodoActivoExistente && !form.id_periodo" class="aviso-amarillo">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="aviso-icono"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
             <span>El periodo actualmente activo quedará inactivo al guardar este nuevo periodo.</span>
           </div>
@@ -160,10 +161,11 @@
           <div class="form-grupo">
             <label>Estatus</label>
             <select v-model="form.estatus" class="modal-select">
-              <option :value="1">Activo</option>
-              <option :value="0">Inactivo</option>
+              <option value="ACTIVO">Activo</option>
+              <option value="PROGRAMADO">Programado</option>
+              <option value="INACTIVO">Inactivo</option>
             </select>
-            <div class="indicador-estatus" :class="form.estatus ? 'activo' : 'inactivo'">{{ form.estatus ? 'Activo' : 'Inactivo' }}</div>
+            <div class="indicador-estatus" :class="form.activo ? 'activo' : 'inactivo'">{{ etiquetaEstatus(form) }}</div>
           </div>
         </div>
         <div class="modal-footer">
@@ -218,7 +220,7 @@ const periodoAEliminar  = ref(null)
 const paginaActual      = ref(1)
 const porPagina         = 10
 
-const form   = reactive({ id_periodo: null, nombre_periodo: '', fecha_inicio: '', fecha_fin: '', estatus: 1 })
+const form   = reactive({ id_periodo: null, nombre_periodo: '', fecha_inicio: '', fecha_fin: '', estatus: 'PROGRAMADO', activo: false })
 const errors = reactive({})
 const notificacion = ref({ visible: false, mensaje: '', tipo: 'exito' })
 let timerNotif = null
@@ -229,14 +231,15 @@ const mostrarNotificacion = (mensaje, tipo = 'exito') => {
   timerNotif = setTimeout(() => { notificacion.value.visible = false }, 3500)
 }
 
-const periodoActivoExistente = computed(() => periodos.value.some(p => p.estatus && p.id_periodo !== form.id_periodo))
+const periodoActivoExistente = computed(() => periodos.value.some(p => p.activo && p.id_periodo !== form.id_periodo))
 
 const cargarPeriodos = async () => {
   cargando.value = true
   try {
     const res = await fetch(`${API}/periodos`)
     if (!res.ok) throw new Error()
-    periodos.value = await res.json()
+    const json = await res.json()
+    periodos.value = Array.isArray(json) ? json : (json.data ?? [])
   } catch { mostrarNotificacion('No se pudieron cargar los periodos.', 'error') }
   finally { cargando.value = false }
 }
@@ -244,11 +247,16 @@ const cargarPeriodos = async () => {
 onMounted(() => { cargarPeriodos() })
 
 const normalize = (t) => t?.toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') ?? ''
+const etiquetaEstatus = (periodo) => {
+  if (periodo?.estatus === 'ACTIVO') return 'Activo'
+  if (periodo?.estatus === 'PROGRAMADO') return 'Programado'
+  return 'Inactivo'
+}
 
 const periodosFiltrados = computed(() =>
   periodos.value.filter(p => {
     const coincideBusqueda = !busqueda.value || normalize(p.nombre_periodo).includes(normalize(busqueda.value))
-    const coincideEstatus  = !filtroEstatus.value || String(p.estatus) === filtroEstatus.value
+    const coincideEstatus  = !filtroEstatus.value || p.estatus === filtroEstatus.value
     return coincideBusqueda && coincideEstatus
   })
 )
@@ -260,6 +268,7 @@ const paginados    = computed(() => {
 })
 
 watch([busqueda, filtroEstatus], () => { paginaActual.value = 1 })
+watch(() => form.estatus, (estatus) => { form.activo = estatus === 'ACTIVO' })
 
 const formatearFecha = (fecha) => {
   if (!fecha) return '—'
@@ -267,10 +276,10 @@ const formatearFecha = (fecha) => {
 }
 
 const limpiarFiltros  = () => { busqueda.value = ''; filtroEstatus.value = ''; filaActiva.value = -1; paginaActual.value = 1 }
-const resetForm       = () => { form.id_periodo = null; form.nombre_periodo = ''; form.fecha_inicio = ''; form.fecha_fin = ''; form.estatus = 1; Object.keys(errors).forEach(k => delete errors[k]) }
+const resetForm       = () => { form.id_periodo = null; form.nombre_periodo = ''; form.fecha_inicio = ''; form.fecha_fin = ''; form.estatus = 'PROGRAMADO'; form.activo = false; Object.keys(errors).forEach(k => delete errors[k]) }
 const abrirModalNuevo  = () => { resetForm(); showModal.value = true }
 const abrirModalVer    = (p) => { periodoVer.value = p; showModalVer.value = true }
-const abrirModalEditar = (p) => { resetForm(); form.id_periodo = p.id_periodo; form.nombre_periodo = p.nombre_periodo; form.fecha_inicio = p.fecha_inicio; form.fecha_fin = p.fecha_fin; form.estatus = p.estatus; showModal.value = true }
+const abrirModalEditar = (p) => { resetForm(); form.id_periodo = p.id_periodo; form.nombre_periodo = p.nombre_periodo; form.fecha_inicio = p.fecha_inicio; form.fecha_fin = p.fecha_fin; form.estatus = p.estatus; form.activo = !!p.activo; showModal.value = true }
 const cerrarModal      = () => { showModal.value = false; resetForm() }
 const solicitarEliminar = () => { periodoAEliminar.value = { id_periodo: form.id_periodo, nombre_periodo: form.nombre_periodo }; showModal.value = false; showModalEliminar.value = true }
 
@@ -288,7 +297,7 @@ const guardar = async () => {
   guardando.value = true
   const esEdicion = !!form.id_periodo
   const url = esEdicion ? `${API}/periodos/${form.id_periodo}` : `${API}/periodos`
-  const payload = { nombre_periodo: form.nombre_periodo.trim(), fecha_inicio: form.fecha_inicio, fecha_fin: form.fecha_fin, estatus: form.estatus }
+  const payload = { nombre_periodo: form.nombre_periodo.trim(), fecha_inicio: form.fecha_inicio, fecha_fin: form.fecha_fin, estatus: form.estatus, activo: form.activo }
   try {
     const res = await fetch(url, { method: esEdicion ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(payload) })
     if (!res.ok) throw new Error()
