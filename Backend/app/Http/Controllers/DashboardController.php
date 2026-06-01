@@ -75,7 +75,7 @@ class DashboardController extends Controller
     public function carreras()
     {
         try {
-            $periodo  = DB::table('periodo')->where('estatus', 1)->orderByDesc('id_periodo')->first();
+            $periodo  = DB::table('periodo')->where('activo', 1)->orderByDesc('id_periodo')->first();
             $carreras = $this->_carrerasKpis($periodo);
             $maxMat   = count($carreras) > 0 ? max(array_column($carreras, 'matriculas')) : 1;
             $maxMat   = $maxMat ?: 1;
@@ -116,7 +116,7 @@ class DashboardController extends Controller
     public function kpis()
     {
         try {
-            $periodo      = DB::table('periodo')->where('estatus', 1)->orderByDesc('id_periodo')->first();
+            $periodo      = DB::table('periodo')->where('activo', 1)->orderByDesc('id_periodo')->first();
             $totalAlumnos = $this->alumnosConEstatus(['Activo', '1', 'true'])->count();
 
             $alumnosInscritos = DB::table('inscripcion as i')
@@ -318,7 +318,7 @@ class DashboardController extends Controller
     private function resumenCarreras()
     {
         $periodoActual = DB::table('periodo')
-            ->where('estatus', 1)
+            ->where('activo', 1)
             ->first();
 
         if (!$periodoActual) {
