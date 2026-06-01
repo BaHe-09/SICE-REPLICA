@@ -43,7 +43,8 @@ Route::get('/calificaciones-grupo',         [ServiciosEscolaresController::class
 Route::get('/carreras/{id}/actas',          [ServiciosEscolaresController::class, 'getActasPorCarrera']);
 Route::post('/actas/{id}/generar',          [ServiciosEscolaresController::class, 'generarActa']);
 Route::get('/alumnos/{control}/historial',  [ServiciosEscolaresController::class, 'historialPorControl']);
-Route::post('/guardar-calificaciones', [ServiciosEscolaresController::class, 'guardarCalificaciones']);
+Route::post('/guardar-calificaciones',     [ServiciosEscolaresController::class, 'guardarCalificaciones']);
+Route::post('/calificaciones/guardar',     [ServiciosEscolaresController::class, 'guardarCalificaciones']);
 Route::put('/calificaciones/{id}', [ServiciosEscolaresController::class, 'actualizarCalificacion']);
 Route::delete('/calificaciones/{id}', [ServiciosEscolaresController::class, 'eliminarCalificacion']);
 
