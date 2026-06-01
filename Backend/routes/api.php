@@ -61,7 +61,11 @@ Route::post('/alumnos', [ServiciosEscolaresController::class, 'store']);
 Route::get('/buscar-alumno', [ServiciosEscolaresController::class, 'buscarAlumnoInscripcion']);
 Route::get('/horario/{numero_control}', [AlumnoController::class, 'horario']);
 Route::get('/alumnos/buscar-control', [EventoController::class, 'buscarAlumno']);
+// === EXPEDIENTE COMPLETO ===
+Route::get('/alumnos/{numero_control}/expediente', [AlumnoController::class, 'expediente']);
+Route::put('/alumnos/{numero_control}/expediente', [AlumnoController::class, 'actualizarExpediente']);
 
+Route::get('/alumnos/especialidades', [AlumnoController::class, 'especialidades']);
 // === CRUD COMPLETO DE ALUMNOS ===
 Route::get('/alumnos/catalogos', [AlumnoController::class, 'catalogos']);
 Route::get('/alumnos-crud', [AlumnoController::class, 'index']);
