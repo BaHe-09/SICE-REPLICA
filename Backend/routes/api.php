@@ -61,7 +61,11 @@ Route::post('/alumnos', [ServiciosEscolaresController::class, 'store']);
 Route::get('/buscar-alumno', [ServiciosEscolaresController::class, 'buscarAlumnoInscripcion']);
 Route::get('/horario/{numero_control}', [AlumnoController::class, 'horario']);
 Route::get('/alumnos/buscar-control', [EventoController::class, 'buscarAlumno']);
+// === EXPEDIENTE COMPLETO ===
+Route::get('/alumnos/{numero_control}/expediente', [AlumnoController::class, 'expediente']);
+Route::put('/alumnos/{numero_control}/expediente', [AlumnoController::class, 'actualizarExpediente']);
 
+Route::get('/alumnos/especialidades', [AlumnoController::class, 'especialidades']);
 // === CRUD COMPLETO DE ALUMNOS ===
 Route::get('/alumnos/catalogos', [AlumnoController::class, 'catalogos']);
 Route::get('/alumnos-crud', [AlumnoController::class, 'index']);
@@ -120,6 +124,7 @@ Route::post('/carreras', [CarreraController::class, 'store']);
 Route::put('/carreras/{id}', [CarreraController::class, 'update']);
 Route::delete('/carreras/{id}', [CarreraController::class, 'destroy']);
 Route::get('/carreras/{id}/grupos', [CarreraController::class, 'grupos']);
+Route::get('/carreras/{id}/semestres/{semestre}/grupos', [CarreraController::class, 'gruposPorSemestre']);
 
 Route::get('/departamentos',           [DepartamentoController::class, 'index']);
 Route::post('/departamentos',          [DepartamentoController::class, 'store']);
@@ -229,6 +234,8 @@ Route::delete('/eventos/{id}/participantes/{control}',           [EventoControll
 
 Route::get('/eventos/{id}/constancias',          [EventoController::class, 'constancias']);
 Route::post('/eventos/{id}/constancias/generar', [EventoController::class, 'generarConstancias']);
+
+Route::get('/eventos/{id}/constancias/{no_control}', [EventoController::class, 'constanciaPDF']);
 
 
 // ====================== MÓDULO DE RECURSOS HUMANOS ======================
