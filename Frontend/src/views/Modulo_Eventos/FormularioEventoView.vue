@@ -4,7 +4,7 @@
 <!-- Rediseño visual SaaS moderno                 -->
 <!-- ============================================= -->
 <template>
-  <MainLayout v-slot="{ busquedaGlobal }">
+  <MainLayout>
     <div class="formulario-evento-page">
       <div class="barra-carga" :class="{ activa: cargando }">
         <div class="barra-progreso"></div>
@@ -36,8 +36,9 @@
       </div>
 
       <form @submit.prevent="guardar" novalidate>
+
+        <!-- ─── SECCIÓN 1: Información General ─── -->
         <div class="seccion-card">
-          <!-- Cabecera de sección con acento visual -->
           <div class="seccion-titulo">
             <div class="seccion-icono">
               <svg viewBox="0 0 24 24" fill="none" stroke="#1D52B7" stroke-width="2" width="20" height="20">
@@ -48,8 +49,8 @@
               </svg>
             </div>
             <div>
-              <h2 class="seccion-nombre">INFORMACIÓN DEL EVENTO</h2>
-              <p class="seccion-desc">DATOS GENERALES DEL EVENTO INSTITUCIONAL</p>
+              <h2 class="seccion-nombre">INFORMACIÓN GENERAL</h2>
+              <p class="seccion-desc">NOMBRE, TIPO Y FECHA DEL EVENTO — CAMPOS REQUERIDOS</p>
             </div>
           </div>
           <div class="divisor"></div>
@@ -58,21 +59,21 @@
             <!-- Nombre -->
             <div class="campo-form campo-ancho">
               <label class="campo-label">NOMBRE DEL EVENTO <span class="requerido">*</span></label>
-              <!-- CORRECCIÓN: v-model apunta a form.nombre (compatible con payload backend) -->
-              <input v-model="form.nombre" type="text" placeholder="EJ: SEMANA DE INGENIERÍA 2026" class="campo-input" :class="{ 'campo-error': errores.nombre }" @input="validarCampo('nombre')" />
-              <span v-if="errores.nombre" class="mensaje-error">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                {{ errores.nombre }}
-              </span>
+              <input v-model="form.nombre" type="text" maxlength="150" placeholder="EJ: SEMANA DE INGENIERÍA 2026" class="campo-input" :class="{ 'campo-error': errores.nombre }" @input="validarCampo('nombre')" />
+              <div class="campo-footer-row">
+                <span v-if="errores.nombre" class="mensaje-error">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  {{ errores.nombre }}
+                </span>
+                <span v-else class="campo-hint"></span>
+                <span class="campo-contador" :class="{ 'contador-limite': form.nombre.length > 130 }">{{ form.nombre.length }}/150</span>
+              </div>
             </div>
 
             <!-- Tipo -->
             <div class="campo-form">
               <label class="campo-label">TIPO DE EVENTO <span class="requerido">*</span></label>
               <div class="select-wrap">
-                <!-- CORRECCIÓN: v-model apunta a form.tipo_evento_id (campo correcto del backend) -->
-                <!-- CORRECCIÓN: :value usa t.id_tipo_evento (campo correcto de /api/tipos-evento) -->
-                <!-- CORRECCIÓN: texto usa t.nombre_tipo (campo correcto de /api/tipos-evento) -->
                 <select v-model="form.tipo_evento_id" class="campo-input campo-select" :class="{ 'campo-error': errores.tipo_evento_id }" @change="validarCampo('tipo_evento_id')">
                   <option value="">SELECCIONA UN TIPO</option>
                   <option v-for="t in tiposEvento" :key="t.id_tipo_evento" :value="t.id_tipo_evento">{{ t.nombre_tipo }}</option>
@@ -95,7 +96,6 @@
                   <line x1="8" y1="2" x2="8" y2="6"/>
                   <line x1="3" y1="10" x2="21" y2="10"/>
                 </svg>
-                <!-- CORRECCIÓN: en modo edición no se restringe min para permitir fechas existentes -->
                 <input v-model="form.fecha" type="date" :min="modoEdicion ? undefined : fechaMinima" class="campo-input campo-input-fecha" :class="{ 'campo-error': errores.fecha }" @change="validarCampo('fecha')" />
               </div>
               <span v-if="errores.fecha" class="mensaje-error">
@@ -103,10 +103,31 @@
                 {{ errores.fecha }}
               </span>
             </div>
+          </div>
+        </div>
 
-            <!-- Hora Inicio (campo visual — el backend no lo soporta, se mantiene como opcional/informativo) -->
+        <!-- ─── SECCIÓN 2: Detalles Adicionales ─── -->
+        <div class="seccion-card">
+          <div class="seccion-titulo">
+            <div class="seccion-icono">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#1D52B7" stroke-width="2" width="20" height="20">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="seccion-nombre">DETALLES ADICIONALES</h2>
+              <p class="seccion-desc">INFORMACIÓN COMPLEMENTARIA Y CONFIGURACIÓN DEL EVENTO</p>
+            </div>
+          </div>
+          <div class="divisor"></div>
+
+          <div class="campos-grid">
+            <!-- Hora Inicio -->
             <div class="campo-form">
-              <label class="campo-label">HORA DE INICIO</label>
+              <label class="campo-label">HORA DE INICIO <span class="campo-badge-opcional">OPCIONAL</span></label>
               <div class="campo-hora-wrap">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" class="icono-campo">
                   <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
@@ -115,9 +136,9 @@
               </div>
             </div>
 
-            <!-- Hora Fin (campo visual — el backend no lo soporta, se mantiene como opcional/informativo) -->
+            <!-- Hora Fin -->
             <div class="campo-form">
-              <label class="campo-label">HORA DE FIN</label>
+              <label class="campo-label">HORA DE FIN <span class="campo-badge-opcional">OPCIONAL</span></label>
               <div class="campo-hora-wrap">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" class="icono-campo">
                   <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
@@ -126,9 +147,9 @@
               </div>
             </div>
 
-            <!-- Lugar (campo visual — el backend no lo soporta, se mantiene como opcional/informativo) -->
+            <!-- Lugar -->
             <div class="campo-form campo-ancho">
-              <label class="campo-label">LUGAR</label>
+              <label class="campo-label">LUGAR <span class="campo-badge-opcional">OPCIONAL</span></label>
               <div class="campo-icono-wrap">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" class="icono-campo">
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
@@ -138,9 +159,9 @@
               </div>
             </div>
 
-            <!-- Cupo (campo visual — el backend no lo soporta, se mantiene como opcional/informativo) -->
+            <!-- Cupo -->
             <div class="campo-form">
-              <label class="campo-label">CUPO MÁXIMO</label>
+              <label class="campo-label">CUPO MÁXIMO <span class="campo-badge-opcional">OPCIONAL</span></label>
               <div class="campo-icono-wrap">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" class="icono-campo">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -151,9 +172,9 @@
               </div>
             </div>
 
-            <!-- Responsable (campo visual — el backend no lo soporta, se mantiene como opcional/informativo) -->
+            <!-- Responsable -->
             <div class="campo-form">
-              <label class="campo-label">RESPONSABLE</label>
+              <label class="campo-label">RESPONSABLE <span class="campo-badge-opcional">OPCIONAL</span></label>
               <div class="campo-icono-wrap">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" class="icono-campo">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
@@ -163,9 +184,9 @@
               </div>
             </div>
 
-            <!-- Constancia (campo visual — el backend no lo soporta, se mantiene como opcional/informativo) -->
+            <!-- Constancia -->
             <div class="campo-form campo-ancho">
-              <label class="campo-label">GENERA CONSTANCIA</label>
+              <label class="campo-label">GENERA CONSTANCIA <span class="campo-badge-opcional">OPCIONAL</span></label>
               <div class="campo-toggle-card" :class="{ 'toggle-activo': form.genera_constancia }">
                 <div class="toggle-card-left">
                   <div class="toggle-card-icono" :class="{ 'icono-activo': form.genera_constancia }">
@@ -189,32 +210,46 @@
               </div>
             </div>
 
-            <!-- Descripción (campo soportado por el backend — opcional) -->
+            <!-- Descripción -->
             <div class="campo-form campo-ancho">
-              <label class="campo-label">DESCRIPCIÓN</label>
-              <textarea v-model="form.descripcion" rows="4" placeholder="DESCRIBE BREVEMENTE EL OBJETIVO O CONTENIDO DEL EVENTO..." class="campo-input campo-textarea"></textarea>
-              <span class="campo-hint">OPCIONAL · MÁX. RECOMENDADO 300 CARACTERES</span>
+              <label class="campo-label">DESCRIPCIÓN <span class="campo-badge-opcional">OPCIONAL</span></label>
+              <textarea v-model="form.descripcion" rows="4" maxlength="300" placeholder="DESCRIBE BREVEMENTE EL OBJETIVO O CONTENIDO DEL EVENTO..." class="campo-input campo-textarea"></textarea>
+              <div class="campo-footer-row">
+                <span class="campo-hint">VISIBLE EN EL DETALLE DEL EVENTO</span>
+                <span class="campo-contador" :class="{ 'contador-limite': form.descripcion.length > 270 }">{{ form.descripcion.length }}/300</span>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Barra de acciones sticky -->
         <div class="acciones-form">
-          <button type="button" @click="router.push('/eventos')" class="btn-cancelar">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          <div class="acciones-modo-badge" :class="modoEdicion ? 'modo-edicion' : 'modo-creacion'">
+            <svg v-if="modoEdicion" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+              <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
             </svg>
-            CANCELAR
-          </button>
-          <button type="submit" class="btn-primario" :disabled="cargando">
-            <span v-if="cargando" class="spinner"></span>
-            <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17">
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-              <polyline points="17 21 17 13 7 13 7 21"/>
-              <polyline points="7 3 7 8 15 8"/>
+            <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
             </svg>
-            {{ cargando ? 'GUARDANDO...' : (modoEdicion ? 'ACTUALIZAR EVENTO' : 'GUARDAR EVENTO') }}
-          </button>
+            {{ modoEdicion ? 'MODO EDICIÓN' : 'MODO CREACIÓN' }}
+          </div>
+          <div class="acciones-botones">
+            <button type="button" @click="router.push('/eventos')" class="btn-cancelar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              CANCELAR
+            </button>
+            <button type="submit" class="btn-primario" :disabled="cargando">
+              <span v-if="cargando" class="spinner"></span>
+              <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+              </svg>
+              {{ cargando ? 'GUARDANDO...' : (modoEdicion ? 'ACTUALIZAR EVENTO' : 'GUARDAR EVENTO') }}
+            </button>
+          </div>
         </div>
       </form>
 
@@ -314,11 +349,13 @@ const resetForm = () => {
 
 // ── Cargar tipos de evento ────────────────────────────────────────────────────
 // GET /api/tipos-evento → [{ id_tipo_evento, nombre_tipo, ... }]
+// CORRECCIÓN: manejo defensivo para respuesta paginada { data: [] } de Laravel
 const cargarTipos = async () => {
   try {
     const r = await fetch(`${API}/tipos-evento`, { headers: headersGet })
     if (!r.ok) throw new Error('Error al cargar tipos')
-    tiposEvento.value = await r.json()
+    const data = await r.json()
+    tiposEvento.value = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : [])
   } catch {
     mostrarToast('No se pudieron cargar los tipos de evento.', 'error')
   }
@@ -345,13 +382,15 @@ const cargarEvento = async () => {
 
     // CORRECCIÓN: mapeo correcto de campos del backend al formulario.
     //   - d.nombre_evento ?? d.nombre  → ambos alias vienen del backend
-    //   - d.tipo_evento_id             → campo real del backend (antes se usaba d.id_tipo_evento — INCORRECTO)
+    //   - d.tipo_evento_id             → campo real del backend, normalizado a Number para
+    //                                    coincidir con los :value numéricos del <select>
+    //   - Fallback a d.tipo_evento?.id_tipo_evento si tipo_evento_id llega null
     //   - d.fecha                      → correcto
     //   - d.descripcion                → correcto
     //   - El resto de campos visuales no existen en el backend; se dejan vacíos.
     form.value = {
       nombre:            d.nombre_evento ?? d.nombre ?? '',
-      tipo_evento_id:    d.tipo_evento_id ?? '',
+      tipo_evento_id:    Number(d.tipo_evento_id ?? d.tipo_evento?.id_tipo_evento ?? '') || '',
       fecha:             d.fecha          ?? '',
       descripcion:       d.descripcion    ?? '',
       // Campos visuales — backend no los devuelve
@@ -371,10 +410,13 @@ const cargarEvento = async () => {
 }
 
 // ── Ciclo de vida ─────────────────────────────────────────────────────────────
-onMounted(() => {
-  cargarTipos()
+// CORRECCIÓN: cargarTipos debe resolverse ANTES de cargarEvento para que el
+// <select> ya tenga sus <option> cuando se asigne form.tipo_evento_id.
+// En paralelo, el tipo no se preselecciona porque Vue no encuentra la opción todavía.
+onMounted(async () => {
+  await cargarTipos()
   if (modoEdicion.value) {
-    cargarEvento()
+    await cargarEvento()
   } else {
     resetForm()
   }
@@ -707,7 +749,7 @@ const guardar = async () => {
 /* ─────────────────────────────────────────────── */
 .acciones-form {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   gap: 0.75rem;
   background: #FFFFFF;
@@ -715,6 +757,63 @@ const guardar = async () => {
   border-radius: 14px;
   padding: 1rem 1.5rem;
   box-shadow: 0 4px 16px rgba(29,82,183,.06);
+  flex-wrap: wrap;
+}
+.acciones-botones {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.acciones-modo-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.03em;
+}
+.modo-creacion {
+  background: rgba(39,174,96,.10);
+  color: #27AE60;
+  border: 1px solid rgba(39,174,96,.2);
+}
+.modo-edicion {
+  background: rgba(29,82,183,.10);
+  color: #1D52B7;
+  border: 1px solid rgba(29,82,183,.2);
+}
+
+/* Campo contador de caracteres */
+.campo-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.campo-contador {
+  font-size: 0.72rem;
+  color: #9CA3AF;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.campo-contador.contador-limite { color: #F59E0B; }
+
+/* Badge OPCIONAL en labels */
+.campo-badge-opcional {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #9CA3AF;
+  background: #F4F6F9;
+  border: 1px solid #E4E9F0;
+  padding: 1px 6px;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+  margin-left: 4px;
 }
 
 /* ─────────────────────────────────────────────── */
@@ -797,12 +896,19 @@ const guardar = async () => {
 /* ─────────────────────────────────────────────── */
 /* RESPONSIVE                                      */
 /* ─────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .campos-grid { grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+  .seccion-card { padding: 1.5rem; }
+}
+
 @media (max-width: 640px) {
   .campos-grid { grid-template-columns: 1fr; gap: 1.1rem; }
   .seccion-card { padding: 1.25rem; border-radius: 14px; }
   .encabezado-seccion { gap: 0.75rem; }
   .titulo-pagina { font-size: 1.5rem; }
   .acciones-form { flex-direction: column; align-items: stretch; }
+  .acciones-botones { flex-direction: column; }
+  .acciones-modo-badge { justify-content: center; }
   .btn-primario, .btn-cancelar { width: 100%; justify-content: center; }
 }
 </style>
