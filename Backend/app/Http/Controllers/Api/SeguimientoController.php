@@ -7,6 +7,27 @@ use Illuminate\Support\Facades\DB;
 
 class SeguimientoController extends Controller
 {
+    private function planVigente(int $idCarrera): ?object
+    {
+        return DB::table('plan_estudio')
+            ->where('id_carrera', $idCarrera)
+            ->orderByDesc('id_plan')
+            ->first();
+    }
+
+    private function materiasCursadasDesdeKardex(int $idAlumno)
+    {
+        return DB::table('kardex as k')
+            ->join('detalle_kardex as dk', 'dk.id_kardex', '=', 'k.id_kardex')
+            ->where('k.id_alumno', $idAlumno)
+            ->select('dk.id_materia', 'dk.calificacion_final', 'dk.estado')
+            ->get()
+            ->groupBy('id_materia')
+            ->map(function ($rows) {
+                return $rows->sortByDesc('calificacion_final')->first();
+            });
+    }
+
     /**
      * GET /api/seguimiento/{id_alumno}
      * Avance curricular del alumno respecto a su plan de estudios
@@ -33,23 +54,20 @@ class SeguimientoController extends Controller
                 return response()->json(['error' => 'Alumno no encontrado'], 404);
             }
 
+            $planRow = $this->planVigente($alumno->id_carrera);
+
             // Todas las materias del plan de estudios de la carrera
             $planMaterias = DB::table('plan_materia as pm')
                 ->join('plan_estudio as pe', 'pm.id_plan', '=', 'pe.id_plan')
                 ->join('materia as m', 'pm.id_materia', '=', 'm.id_materia')
                 ->where('pe.id_carrera', $alumno->id_carrera)
+                ->when($planRow, fn($q) => $q->where('pm.id_plan', $planRow->id_plan))
                 ->select('m.id_materia', 'm.nombre', 'm.creditos', 'pm.semestre')
                 ->orderBy('pm.semestre')
                 ->get();
 
-            // Materias cursadas por el alumno
-            $cursadas = DB::table('inscripcion as i')
-                ->join('grupo as g', 'i.id_grupo', '=', 'g.id_grupo')
-                ->leftJoin('calificacion as cal', 'cal.id_inscripcion', '=', 'i.id_inscripcion')
-                ->where('i.id_alumno', $id_alumno)
-                ->select('g.id_materia', DB::raw('cal.calificacion as calificacion_final'), 'i.estatus')
-                ->get()
-                ->keyBy('id_materia');
+            // Materias ya registradas en kardex/detalle_kardex.
+            $cursadas = $this->materiasCursadasDesdeKardex($id_alumno);
 
             // Calcular estado de cada materia del plan
             $totalCreditos   = 0;
@@ -75,7 +93,7 @@ class SeguimientoController extends Controller
                     'creditos'          => $m->creditos,
                     'semestre'          => $m->semestre,
                     'estado'            => $estado,
-                    'calificacion_final'=> $cursada->calificacion_final ?? null,
+                    'calificacion_final'=> $cursada?->calificacion_final !== null ? (float) $cursada->calificacion_final : null,
                 ];
             });
 
@@ -123,21 +141,19 @@ class SeguimientoController extends Controller
                 return response()->json(['error' => 'Alumno no encontrado'], 404);
             }
 
+            $planRow = $this->planVigente($alumno->id_carrera);
+
             $planMaterias = DB::table('plan_materia as pm')
                 ->join('plan_estudio as pe', 'pm.id_plan', '=', 'pe.id_plan')
                 ->join('materia as m', 'pm.id_materia', '=', 'm.id_materia')
                 ->where('pe.id_carrera', $alumno->id_carrera)
+                ->when($planRow, fn($q) => $q->where('pm.id_plan', $planRow->id_plan))
                 ->select('m.id_materia', 'm.clave', 'm.nombre', 'm.creditos', 'pm.semestre')
                 ->orderBy('pm.semestre')
+                ->orderBy('m.nombre')
                 ->get();
 
-            $cursadas = DB::table('inscripcion as i')
-                ->join('grupo as g', 'i.id_grupo', '=', 'g.id_grupo')
-                ->leftJoin('calificacion as cal', 'cal.id_inscripcion', '=', 'i.id_inscripcion')
-                ->where('i.id_alumno', $alumno->id_alumno)
-                ->select('g.id_materia', DB::raw('cal.calificacion as calificacion_final'), 'i.estatus')
-                ->get()
-                ->keyBy('id_materia');
+            $cursadas = $this->materiasCursadasDesdeKardex($alumno->id_alumno);
 
             $semestres = [];
             foreach ($planMaterias as $m) {
@@ -153,6 +169,7 @@ class SeguimientoController extends Controller
                     $estado = 'reprobada';
                 }
 
+                $semestres[$m->semestre]['numero']     = $m->semestre;
                 $semestres[$m->semestre]['semestre']   = $m->semestre;
                 $semestres[$m->semestre]['materias'][] = [
                     'id_materia'         => $m->id_materia,
@@ -160,14 +177,26 @@ class SeguimientoController extends Controller
                     'nombre'             => $m->nombre,
                     'creditos'           => $m->creditos,
                     'estado'             => $estado,
-                    'calificacion_final' => $cursada->calificacion_final ?? null,
+                    'calificacion_final' => $cursada?->calificacion_final !== null ? (float) $cursada->calificacion_final : null,
+                    'calificacion'       => $cursada?->calificacion_final !== null ? (float) $cursada->calificacion_final : null,
                 ];
             }
 
             ksort($semestres);
 
             return response()->json([
-                'alumno'       => $alumno,
+                'alumno'       => [
+                    'id_alumno'        => $alumno->id_alumno,
+                    'numero_control'   => $alumno->numero_control,
+                    'no_control'       => $alumno->numero_control,
+                    'id_carrera'       => $alumno->id_carrera,
+                    'nombre_completo'  => $alumno->nombre_completo,
+                    'nombre'           => $alumno->nombre_completo,
+                    'carrera'          => $alumno->carrera,
+                    'semestre_actual'  => $alumno->semestre_actual,
+                    'estatus'          => $alumno->estatus,
+                    'plan_estudio'     => $planRow->nombre_plan ?? 'Plan Vigente',
+                ],
                 'plan_estudios' => array_values($semestres),
             ]);
 
