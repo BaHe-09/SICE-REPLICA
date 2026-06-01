@@ -21,6 +21,19 @@ class PeriodoController extends Controller
         return response()->json($periodos);
     }
 
+    public function activo()
+    {
+        $periodo = Periodo::where('estatus', 1)
+            ->orderByDesc('id_periodo')
+            ->first();
+
+        if (!$periodo) {
+            return response()->json(['error' => 'No hay periodo activo'], 404);
+        }
+
+        return response()->json($this->formatPeriodo($periodo));
+    }
+
     public function store(Request $request)
     {
         $validation = $this->validatePeriodoRequest($request);

@@ -793,6 +793,32 @@ class AlumnoController extends Controller
     //  Catálogo para el select de especialidad al editar expediente
     // =====================================================================
 
+    public function materias($id)
+    {
+        try {
+            $materias = DB::table('inscripcion as i')
+                ->join('grupo as g',   'i.id_grupo',   '=', 'g.id_grupo')
+                ->join('materia as m', 'g.id_materia', '=', 'm.id_materia')
+                ->join('periodo as p', 'g.id_periodo', '=', 'p.id_periodo')
+                ->where('i.id_alumno', $id)
+                ->select(
+                    'i.id_inscripcion',
+                    'm.id_materia',
+                    'm.nombre as materia',
+                    'm.creditos',
+                    'p.nombre_periodo as periodo',
+                    'i.estatus',
+                    'g.id_grupo'
+                )
+                ->orderByDesc('p.id_periodo')
+                ->get();
+
+            return response()->json($materias);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
     public function especialidades(Request $request)
     {
         try {

@@ -72,6 +72,15 @@ Route::get('/alumnos/{numero_control}/expediente', [AlumnoController::class, 'ex
 Route::put('/alumnos/{numero_control}/expediente', [AlumnoController::class, 'actualizarExpediente']);
 
 Route::get('/alumnos/especialidades', [AlumnoController::class, 'especialidades']);
+Route::get('/alumnos/{id}/materias', [AlumnoController::class, 'materias']);
+
+// ESPECIALIDADES CRUD
+use App\Http\Controllers\Api\EspecialidadController;
+Route::get('/especialidades',      [EspecialidadController::class, 'index']);
+Route::get('/especialidades/{id}', [EspecialidadController::class, 'show']);
+Route::post('/especialidades',     [EspecialidadController::class, 'store']);
+Route::put('/especialidades/{id}', [EspecialidadController::class, 'update']);
+Route::delete('/especialidades/{id}', [EspecialidadController::class, 'destroy']);
 // === CRUD COMPLETO DE ALUMNOS ===
 Route::get('/alumnos/catalogos', [AlumnoController::class, 'catalogos']);
 Route::get('/alumnos-crud', [AlumnoController::class, 'index']);
@@ -191,6 +200,7 @@ Route::post('/plan-materia', [PlanMateriaController::class, 'store']);
 use App\Http\Controllers\PeriodoController;
 
 Route::get('/periodos', [PeriodoController::class, 'index']);
+Route::get('/periodos/activo', [PeriodoController::class, 'activo']);
 Route::post('/periodos', [PeriodoController::class, 'store']);
 Route::put('/periodos/{id}', [PeriodoController::class, 'update']);
 Route::patch('/periodos/{id}/activar', [PeriodoController::class, 'activar']);
