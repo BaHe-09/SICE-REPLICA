@@ -193,6 +193,8 @@ use App\Http\Controllers\PeriodoController;
 Route::get('/periodos', [PeriodoController::class, 'index']);
 Route::post('/periodos', [PeriodoController::class, 'store']);
 Route::put('/periodos/{id}', [PeriodoController::class, 'update']);
+Route::patch('/periodos/{id}/activar', [PeriodoController::class, 'activar']);
+Route::patch('/periodos/{id}/desactivar', [PeriodoController::class, 'desactivar']);
 Route::delete('/periodos/{id}', [PeriodoController::class, 'destroy']);
 
 // PLANES DE ESTUDIO
