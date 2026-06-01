@@ -330,7 +330,7 @@ const router = createRouter({
     {
       path: '/configuracion/periodos',
       name: 'ConfigPeriodos',
-      component: () => import('@/views/ServiciosEscolares/ConfiguracionSE.vue')
+      component: () => import('@/views/Configuracion/PeriodosEscolaresView.vue')
     },
 
     // ══════════════════════════════════════════════════════════════════════
