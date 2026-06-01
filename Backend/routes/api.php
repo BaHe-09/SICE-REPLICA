@@ -84,6 +84,7 @@ Route::get('/grupos-disponibles', [ServiciosEscolaresController::class, 'getGrup
 Route::post('/inscribir', [ServiciosEscolaresController::class, 'inscribirAlumno']);
 Route::get('/grupos', [GrupoController::class, 'index']);
 Route::post('/grupos', [GrupoController::class, 'store']);
+Route::get('/grupos/{id}', [GrupoController::class, 'show']);
 Route::put('/grupos/{id}', [GrupoController::class, 'update']);
 Route::delete('/grupos/{id}', [GrupoController::class, 'destroy']);
 Route::post('/grupos/{id}/cerrar-acta', [GrupoController::class, 'cerrarActa']);

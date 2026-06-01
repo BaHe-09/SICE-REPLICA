@@ -602,4 +602,153 @@ class GrupoController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+
+    // =========================================================================
+
+    /**
+     * GET /api/grupos/{id}
+     *
+     * Detalle completo de un grupo para la vista de Grupos y Horarios.
+     * Devuelve header, información, tutor, alumnos inscritos y su promedio.
+     */
+    public function show(int $id)
+    {
+        try {
+            $grupo = DB::table('grupo as g')
+                ->join('materia as m',       'g.id_materia',  '=', 'm.id_materia')
+                ->leftJoin('docente as d',   'g.id_docente',  '=', 'd.id_docente')
+                ->leftJoin('empleado as em', 'd.id_empleado', '=', 'em.id_empleado')
+                ->leftJoin('persona as pd',  'em.id_persona', '=', 'pd.id_persona')
+                ->leftJoin('aula as a',      'g.id_aula',     '=', 'a.id_aula')
+                ->leftJoin('edificio as ed', 'a.id_edificio', '=', 'ed.id_edificio')
+                ->leftJoin('periodo as per', 'g.id_periodo',  '=', 'per.id_periodo')
+                ->leftJoin('plan_materia as pm', 'pm.id_materia', '=', 'm.id_materia')
+                ->leftJoin('plan_estudio as pe', function ($j) {
+                    $j->on('pe.id_plan', '=', 'pm.id_plan')->where('pe.estatus', 1);
+                })
+                ->leftJoin('carrera as c',   'pe.id_carrera', '=', 'c.id_carrera')
+                ->where('g.id_grupo', $id)
+                ->select(
+                    'g.id_grupo',
+                    'g.clave_grupo',
+                    'g.capacidad',
+                    'g.estatus',
+                    'm.nombre as nombre_materia',
+                    'pm.semestre',
+                    'per.nombre_periodo as periodo',
+                    'a.nombre as aula_nombre',
+                    'ed.nombre_edificio as edificio_nombre',
+                    'c.nombre as carrera_nombre',
+                    'pe.nombre_plan as plan_estudios',
+                    DB::raw("COALESCE(
+                        CONCAT(pd.nombre,' ',pd.apellido_paterno,' ',COALESCE(pd.apellido_materno,'')),
+                        'Sin asignar'
+                    ) as docente_nombre"),
+                    'pd.curp as tutor_curp',
+                    DB::raw("(SELECT correo FROM persona_correo WHERE id_persona = pd.id_persona LIMIT 1) as tutor_correo"),
+                    DB::raw("(SELECT telefono FROM persona_telefono WHERE id_persona = pd.id_persona LIMIT 1) as tutor_telefono"),
+                    'd.grado_academico as tutor_grado',
+                    // Horario desde horarios_grupos si existe, sino desde grupo
+                    DB::raw("COALESCE(
+                        (SELECT hg.hora_inicio FROM horarios_grupos hg WHERE hg.id_grupo = g.id_grupo LIMIT 1),
+                        g.hora_inicio
+                    ) as hora_inicio"),
+                    DB::raw("COALESCE(
+                        (SELECT hg.hora_fin FROM horarios_grupos hg WHERE hg.id_grupo = g.id_grupo LIMIT 1),
+                        g.hora_fin
+                    ) as hora_fin"),
+                    DB::raw("COALESCE(
+                        (SELECT hg.dia FROM horarios_grupos hg WHERE hg.id_grupo = g.id_grupo LIMIT 1),
+                        g.dia
+                    ) as dia_clase")
+                )
+                ->first();
+
+            if (!$grupo) {
+                return response()->json(['error' => 'Grupo no encontrado'], 404);
+            }
+
+            // Conteo de inscritos
+            $inscritos = DB::table('inscripcion')
+                ->where('id_grupo', $id)
+                ->whereIn('estatus', ['Activo', 'activo', 'inscrito'])
+                ->count();
+
+            // Regulares: promedio >= 70 en todas sus materias
+            // Irregulares: al menos una materia reprobada
+            $promediosPorAlumno = DB::table('inscripcion as i')
+                ->join('calificacion as c',  'c.id_inscripcion', '=', 'i.id_inscripcion')
+                ->join('evaluacion as ev',   'c.id_evaluacion',  '=', 'ev.id_evaluacion')
+                ->where('i.id_grupo', $id)
+                ->select(
+                    'i.id_alumno',
+                    DB::raw('SUM(c.calificacion * ev.porcentaje / 100) as promedio')
+                )
+                ->groupBy('i.id_alumno')
+                ->get();
+
+            $regulares   = $promediosPorAlumno->where('promedio', '>=', 70)->count();
+            $irregulares = $promediosPorAlumno->where('promedio', '<',  70)->count();
+
+            // Alumnos del grupo con promedio
+            $alumnos = DB::table('inscripcion as i')
+                ->join('alumno as a',  'i.id_alumno', '=', 'a.id_alumno')
+                ->join('persona as p', 'a.id_persona', '=', 'p.id_persona')
+                ->leftJoin('estatus_alumno as ea', 'a.id_estatus_alumno', '=', 'ea.id_estatus_alumno')
+                ->where('i.id_grupo', $id)
+                ->whereIn('i.estatus', ['Activo', 'activo', 'inscrito'])
+                ->select(
+                    'a.numero_control as noControl',
+                    DB::raw("CONCAT(p.nombre,' ',p.apellido_paterno,' ',COALESCE(p.apellido_materno,'')) as nombre"),
+                    DB::raw("COALESCE(ea.nombre, a.estatus, 'Activo') as estatus"),
+                    'i.id_inscripcion'
+                )
+                ->get()
+                ->map(function ($alumno) {
+                    $promedio = DB::table('calificacion as c')
+                        ->join('evaluacion as ev', 'c.id_evaluacion', '=', 'ev.id_evaluacion')
+                        ->where('c.id_inscripcion', $alumno->id_inscripcion)
+                        ->sum(DB::raw('c.calificacion * ev.porcentaje / 100'));
+
+                    return [
+                        'noControl' => $alumno->noControl,
+                        'nombre'    => trim($alumno->nombre),
+                        'estatus'   => $alumno->estatus,
+                        'promedio'  => $promedio ? round($promedio, 1) : null,
+                    ];
+                });
+
+            return response()->json([
+                // Header
+                'nombre_grupo'   => $grupo->clave_grupo,
+                'semestre'       => $grupo->semestre,
+                'turno'          => null,
+                'carrera_nombre' => $grupo->carrera_nombre,
+                'inscritos'      => $inscritos,
+                'regulares'      => $regulares,
+                'irregulares'    => $irregulares,
+                // Información
+                'clave_grupo'    => $grupo->clave_grupo,
+                'plan_estudios'  => $grupo->plan_estudios,
+                'aula_nombre'    => $grupo->aula_nombre,
+                'edificio_nombre'=> $grupo->edificio_nombre,
+                'capacidad'      => $grupo->capacidad,
+                'horario'        => $grupo->hora_inicio && $grupo->hora_fin
+                    ? $grupo->hora_inicio . ' - ' . $grupo->hora_fin
+                    : null,
+                'dias_clase'     => $grupo->dia_clase,
+                // Tutor
+                'docente_nombre' => trim($grupo->docente_nombre),
+                'tutor_correo'   => $grupo->tutor_correo,
+                'tutor_telefono' => $grupo->tutor_telefono,
+                'tutor_grado'    => $grupo->tutor_grado,
+                // Alumnos
+                'alumnos'        => $alumnos->values(),
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
 }
